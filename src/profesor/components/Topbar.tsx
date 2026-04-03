@@ -1,56 +1,56 @@
 import React, { useEffect, useRef, useState } from 'react'
-import ReactDOM from 'react-dom'
-import { useNavigate, useLocation } from 'react-router-dom'
-import AuthAdapter from '../../services/AuthAdapter'
+import { useNavigate } from 'react-router-dom'
 import surveyHelpers from '../../services/surveyHelpers'
 import supabaseClient from '../../services/supabaseClient'
+import { useAuth } from '../../services/AuthContext'
+import ProfileModal, { loadProfile, loadProfileAsync, ProfileData } from './ProfileModal'
 
 type Props = {
   notificationsOpen: boolean
   onToggleNotifications: () => void
   notifications?: any[]
   badgeCount?: number
+  onToggleMobileSidebar?: () => void
 }
 
-export default function Topbar({ notificationsOpen, onToggleNotifications, notifications: notificationsProp, badgeCount }: Props) {
+export default function Topbar({ notificationsOpen, onToggleNotifications, notifications: notificationsProp, badgeCount, onToggleMobileSidebar }: Props) {
   const navigate = useNavigate()
-  const location = useLocation()
-  const [open, setOpen] = useState(false)
-  const ddRef = useRef<HTMLDivElement | null>(null)
-  const toggleBtnRef = useRef<HTMLButtonElement | null>(null)
-  const [portalRect, setPortalRect] = useState<{ top: number; left: number; width: number } | null>(null)
-  const [dropdownMounted, setDropdownMounted] = useState(false)
-  const [dropdownVisible, setDropdownVisible] = useState(false)
-  const closingTimeoutRef = useRef<number | null>(null)
-  const openRafRef = useRef<number | null>(null)
-  const [logoutMessage, setLogoutMessage] = useState('')
-  const [logoutMsgType, setLogoutMsgType] = useState<'success' | 'error'>('success')
-  const logoutTimerRef = useRef<number | null>(null)
-  const navTimerRef = useRef<number | null>(null)
+  const { user: currentUser } = useAuth()
+  const userId = currentUser?.id || currentUser?.email || null
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [chipMenuOpen, setChipMenuOpen] = useState(false)
+  const chipMenuRef = useRef<HTMLDivElement>(null)
+  const [profile, setProfile] = useState<ProfileData>(() => loadProfile(userId))
+
+  // Reload profile when user changes (async from Supabase, sync cache first)
+  useEffect(() => {
+    setProfile(loadProfile(userId))
+    loadProfileAsync(userId).then(p => setProfile(p))
+  }, [userId])
+
+  // Close chip menu on outside click
+  useEffect(() => {
+    if (!chipMenuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (chipMenuRef.current && !chipMenuRef.current.contains(e.target as Node)) {
+        setChipMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [chipMenuOpen])
+
+  const roleLabel = ({ admin: 'Administrador', profesor: 'Profesor', estudiante: 'Estudiante' } as Record<string, string>)[String(currentUser?.role || '')] ?? (currentUser ? 'Usuario' : 'Invitado')
+  const avatarInitials = profile.displayName
+    ? profile.displayName.trim().split(/\s+/).slice(0, 2).map((w: string) => w[0]).join('').toUpperCase()
+    : (currentUser?.email ? String(currentUser.email).slice(0, 2).toUpperCase() : 'PM')
   const [unreadNotifications, setUnreadNotifications] = useState<number>(0)
   const [pendingResponses, setPendingResponses] = useState<number>(0)
-  const [currentUser, setCurrentUser] = useState<any | null>(() => AuthAdapter.getUser())
   const [hiddenMap, setHiddenMap] = useState<Record<string, any>>({})
   const [hiddenMapLoaded, setHiddenMapLoaded] = useState(false)
   const [surveysList, setSurveysList] = useState<any[] | null>(null)
 
-  useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
-      const t = e.target as Node
-      if (ddRef.current && !ddRef.current.contains(t) && toggleBtnRef.current && !toggleBtnRef.current.contains(t)) {
-        closeMenu()
-      }
-    }
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeMenu()
-    }
-    document.addEventListener('click', onDocClick)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('click', onDocClick)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [])
+
 
   // Recompute pendingResponses using the user's responses fetched from Firebase
   useEffect(() => {
@@ -64,7 +64,7 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
         const supabaseEnabled = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
         const dataClient: any = supabaseClient
         const authUser = (dataClient && dataClient.getAuthCurrentUser && dataClient.getAuthCurrentUser()) || null
-        const uid = authUser ? (authUser as any).uid : (currentUser && currentUser.uid) || null
+        const uid = authUser ? (authUser as any).uid : (currentUser && currentUser.id) || null
         if (!uid) {
           if (!cancelled) setPendingResponses(0)
           return
@@ -105,151 +105,8 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
     return () => { cancelled = true }
   }, [surveysList, currentUser])
 
-  useEffect(() => {
-    if (dropdownVisible) {
-      // focus the item that matches current route, otherwise first item
-      try {
-        const path = location.pathname || ''
-        // prefer exact matches, otherwise fallback to prefix match
-        const exact = ddRef.current?.querySelector<HTMLElement>(`.item[data-path="${path}"]`)
-        if (exact) return exact.focus()
-        // try prefix matches like /profesor/encuestas
-        const prefixMatch = Array.from(ddRef.current?.querySelectorAll<HTMLElement>('.item[data-path]') || []).find(el => {
-          const p = el.getAttribute('data-path') || ''
-          return p && path.startsWith(p)
-        })
-        if (prefixMatch) return prefixMatch.focus()
-        const first = ddRef.current?.querySelector<HTMLElement>('.item')
-        first?.focus()
-      } catch (e) {
-        const first = ddRef.current?.querySelector<HTMLElement>('.item')
-        first?.focus()
-      }
-    }
-  }, [dropdownVisible])
 
-  // helper to close the menu and move focus back to the toggle (animates hide then unmounts)
-  function closeMenu() {
-    try { toggleBtnRef.current?.focus() } catch (e) {}
-    // start hide animation
-    setDropdownVisible(false)
-    // clear previous timeout
-    if (closingTimeoutRef.current) window.clearTimeout(closingTimeoutRef.current)
-    // wait for CSS closing animation then unmount
-    closingTimeoutRef.current = window.setTimeout(() => {
-      setDropdownMounted(false)
-      setPortalRect(null)
-      setOpen(false)
-      closingTimeoutRef.current = null
-    }, 320)
-  }
 
-  const onToggle = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (open) { closeMenu(); return }
-    // if notifications panel is open, request parent to close it so only one is visible
-    try { if ((notificationsOpen as boolean) && onToggleNotifications) onToggleNotifications() } catch (e) {}
-    setOpen(true)
-  }
-
-  // If notifications panel opens elsewhere, close this user menu so both aren't open
-  useEffect(() => {
-    try {
-      if (notificationsOpen) {
-        // animate close
-        if (open) closeMenu()
-      }
-    } catch (e) {}
-  }, [notificationsOpen])
-
-  // compute portal rect for dropdown so it can be rendered outside the topbar
-  useEffect(() => {
-    if (!open) {
-      // cleanup any pending open animations
-      if (openRafRef.current) { cancelAnimationFrame(openRafRef.current); openRafRef.current = null }
-      setPortalRect(null)
-      setDropdownMounted(false)
-      setDropdownVisible(false)
-      return
-    }
-
-    const compute = () => {
-      try {
-        const btn = toggleBtnRef.current
-        if (!btn) { setPortalRect(null); return }
-        const r = btn.getBoundingClientRect()
-        const menuW = Math.min(260, Math.max(200, Math.floor(window.innerWidth * 0.22)))
-        const left = Math.min(Math.max(Math.floor(r.right - menuW), 8), Math.max(8, window.innerWidth - menuW - 8))
-        const topBarEl = document.getElementById('top-bar')
-        const topBarBottom = topBarEl ? topBarEl.getBoundingClientRect().bottom : r.bottom
-        // tuck a bit under the topbar so it appears to emerge from behind
-        const top = Math.floor(topBarBottom - 8)
-        setPortalRect({ top, left, width: menuW })
-        setDropdownMounted(true)
-        // ensure the element mounts first, then add the 'show' class in next frame
-        if (openRafRef.current) cancelAnimationFrame(openRafRef.current)
-        openRafRef.current = window.requestAnimationFrame(() => {
-          // small timeout to ensure styles apply
-          window.setTimeout(() => { setDropdownVisible(true); openRafRef.current = null }, 16)
-        })
-      } catch (e) { setPortalRect(null) }
-    }
-
-    compute()
-    window.addEventListener('scroll', compute, { passive: true })
-    window.addEventListener('resize', compute)
-    const onScrollClose = () => { if (open) closeMenu() }
-    window.addEventListener('scroll', onScrollClose, { passive: true })
-    return () => { window.removeEventListener('scroll', compute); window.removeEventListener('resize', compute); window.removeEventListener('scroll', onScrollClose) }
-  }, [open])
-
-  // cleanup timers on unmount
-  useEffect(() => {
-    return () => {
-      if (closingTimeoutRef.current) window.clearTimeout(closingTimeoutRef.current)
-      if (openRafRef.current) cancelAnimationFrame(openRafRef.current)
-    }
-  }, [])
-
-  const onLogout = () => {
-    // Prefer app-level logout if available, fallback to legacy modal
-    try {
-      if ((window as any).logout) return (window as any).logout()
-      if ((window as any).showLogoutModal) return (window as any).showLogoutModal()
-    } catch (e) {}
-    try {
-      AuthAdapter.logout()
-    } catch (e) {}
-    closeMenu()
-
-    // show a small logout flow: 'Cerrando sesión...' -> 'Sesión cerrada' (red)
-    if (logoutTimerRef.current) window.clearTimeout(logoutTimerRef.current)
-    if (navTimerRef.current) window.clearTimeout(navTimerRef.current)
-    setLogoutMessage('Cerrando sesión...')
-    setLogoutMsgType('success')
-
-    logoutTimerRef.current = window.setTimeout(() => {
-      setLogoutMessage('Sesión cerrada')
-      // make the final message red
-      setLogoutMsgType('error')
-      navTimerRef.current = window.setTimeout(() => {
-        setLogoutMessage('')
-        try { navigate('/', { replace: true }) } catch (e) { setTimeout(() => window.location.reload(), 300) }
-      }, 700)
-    }, 600)
-  }
-
-  useEffect(() => {
-    const onAuth = () => { try { setCurrentUser(AuthAdapter.getUser()) } catch (e) {} }
-    try { window.addEventListener('auth:changed', onAuth as EventListener) } catch (e) {}
-    return () => {
-      if (logoutTimerRef.current) window.clearTimeout(logoutTimerRef.current)
-      if (navTimerRef.current) window.clearTimeout(navTimerRef.current)
-      try { window.removeEventListener('auth:changed', onAuth as EventListener) } catch (e) {}
-    }
-  }, [])
-
-  // load unread notifications count and listen for updates
   useEffect(() => {
     let unsubSurv: (() => void) | null = null
 
@@ -315,7 +172,7 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
       const supabaseEnabled = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
       const dataClient: any = supabaseClient
       const authUser = (dataClient && dataClient.getAuthCurrentUser && dataClient.getAuthCurrentUser()) || null
-      const uid = authUser ? (authUser as any).uid : (currentUser && currentUser.uid) || null
+      const uid = authUser ? (authUser as any).uid : (currentUser && currentUser.id) || null
       if (!uid) { setHiddenMap({}); setHiddenMapLoaded(true); return () => {} }
       if (dataClient && dataClient.isEnabled && dataClient.isEnabled() && dataClient.listenHiddenNotifications) {
         unsubHidden = dataClient.listenHiddenNotifications(String(uid), (map: Record<string, any>) => {
@@ -357,6 +214,15 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
       <div id="top-bar" className="fixed top-0 right-0 left-0 z-30 flex items-center gap-1 py-2 px-3 shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out"
         style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', color: 'var(--color-text)'}}>
 
+        {/* Hamburger — solo mobile */}
+        <button
+          className="topbar-hamburger"
+          onClick={onToggleMobileSidebar}
+          aria-label="Abrir menú"
+        >
+          <span className="material-symbols-outlined">menu</span>
+        </button>
+
         {/* Brand / Logo */}
         <div className="topbar-brand" onClick={() => { try { navigate('/profesor') } catch (e) {} }}>
           <span className="material-symbols-outlined topbar-brand-icon">school</span>
@@ -393,51 +259,48 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
 
       
 
-      <div className="user-menu relative">
+      <div className="user-chip-wrapper" ref={chipMenuRef}>
         <button
-          id="user-menu-toggle"
-          ref={toggleBtnRef}
-          className="user-menu-button"
+          className="user-chip"
+          onClick={() => setChipMenuOpen(v => !v)}
           aria-haspopup="true"
-          aria-expanded={open}
-          aria-controls="user-dropdown"
-          onClick={onToggle}
+          aria-expanded={chipMenuOpen}
+          aria-label="Menú de usuario"
         >
-          <div id="user-avatar" className="user-avatar placeholder">{(currentUser && (currentUser.name || currentUser.email) ? String((currentUser.name || currentUser.email)).slice(0,2).toUpperCase() : 'PM')}</div>
-          <span className="material-symbols-outlined chev" aria-hidden="true">expand_more</span>
+          {profile.avatarUrl ? (
+            <img src={profile.avatarUrl} alt="Avatar" className="user-avatar user-avatar-photo" />
+          ) : (
+            <div className="user-avatar placeholder">{avatarInitials}</div>
+          )}
+          <span className="user-chip-name">{roleLabel}</span>
+          <span className={`material-symbols-outlined user-chip-chevron${chipMenuOpen ? ' open' : ''}`}>expand_more</span>
         </button>
-        {dropdownMounted && portalRect && ReactDOM.createPortal(
-          <div
-            id="user-dropdown"
-            ref={ddRef}
-            className={`user-dropdown ${dropdownVisible ? 'show' : ''}`}
-            role="menu"
-            style={{ position: 'fixed', top: portalRect.top, left: portalRect.left, width: portalRect.width }}
-          >
-            {/* User info header */}
-            <div className="user-dropdown-header">
-              <div className="user-avatar placeholder">{(currentUser && (currentUser.name || currentUser.email) ? String((currentUser.name || currentUser.email)).slice(0,2).toUpperCase() : 'PM')}</div>
-              <div className="user-dropdown-info">
-                <span className="user-dropdown-name">{currentUser ? (currentUser.name || currentUser.displayName || currentUser.email) : 'Invitado'}</span>
-                {currentUser?.email && <span className="user-dropdown-email">{currentUser.email}</span>}
-              </div>
-            </div>
-            <div className="divider" />
-            <div tabIndex={0} onClick={onLogout} className="item logout-item">
-              <span className="material-symbols-outlined" style={{fontSize:'18px'}}>logout</span>
-              Cerrar sesión
-            </div>
-          </div>, document.body
+
+        {chipMenuOpen && (
+          <div className="chip-dropdown" role="menu">
+            <button
+              className="chip-dropdown-item"
+              role="menuitem"
+              onClick={() => { setChipMenuOpen(false); setProfileOpen(true) }}
+            >
+              <span className="material-symbols-outlined">manage_accounts</span>
+              Perfil
+            </button>
+          </div>
         )}
       </div>
+
+      <ProfileModal
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        userId={userId}
+        onSave={(data) => {
+          setProfile(data)
+          window.dispatchEvent(new CustomEvent('profile:updated', { detail: data }))
+        }}
+      />
         </div>{/* end topbar-actions */}
     </div>
-      {/* logout toast (uses styles from login.css) */}
-      {logoutMessage && (
-        <div className={`message ${logoutMsgType} show`} role="status">
-          {logoutMessage}
-        </div>
-      )}
     </>
   )
 }

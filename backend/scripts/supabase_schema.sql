@@ -146,7 +146,7 @@ CREATE POLICY surveys_select ON public.surveys
     published = true
     OR auth.uid()::text = owner_uid
     OR auth.uid()::text = owner_id
-    OR (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+    OR (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
   );
 
 DROP POLICY IF EXISTS surveys_insert ON public.surveys;
@@ -158,7 +158,7 @@ CREATE POLICY surveys_update ON public.surveys
   FOR UPDATE USING (
     auth.uid()::text = owner_uid
     OR auth.uid()::text = owner_id
-    OR (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+    OR (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
   );
 
 DROP POLICY IF EXISTS surveys_delete ON public.surveys;
@@ -166,7 +166,7 @@ CREATE POLICY surveys_delete ON public.surveys
   FOR DELETE USING (
     auth.uid()::text = owner_uid
     OR auth.uid()::text = owner_id
-    OR (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+    OR (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
   );
 
 -- SURVEY_RESPONSES: authenticated users can insert/select their own
@@ -176,7 +176,7 @@ DROP POLICY IF EXISTS survey_responses_select ON public.survey_responses;
 CREATE POLICY survey_responses_select ON public.survey_responses
   FOR SELECT USING (
     auth.uid()::text = user_id
-    OR (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+    OR (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
     OR EXISTS (
       SELECT 1 FROM public.surveys s
       WHERE s.id = survey_id AND (
@@ -194,7 +194,7 @@ DROP POLICY IF EXISTS survey_responses_delete ON public.survey_responses;
 CREATE POLICY survey_responses_delete ON public.survey_responses
   FOR DELETE USING (
     auth.uid()::text = user_id
-    OR (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+    OR (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
   );
 
 -- SURVEY_REPORTS
@@ -204,7 +204,7 @@ DROP POLICY IF EXISTS survey_reports_select ON public.survey_reports;
 CREATE POLICY survey_reports_select ON public.survey_reports
   FOR SELECT USING (
     auth.uid()::text = reporter_id
-    OR (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+    OR (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
     OR EXISTS (
       SELECT 1 FROM public.surveys s
       WHERE s.id = survey_id AND (
@@ -221,7 +221,7 @@ CREATE POLICY survey_reports_insert ON public.survey_reports
 DROP POLICY IF EXISTS survey_reports_delete ON public.survey_reports;
 CREATE POLICY survey_reports_delete ON public.survey_reports
   FOR DELETE USING (
-    (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+    (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
     OR EXISTS (
       SELECT 1 FROM public.surveys s
       WHERE s.id = survey_id AND (
@@ -245,5 +245,63 @@ CREATE POLICY notifications_insert ON public.notifications
 DROP POLICY IF EXISTS notifications_delete ON public.notifications;
 CREATE POLICY notifications_delete ON public.notifications
   FOR DELETE USING (
-    (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+    (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
+  );
+
+-- ============================================================
+-- PROFILES (display_name + avatar_url por usuario)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.profiles (
+  user_id   text PRIMARY KEY,
+  display_name text DEFAULT '',
+  avatar_url   text DEFAULT '',
+  updated_at   timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS profiles_select ON public.profiles;
+CREATE POLICY profiles_select ON public.profiles
+  FOR SELECT USING (auth.uid()::text = user_id);
+
+DROP POLICY IF EXISTS profiles_upsert ON public.profiles;
+CREATE POLICY profiles_upsert ON public.profiles
+  FOR ALL USING (auth.uid()::text = user_id)
+  WITH CHECK (auth.uid()::text = user_id);
+
+-- ============================================================
+-- STORAGE: bucket "avatars"
+-- Ejecutar en Supabase Dashboard > Storage > New bucket:
+--   Nombre: avatars | Public: true
+-- O ejecutar este SQL (requiere permisos de superuser/service_role):
+-- ============================================================
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage RLS policies para el bucket avatars
+DROP POLICY IF EXISTS avatars_select ON storage.objects;
+CREATE POLICY avatars_select ON storage.objects
+  FOR SELECT USING (bucket_id = 'avatars');
+
+DROP POLICY IF EXISTS avatars_insert ON storage.objects;
+CREATE POLICY avatars_insert ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'avatars'
+    AND auth.role() = 'authenticated'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+DROP POLICY IF EXISTS avatars_update ON storage.objects;
+CREATE POLICY avatars_update ON storage.objects
+  FOR UPDATE USING (
+    bucket_id = 'avatars'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+DROP POLICY IF EXISTS avatars_delete ON storage.objects;
+CREATE POLICY avatars_delete ON storage.objects
+  FOR DELETE USING (
+    bucket_id = 'avatars'
+    AND auth.uid()::text = (storage.foldername(name))[1]
   );

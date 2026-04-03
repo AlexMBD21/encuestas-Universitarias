@@ -18,6 +18,7 @@ export default function ProfesorLayout({ onBack }: Props) {
   const [sharedNotifications, setSharedNotifications] = useState<any[]>([])
   const [visibleNotifCount, setVisibleNotifCount] = useState(0)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const navigate = useNavigate();
   const location = useLocation()
   const isDashboardRoot = String(location.pathname || '').replace(/\/+$/,'') === '/profesor'
@@ -76,10 +77,15 @@ export default function ProfesorLayout({ onBack }: Props) {
 
   return (
     <div className={`profesor-root layout-with-sidebar${sidebarCollapsed ? ' sidebar-is-collapsed' : ''}`}>
-      <Topbar notificationsOpen={notificationsOpen} onToggleNotifications={toggleNotifications} notifications={sharedNotifications} badgeCount={visibleNotifCount} />
+      <Topbar notificationsOpen={notificationsOpen} onToggleNotifications={toggleNotifications} notifications={sharedNotifications} badgeCount={visibleNotifCount} onToggleMobileSidebar={() => setMobileSidebarOpen(v => !v)} />
+      {mobileSidebarOpen && (
+        <div className="sidebar-mobile-backdrop" onClick={() => setMobileSidebarOpen(false)} aria-hidden="true" />
+      )}
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(v => !v)}
+        mobileOpen={mobileSidebarOpen}
+        onMobileClose={() => setMobileSidebarOpen(false)}
       />
       <NotificationsPanel open={notificationsOpen} onClose={closeNotifications} notifications={sharedNotifications} onVisibleCountChange={setVisibleNotifCount} />
 

@@ -21,7 +21,7 @@ module.exports = async function (req, res) {
     const caller = await admin.auth.getUser(token)
     if (!caller || !caller.data || !caller.data.user) return res.status(401).json({ error: 'Invalid token' })
     const callerUser = caller.data.user
-    const callerRole = (callerUser.user_metadata && callerUser.user_metadata.role) || null
+    const callerRole = (callerUser.app_metadata && callerUser.app_metadata.role) || null
     if (callerRole !== 'admin') return res.status(403).json({ error: 'Forbidden: admin role required' })
 
     const body = req.body || {}
@@ -44,7 +44,7 @@ module.exports = async function (req, res) {
               try {
                 if (userId && u.id === userId) return true
                 if (email && String(u.email || '').toLowerCase() === String(email || '').toLowerCase()) return true
-                const meta = u.raw_user_meta_data || u.user_metadata || {}
+                const meta = u.raw_app_meta_data || u.app_metadata || u.raw_user_meta_data || u.user_metadata || {}
                 if (legacyKey && (String(meta.legacy_key || meta.legacyKey || '').toLowerCase() === String(legacyKey).toLowerCase())) return true
               } catch (e) {}
               return false
@@ -61,11 +61,11 @@ module.exports = async function (req, res) {
         }
         if (legacyKey) {
           // Fallback: try to scan a subset of auth.users and match raw_user_meta_data
-          const q = await admin.from('auth.users').select('id, raw_user_meta_data').limit(500)
+          const q = await admin.from('auth.users').select('id, raw_app_meta_data, raw_user_meta_data').limit(500)
           if (!q.error && Array.isArray(q.data)) {
             const found = q.data.find(u => {
               try {
-                const r = u.raw_user_meta_data || {}
+                const r = u.raw_app_meta_data || u.raw_user_meta_data || {}
                 return String(r.legacy_key || r.legacyKey || '').toLowerCase() === String(legacyKey).toLowerCase()
               } catch (e) { return false }
             })
@@ -80,7 +80,7 @@ module.exports = async function (req, res) {
     if (!targetId) return res.status(404).json({ error: 'User not found' })
 
     const payload = {}
-    if (role) payload.user_metadata = { role: String(role) }
+    if (role) payload.app_metadata = { role: String(role) }
     if (password) payload.password = String(password)
     if (Object.keys(payload).length === 0) return res.status(400).json({ error: 'Nothing to update' })
 
@@ -89,12 +89,12 @@ module.exports = async function (req, res) {
         const r = await admin.auth.admin.updateUserById(targetId, payload)
         if (r && r.error) return res.status(500).json({ error: r.error.message || r.error })
       } else {
-        // Fallback: update raw_user_meta_data for role changes
-        if (payload.user_metadata) {
-          const q = await admin.from('auth.users').select('raw_user_meta_data').eq('id', targetId).limit(1).maybeSingle()
-          const existing = q && q.data ? q.data.raw_user_meta_data || {} : {}
-          const merged = Object.assign({}, existing, payload.user_metadata)
-          const upd = await admin.from('auth.users').update({ raw_user_meta_data: JSON.stringify(merged) }).eq('id', targetId)
+        // Fallback: update raw_app_meta_data for role changes
+        if (payload.app_metadata) {
+          const q = await admin.from('auth.users').select('raw_app_meta_data').eq('id', targetId).limit(1).maybeSingle()
+          const existing = q && q.data ? q.data.raw_app_meta_data || {} : {}
+          const merged = Object.assign({}, existing, payload.app_metadata)
+          const upd = await admin.from('auth.users').update({ raw_app_meta_data: JSON.stringify(merged) }).eq('id', targetId)
           if (upd.error) return res.status(500).json({ error: upd.error.message || upd.error })
         }
         // password fallback not supported in this path

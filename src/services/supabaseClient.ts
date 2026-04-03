@@ -186,7 +186,10 @@ export async function getCurrentUserClaims(forceRefresh: boolean = false) {
     try {
       const r: any = await supabase.auth.getUser()
       const u = r && r.data ? r.data.user : null
-      return (u && u.user_metadata) ? u.user_metadata : {}
+      // app_metadata is server-only (not editable by users); prefer it for role claims.
+      // Fall back to user_metadata for non-security fields like display names.
+      if (!u) return {}
+      return { ...(u.user_metadata || {}), ...(u.app_metadata || {}) }
     } catch (e) { return {} }
   } catch (e) { return {} }
 }
@@ -802,5 +805,73 @@ export default {
   getAccessToken,
   getServerUser,
   resolveOwnerEmails,
-  getPublishedSurveyOwners
+  getPublishedSurveyOwners,
+  getProfile,
+  upsertProfile,
+  uploadAvatar,
 }
+
+// ============================================================
+// PROFILES & AVATAR STORAGE
+// ============================================================
+
+export async function getProfile(userId: string): Promise<{ display_name: string; avatar_url: string } | null> {
+  ensureClient()
+  if (!supabase || !userId) return null
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('display_name, avatar_url')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (error) { console.debug('[supabaseClient] getProfile error', error); return null }
+    return data || null
+  } catch (e) { console.debug('[supabaseClient] getProfile exception', e); return null }
+}
+
+export async function upsertProfile(userId: string, displayName: string, avatarUrl: string): Promise<boolean> {
+  ensureClient()
+  if (!supabase || !userId) return false
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .upsert(
+        { user_id: userId, display_name: displayName, avatar_url: avatarUrl, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      )
+    if (error) { console.warn('[supabaseClient] upsertProfile error', error); return false }
+    return true
+  } catch (e) { console.warn('[supabaseClient] upsertProfile exception', e); return false }
+}
+
+/**
+ * Uploads an avatar image to Supabase Storage bucket "avatars".
+ * Uses upsert (same path = {userId}/avatar) so it automatically replaces any existing photo.
+ * Returns the public URL of the uploaded image, or null on failure.
+ */
+export async function uploadAvatar(userId: string, file: File): Promise<string | null> {
+  ensureClient()
+  if (!supabase || !userId) return null
+  try {
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const path = `${userId}/avatar.${ext}`
+    // Remove old avatar files with different extensions before uploading new one
+    try {
+      const { data: list } = await supabase.storage.from('avatars').list(userId)
+      if (list && list.length > 0) {
+        const toRemove = list.map((f: any) => `${userId}/${f.name}`)
+        await supabase.storage.from('avatars').remove(toRemove)
+      }
+    } catch (e) { /* non-fatal */ }
+
+    const { error } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true, contentType: file.type })
+    if (error) { console.warn('[supabaseClient] uploadAvatar error', error); return null }
+
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
+    // Add cache-busting query param so the browser picks up the new image
+    const url = urlData?.publicUrl ? `${urlData.publicUrl}?t=${Date.now()}` : null
+    return url
+  } catch (e) { console.warn('[supabaseClient] uploadAvatar exception', e); return null }}
+

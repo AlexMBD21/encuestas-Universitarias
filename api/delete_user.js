@@ -22,7 +22,7 @@ module.exports = async function (req, res) {
       const caller = await admin.auth.getUser(token)
       if (!caller || !caller.data || !caller.data.user) return res.status(401).json({ error: 'Invalid token' })
       const callerUser = caller.data.user
-      const callerRole = (callerUser.user_metadata && callerUser.user_metadata.role) || null
+      const callerRole = (callerUser.app_metadata && callerUser.app_metadata.role) || null
       if (callerRole !== 'admin') return res.status(403).json({ error: 'Forbidden: admin role required' })
     } catch (e) {
       console.error('caller validation failed', e)

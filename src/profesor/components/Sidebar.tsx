@@ -1,9 +1,12 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import AuthAdapter from '../../services/AuthAdapter'
 
 type Props = {
   collapsed: boolean
   onToggleCollapse: () => void
+  mobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
 const navItems = [
@@ -13,9 +16,18 @@ const navItems = [
   { path: '/profesor/configuracion', icon: 'settings', label: 'Configuración' },
 ]
 
-export default function Sidebar({ collapsed, onToggleCollapse }: Props) {
+export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMobileClose }: Props) {
   const navigate = useNavigate()
   const location = useLocation()
+
+  const handleLogout = () => {
+    try {
+      if ((window as any).logout) return (window as any).logout()
+      if ((window as any).showLogoutModal) return (window as any).showLogoutModal()
+    } catch (e) {}
+    try { AuthAdapter.logout() } catch (e) {}
+    try { navigate('/', { replace: true }) } catch (e) { window.location.href = '/' }
+  }
 
   const getActivePath = () => {
     const curPath = location.pathname || ''
@@ -31,7 +43,7 @@ export default function Sidebar({ collapsed, onToggleCollapse }: Props) {
   const activePath = getActivePath()
 
   return (
-    <aside id="app-sidebar" className={`app-sidebar${collapsed ? ' collapsed' : ''}`} aria-label="Navegación principal">
+    <aside id="app-sidebar" className={`app-sidebar${collapsed ? ' collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}`} aria-label="Navegación principal">
 
       {/* Collapse toggle */}
       <div className="sidebar-collapse-row">
@@ -62,6 +74,19 @@ export default function Sidebar({ collapsed, onToggleCollapse }: Props) {
           </button>
         ))}
       </nav>
+
+      {/* Logout al fondo */}
+      <div className="sidebar-footer">
+        <button
+          className="sidebar-logout-btn"
+          onClick={handleLogout}
+          title={collapsed ? 'Cerrar sesión' : undefined}
+          aria-label="Cerrar sesión"
+        >
+          <span className="material-symbols-outlined sidebar-nav-icon">logout</span>
+          {!collapsed && <span className="sidebar-nav-label">Cerrar sesión</span>}
+        </button>
+      </div>
     </aside>
   )
 }

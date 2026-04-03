@@ -21,7 +21,7 @@ function parseArgs() {
 async function trySetMetadataByUserId(supabase, userId, role) {
   try {
     if (supabase && supabase.auth && supabase.auth.admin && typeof supabase.auth.admin.updateUserById === 'function') {
-      const { data, error } = await supabase.auth.admin.updateUserById(userId, { user_metadata: { role } })
+      const { data, error } = await supabase.auth.admin.updateUserById(userId, { app_metadata: { role } })
       if (error) throw error
       return true
     }
@@ -29,13 +29,13 @@ async function trySetMetadataByUserId(supabase, userId, role) {
     // ignore and fallback
   }
 
-  // Fallback: try to update raw_user_meta_data in auth.users
+  // Fallback: try to update raw_app_meta_data in auth.users
   try {
-    const q = await supabase.from('auth.users').select('raw_user_meta_data').eq('id', userId).limit(1).maybeSingle()
+    const q = await supabase.from('auth.users').select('raw_app_meta_data').eq('id', userId).limit(1).maybeSingle()
     if (!q.error && q.data) {
-      const existing = q.data.raw_user_meta_data || {}
+      const existing = q.data.raw_app_meta_data || {}
       const merged = Object.assign({}, existing, { role })
-      const upd = await supabase.from('auth.users').update({ raw_user_meta_data: JSON.stringify(merged) }).eq('id', userId)
+      const upd = await supabase.from('auth.users').update({ raw_app_meta_data: JSON.stringify(merged) }).eq('id', userId)
       if (upd.error) throw upd.error
       return true
     }

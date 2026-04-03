@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import surveyHelpers from '../../services/surveyHelpers'
 import supabaseClient from '../../services/supabaseClient'
 import AuthAdapter from '../../services/AuthAdapter'
+import { loadProfile, loadProfileAsync } from '../components/ProfileModal'
 import '../styles/dashboard-profesor.css'
 
 export default function Dashboard() {
@@ -17,6 +18,13 @@ export default function Dashboard() {
   const [activeCount, setActiveCount] = useState<number>(0)
   const [notifications, setNotifications] = useState<any[]>([])
   const [currentUser, setCurrentUser] = useState<any | null>(() => AuthAdapter.getUser())
+  const userId = currentUser?.id || currentUser?.email || null
+  const [profileName, setProfileName] = useState<string>(() => loadProfile(userId).displayName)
+
+  useEffect(() => {
+    setProfileName(loadProfile(userId).displayName)
+    loadProfileAsync(userId).then(p => setProfileName(p.displayName))
+  }, [userId])
 
   const supabaseEnabledNow = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
   const backendEnabled = supabaseEnabledNow
@@ -24,8 +32,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     const onAuth = () => { try { setCurrentUser(AuthAdapter.getUser()) } catch (e) {} }
+    const onProfile = (e: any) => { try { setProfileName((e as CustomEvent).detail?.displayName || '') } catch (e) {} }
     try { window.addEventListener('auth:changed', onAuth as EventListener) } catch (e) {}
-    return () => { try { window.removeEventListener('auth:changed', onAuth as EventListener) } catch (e) {} }
+    try { window.addEventListener('profile:updated', onProfile as EventListener) } catch (e) {}
+    return () => {
+      try { window.removeEventListener('auth:changed', onAuth as EventListener) } catch (e) {}
+      try { window.removeEventListener('profile:updated', onProfile as EventListener) } catch (e) {}
+    }
   }, [])
 
   const [userResponsesByUser, setUserResponsesByUser] = useState<Record<string, any[]>>({})
@@ -786,7 +799,9 @@ export default function Dashboard() {
       {/* Welcome Section */}
       <div className="flex flex-wrap justify-between gap-3 px-4 py-0.5">
         <div>
-          <h1 className="text-slate-900 dark:text-slate-50 text-3xl font-black leading-tight tracking-[-0.033em] min-w-72 mb-1">¡Bienvenido de nuevo!</h1>
+          <h1 className="text-slate-900 dark:text-slate-50 text-3xl font-black leading-tight tracking-[-0.033em] min-w-72 mb-1">
+            {profileName ? `¡Bienvenido de nuevo, ${profileName}!` : '¡Bienvenido de nuevo!'}
+          </h1>
           <p className="text-slate-600 dark:text-slate-300 text-sm mt-1 max-w-xl">Revisa el estado de tus campañas activas y las últimas métricas de satisfacción recolectadas hoy.</p>
         </div>
       </div>
