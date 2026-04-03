@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import surveyHelpers from '../../services/surveyHelpers'
 import supabaseClient from '../../services/supabaseClient'
 import AuthAdapter from '../../services/AuthAdapter'
+import { useAuth } from '../../services/AuthContext'
 import { loadProfile, loadProfileAsync } from '../components/ProfileModal'
 import '../styles/dashboard-profesor.css'
 
@@ -20,6 +21,8 @@ export default function Dashboard() {
   const [currentUser, setCurrentUser] = useState<any | null>(() => AuthAdapter.getUser())
   const userId = currentUser?.id || currentUser?.email || null
   const [profileName, setProfileName] = useState<string>(() => loadProfile(userId).displayName)
+  const { user: authUser } = useAuth()
+  const isAdmin = !!(authUser && String((authUser as any).role || '').toLowerCase() === 'admin')
 
   useEffect(() => {
     setProfileName(loadProfile(userId).displayName)
@@ -322,6 +325,8 @@ export default function Dashboard() {
       const reportNotices = Array.isArray(surveyReports) ? surveyReports.map((r: any) => {
         try {
           const s = Array.isArray(surveys) ? surveys.find(x => String(x.id) === String(r.surveyId)) : null
+          // Admin sees all reports regardless of ownership
+          if (isAdmin) return { report: r, survey: s }
           // Check ownerUid first (Supabase UUID stored in owner_uid column), then fallback to ownerId
           let ownerIdRaw: any = s ? (s.ownerUid || s.ownerId || null) : null
           if (ownerIdRaw && typeof ownerIdRaw === 'object') {
@@ -393,7 +398,7 @@ export default function Dashboard() {
 
       return filteredReports
     } catch (e) { return [] }
-  }, [surveyReports, surveys, currentUser])
+  }, [surveyReports, surveys, currentUser, isAdmin])
 
   const noticesRef = useRef<HTMLDivElement | null>(null)
 

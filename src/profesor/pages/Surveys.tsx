@@ -73,6 +73,10 @@ export default function Surveys(): JSX.Element {
   const [highlightedReportId, setHighlightedReportId] = useState<string | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [publishedFilter, setPublishedFilter] = useState<'all'|'published'|'unpublished'|'reported'>('all')
+  const [ownerFilter, setOwnerFilter] = useState<string>('all')
+  const [titleSearch, setTitleSearch] = useState<string>('')
+  const [ownerEmailMap, setOwnerEmailMap] = useState<Record<string, string>>({})
+
   // close menu when clicking outside
   React.useEffect(() => {
     if (!menuOpenFor) return
@@ -104,6 +108,43 @@ export default function Surveys(): JSX.Element {
   }
   const [surveys, setSurveys] = useState<any[]>([])
   const [surveysLoaded, setSurveysLoaded] = useState(false)
+
+  // Resolve UUID → email for all survey owners
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      try {
+        const client: any = supabaseClient
+        if (!client || !client.isEnabled || !client.isEnabled()) return
+        if (client.getPublishedSurveyOwners) {
+          const map = await client.getPublishedSurveyOwners()
+          if (mounted && map && Object.keys(map).length > 0) setOwnerEmailMap(map)
+        } else if (client.resolveOwnerEmails) {
+          const uids = Array.from(new Set(
+            surveys.map((s: any) => String(s.ownerUid || s.ownerId || '')).filter((v: string) => v && !v.includes('@'))
+          ))
+          if (uids.length > 0) {
+            const map = await client.resolveOwnerEmails(uids)
+            if (mounted && map) setOwnerEmailMap(map)
+          }
+        }
+      } catch (e) {}
+    }
+    load()
+    return () => { mounted = false }
+  }, [surveys])
+
+  // Returns the best human-readable owner label for a survey
+  const getOwnerDisplay = (s: any): string => {
+    try {
+      if (s.ownerEmail && String(s.ownerEmail).includes('@')) return String(s.ownerEmail)
+      if (s.owner_email && String(s.owner_email).includes('@')) return String(s.owner_email)
+      const uid = String(s.ownerUid || s.ownerId || '').trim()
+      if (ownerEmailMap[uid]) return ownerEmailMap[uid]
+      if (uid.includes('@')) return uid
+      return uid
+    } catch (e) { return '' }
+  }
   const [showOnlyPending, setShowOnlyPending] = useState(false)
   const [modalSurveyId, setModalSurveyId] = useState<string | null>(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -460,40 +501,88 @@ export default function Surveys(): JSX.Element {
   return (
     <div id="surveys-root" className="px-8 py-6">
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-black">Encuestas</h1>
-          {/* User is managed via Login/AuthAdapter; selector removed to avoid duplicate profile flows */}
+      {/* ── Fila 1: Título + Acciones ─────────────────────────────── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 className="text-3xl font-black">Encuestas</h1>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => {
+            if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
+            handleCreate()
+          }} className={`px-4 py-2 text-sm font-medium rounded-lg ${!backendEnabled ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'}`} disabled={!backendEnabled}>
+            + Nueva Encuesta
+          </button>
+          <button type="button" onClick={() => {
+            if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
+            setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true)
+          }} className={`px-4 py-2 text-sm font-medium rounded-lg ${!backendEnabled ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`} disabled={!backendEnabled}>
+            + Calificación de proyecto
+          </button>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <label className="text-sm flex items-center gap-2">
-              <input type="checkbox" checked={showOnlyPending} onChange={e => setShowOnlyPending(e.target.checked)} />
-              <span>Sin calificar</span>
-            </label>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm flex items-center gap-2">
-              <span>Filtro:</span>
-              <select value={publishedFilter} onChange={e => setPublishedFilter(e.target.value as any)} className="p-1 border rounded text-sm">
-                <option value="all">Todas</option>
-                <option value="published">Sólo publicadas</option>
-                <option value="unpublished">No publicadas</option>
-                <option value="reported">Reportadas</option>
+      </div>
+
+      {/* ── Fila 2: Barra de filtros ───────────────────────────────── */}
+      <div className="bg-white dark:bg-slate-900 border rounded-xl px-4 py-3 mb-4 shadow-sm flex flex-wrap items-center gap-3">
+        {/* Buscador */}
+        <div className="relative">
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input
+            type="text"
+            value={titleSearch}
+            onChange={e => setTitleSearch(e.target.value)}
+            placeholder="Buscar por título..."
+            className="pl-8 pr-7 py-1.5 border rounded-lg text-sm w-52 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          {titleSearch && (
+            <button type="button" onClick={() => setTitleSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" title="Limpiar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          )}
+        </div>
+
+        <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
+
+        {/* Sin calificar */}
+        <label className="text-sm flex items-center gap-1.5 cursor-pointer select-none text-slate-700 dark:text-slate-300">
+          <input type="checkbox" checked={showOnlyPending} onChange={e => setShowOnlyPending(e.target.checked)} className="rounded" />
+          Sin calificar
+        </label>
+
+        {/* Estado */}
+        <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
+          <span className="whitespace-nowrap">Estado:</span>
+          <select value={publishedFilter} onChange={e => setPublishedFilter(e.target.value as any)} className="py-1 px-2 border rounded-lg text-sm bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <option value="all">Todas</option>
+            <option value="published">Publicadas</option>
+            <option value="unpublished">No publicadas</option>
+            <option value="reported">Reportadas</option>
+          </select>
+        </div>
+
+        {/* Propietario */}
+        {(() => {
+          const uniqueOwners = Array.from(
+            new Set(surveys.map(s => getOwnerDisplay(s)).filter(Boolean))
+          ).sort()
+          if (uniqueOwners.length === 0) return null
+          return (
+            <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
+              <span className="whitespace-nowrap">Propietario:</span>
+              <select value={ownerFilter} onChange={e => setOwnerFilter(e.target.value)} className="py-1 px-2 border rounded-lg text-sm bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 max-w-[200px]">
+                <option value="all">Todos</option>
+                {uniqueOwners.map(o => <option key={o} value={o}>{o}</option>)}
               </select>
-            </label>
-          </div>
-            <div className="flex items-center gap-2 action-buttons">
-              <button type="button" onClick={() => {
-                if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
-                handleCreate()
-              }} className={`px-3 py-2 ${!backendEnabled ? 'bg-gray-300 text-gray-600' : 'bg-green-600 text-white'} rounded`} disabled={!backendEnabled}>Nueva Encuesta</button>
-              <button type="button" onClick={() => {
-                if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
-                setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true)
-              }} className={`px-3 py-2 ${!backendEnabled ? 'bg-gray-300 text-gray-600' : 'bg-indigo-600 text-white'} rounded`} disabled={!backendEnabled}>Crear calificación proyecto</button>
-          </div>
-        </div>
+            </div>
+          )
+        })()}
+
+        {/* Chips de filtros activos */}
+        {(showOnlyPending || publishedFilter !== 'all' || ownerFilter !== 'all' || titleSearch.trim()) && (
+          <button type="button" onClick={() => { setShowOnlyPending(false); setPublishedFilter('all'); setOwnerFilter('all'); setTitleSearch('') }}
+            className="ml-auto text-xs text-slate-500 hover:text-red-500 flex items-center gap-1 whitespace-nowrap">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            Limpiar filtros
+          </button>
+        )}
       </div>
 
       {/* If the query param view=create, show inline CreateSurvey panel; if view=details show ViewSurvey */}
@@ -519,8 +608,8 @@ export default function Surveys(): JSX.Element {
           <p className="text-slate-600">No hay encuestas aún. Usa "Nueva Encuesta" para crear una.</p>
         ) : (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {surveys
-              .filter(s => {
+            {(() => {
+              const filteredSurveys = surveys.filter(s => {
                 // filter by pending (Sin calificar)
                 if (showOnlyPending) {
                   // For project-type surveys: keep those where the user hasn't rated all projects
@@ -570,9 +659,33 @@ export default function Surveys(): JSX.Element {
                 }
                 // visibility: unpublished surveys are visible only to their owner
                 if (!s.published && !isOwnerOf(s)) return false
+                // owner filter
+                if (ownerFilter !== 'all') {
+                  if (getOwnerDisplay(s) !== ownerFilter) return false
+                }
+                // title search (all users)
+                if (titleSearch.trim()) {
+                  const q = titleSearch.trim().toLowerCase()
+                  const title = String(s.title || s.name || '').toLowerCase()
+                  if (!title.includes(q)) return false
+                }
                 return true
               })
-                .map(s => {
+              const hasActive = showOnlyPending || publishedFilter !== 'all' || ownerFilter !== 'all' || !!titleSearch.trim()
+              if (filteredSurveys.length === 0) return (
+                <p className="col-span-full text-sm text-slate-500 py-6 text-center">
+                  Sin resultados para los filtros aplicados.
+                </p>
+              )
+              return [
+                hasActive ? (
+                  <p key="__count" className="col-span-full text-xs text-slate-400 -mt-1 mb-1">
+                    Mostrando <strong>{filteredSurveys.length}</strong> de {surveys.length} encuesta{surveys.length !== 1 ? 's' : ''}
+                    {ownerFilter !== 'all' && <> · Propietario: <strong>{ownerFilter}</strong></>}
+                    {titleSearch.trim() && <> · Búsqueda: <strong>&ldquo;{titleSearch.trim()}&rdquo;</strong></>}
+                  </p>
+                ) : null,
+                ...filteredSurveys.map(s => {
                 const isProjectType = s.type === 'project' || ((s.projects || []).length > 0) || ((s.rubric || []).length > 0)
                 // Prefer project-level metadata on the survey when available.
                 // surveyHelpers.* functions return neutral defaults now, so avoid depending on them synchronously.
@@ -597,10 +710,15 @@ export default function Surveys(): JSX.Element {
                 const userResponded = !isProjectType ? (userRespondedLocal || surveyHelpers.hasUserResponded(String(s.id))) : false
                 const firstPending = allProjects.find((p: any) => !surveyHelpers.hasUserRated(String(s.id), String(p.id)))
                 return (
-                  <div key={s.id} id={`survey-${s.id}`} className="relative p-4 border border-gray-200 dark:border-slate-600 rounded-2xl bg-gray-50 dark:bg-slate-800 flex flex-col justify-between shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition duration-150 hover:ring-2 hover:ring-gray-100 focus-within:ring-2 focus-within:ring-gray-200">
+                  <div key={s.id} id={`survey-${s.id}`} className="relative p-4 border dark:border-slate-600 rounded-2xl dark:bg-slate-800 flex flex-col justify-between shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition duration-150 focus-within:ring-2 focus-within:ring-blue-200" style={{ background: '#f1f5fb', borderColor: 'rgba(59,130,246,0.20)', boxShadow: '0 2px 6px rgba(2,6,23,0.07), 0 8px 24px rgba(59,130,246,0.10)' }}>
                     <div>
                       <div>
                         <div className="font-semibold text-sm truncate pr-9">{s.title}</div>
+                        {isAdmin && getOwnerDisplay(s) && (
+                          <div className="text-xs text-slate-400 mt-0.5 truncate" title={getOwnerDisplay(s)}>
+                            <span className="font-medium text-slate-500">Propietario:</span> {getOwnerDisplay(s)}
+                          </div>
+                        )}
                         <div className="mt-2 flex items-center gap-2">
                           {s.published && <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Publicado</span>}
                           {/* show report badge for owner */}
@@ -664,7 +782,8 @@ export default function Surveys(): JSX.Element {
                     </div>
                   </div>
                 )
-              })}
+              })]
+            })()}
           </div>
         )}
       {/* toast */}
