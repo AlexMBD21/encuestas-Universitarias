@@ -1,0 +1,7 @@
+@import './styles/theme.css';
+
+/* Minimal styles for POC - puedes integrar Tailwind en el pipeline más adelante */
+html,body,#root{height:100%;margin:0;padding:0;background:var(--surface)}
+body{font-family:Inter, Arial, sans-serif}
+
+/* NOTE: Button tokens and variants are defined in src/styles/theme.css */

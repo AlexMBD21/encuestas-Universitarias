@@ -1,0 +1,31 @@
+/* Notification panel: deploy from above animation
+   - Use transform-origin at the top-right so the panel appears to unfold from above
+   - Use scaleY + translateY for a more organic 'deploy' effect
+   - Keep pointer-events disabled when closed; ensure transitions run on close by
+     rendering the element until the animation finishes (handled in React component)
+*/
+#notifications-panel {
+  transform-origin: top right;
+  transform: translateY(-18px) scaleY(0.98);
+  opacity: 0;
+  /* Slightly longer, smoother open animation */
+  transition: transform 480ms cubic-bezier(.15,.85,.2,1), opacity 360ms ease;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Visible/open state: fully deployed */
+#notifications-panel.open {
+  transform: translateY(0) scaleY(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Closing state (rendered but closing): animate back up */
+#notifications-panel.closing {
+  transform: translateY(-22px) scaleY(0.96);
+  /* Keep closing a bit faster than opening for snappy UX */
+  transition: transform 300ms cubic-bezier(.2,.9,.2,1), opacity 200ms ease;
+  opacity: 0;
+  pointer-events: none;
+}

@@ -1,0 +1,166 @@
+/* Theme tokens and base styles generated from DESIGN.md */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Colors */
+  --color-primary: #00628d;
+  --color-primary-container: #007cb2;
+  --color-secondary: #4e43d9;
+  --surface: #f8f9fa;
+  --surface-container-low: #f3f4f5;
+  --surface-container-lowest: #ffffff;
+  --on-surface: #191c1d;
+  --on-surface-variant: #3f484f;
+  --on-primary: #ffffff;
+  --outline-variant-hex: #bec8d1;
+  --ghost-border: rgba(190,200,209,0.2);
+  --ghost-border-strong: rgba(190,200,209,0.36);
+  --btn-secondary-shadow: 0 8px 22px -8px rgba(25,28,29,0.10);
+
+  /* Backwards-compatibility aliases (used across existing CSS) */
+  --color-surface: var(--surface-container-lowest);
+  --color-surface-low: var(--surface-container-low);
+  --color-surface-lowest: var(--surface-container-lowest);
+  --color-primary-600: var(--color-primary);
+  --color-primary-dark: #00536f;
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-muted: #6b7280;
+  --btn-radius: 8px;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-primary-container));
+
+  /* Elevation & shadow */
+  --ambient-shadow: 0 12px 32px -4px rgba(25,28,29,0.06);
+
+  /* Glass / backdrop */
+  --backdrop-blur: 14px;
+
+  /* Radii */
+  --radius-round-eight: 0.5rem;
+
+  /* Typography */
+  --font-family-inter: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-body-size: 0.875rem;
+  --font-body-weight: 400;
+  --font-headline-weight: 600;
+}
+
+/* Base elements */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-family-inter);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ghost border example for inputs (accessibility fallback) */
+.input-ghost {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--ghost-border);
+  border-radius: calc(var(--radius-round-eight) - 0.1rem);
+  padding: 0.5rem;
+}
+
+/* Floating glass container */
+.surface-floating {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(var(--backdrop-blur));
+  box-shadow: var(--ambient-shadow);
+  border-radius: var(--radius-round-eight);
+}
+
+/* Buttons - tokens only. Components will be refactored to use these tokens. */
+.btn {
+  font-family: inherit;
+  border-radius: var(--radius-round-eight);
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+}
+
+/* Button variants (compatibility for existing markup) */
+.btn-primary { background: var(--gradient-primary); color: var(--on-primary); }
+.btn-primary:hover { filter:brightness(.98); }
+.btn-danger { background: var(--color-danger); color: var(--on-primary); }
+.btn-success { background: var(--color-success); color: var(--on-primary); }
+.btn-secondary {
+  background: var(--surface-container-lowest);
+  color: var(--color-primary);
+  border: 1.5px solid var(--ghost-border-strong);
+  box-shadow: var(--btn-secondary-shadow);
+  transition: box-shadow 160ms ease, border-color 120ms ease, transform 120ms ease;
+}
+.btn-secondary:hover {
+  box-shadow: 0 10px 26px -8px rgba(25,28,29,0.12);
+  transform: translateY(-1px);
+}
+.btn-secondary:active {
+  transform: translateY(0);
+}
+.btn-secondary:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 10px 26px -6px rgba(25,28,29,0.14);
+  outline: none;
+}
+/* Selected / toggled appearance (matches designer mock) */
+.btn-secondary.selected,
+.btn-secondary.active,
+.btn-secondary[aria-pressed="true"],
+.btn-secondary:focus-visible {
+  background: linear-gradient(180deg, rgba(0,98,141,0.06), rgba(0,98,141,0.02));
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  border-width: 2px;
+  box-shadow: 0 10px 26px -6px rgba(25,28,29,0.14), inset 0 1px 0 rgba(255,255,255,0.6);
+  transform: translateY(-1px);
+}
+.btn-secondary.selected:hover,
+.btn-secondary.active:hover,
+.btn-secondary[aria-pressed="true"]:hover {
+  box-shadow: 0 12px 30px -6px rgba(25,28,29,0.16), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+/* Neutral/ghost button for non-primary actions (Cancel) */
+.btn-ghost {
+  background: var(--surface-container-lowest);
+  color: var(--color-muted);
+  border: 1px solid rgba(15,23,42,0.08);
+  box-shadow: 0 10px 28px -8px rgba(15,23,42,0.10), inset 0 1px 0 rgba(255,255,255,0.5);
+  transition: background 160ms ease, box-shadow 160ms ease, transform 120ms ease, border-color 120ms ease;
+}
+.btn-ghost:hover {
+  background: #ffffff;
+  box-shadow: 0 14px 40px -12px rgba(15,23,42,0.14), inset 0 1px 0 rgba(255,255,255,0.6);
+  transform: translateY(-2px);
+}
+.btn-ghost:active { transform: translateY(0); }
+.btn-ghost:focus { outline: none; border-color: rgba(15,23,42,0.16); box-shadow: 0 16px 44px -10px rgba(15,23,42,0.16), inset 0 1px 0 rgba(255,255,255,0.6); }
+.btn-tertiary { background: transparent; color: var(--color-primary); border: none; }
+.btn-outline { background: var(--surface-container-lowest); color: var(--color-primary); border: 1px solid var(--color-primary); }
+.btn-pagination { background: var(--surface-container-lowest); color: var(--color-muted); border: 1px solid #e5e7eb; padding: .35rem .6rem; border-radius: 6px; }
+.btn-pagination:hover { background: var(--color-primary); color: var(--on-primary); }
+.btn-disabled { opacity: .5; pointer-events: none; }
+
+/* Focus states (sharp, architectural) */
+:focus { outline: none; box-shadow: none; }
+.input-ghost:focus { border-color: var(--color-primary); outline: none; }
+
+/* Helpers */
+.shadow-ambient { box-shadow: var(--ambient-shadow); }
+.text-on-surface-variant { color: var(--on-surface-variant); }
+.bg-surface { background: var(--surface); }
+.bg-surface-low { background: var(--surface-container-low); }
+.bg-surface-lowest { background: var(--surface-container-lowest); }
+
+/* End of theme tokens */

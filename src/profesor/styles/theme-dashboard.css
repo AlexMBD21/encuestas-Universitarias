@@ -1,0 +1,137 @@
+/* Theme variables para el dashboard: paleta de colores, tipografías y tamaños
+   Importar este archivo desde `dashboard-profesor.css` con:
+   @import './theme-dashboard.css';
+
+   Use las variables para mantener congruencia en colores y tipografía.
+*/
+
+:root {
+    /* Colores principales */
+    --color-primary: #61A8F4; /* azul exacto (coincide con la cabecera/modal) */
+    --color-primary-100: #DBEAFE; /* azul suave para hover */
+    --color-primary-600: #2563eb;
+    --color-secondary: #7c3aed; /* morado de acento */
+    --color-accent: #06b6d4; /* cian */
+
+    /* Estados */
+    --color-success: #10b981;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
+
+    /* Neutros / superficies */
+    --color-surface: #ffffff;
+    --color-bg: #f8fafc;
+    --color-text: #0f172a; /* texto principal */
+    --color-muted: #64748b; /* texto secundario */
+    --color-border: rgba(15,23,42,0.06);
+
+    /* Sombras y radio */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --shadow-sm: 0 2px 12px rgba(60,72,88,0.07);
+
+    /* Tipografía */
+    --font-sans: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    --font-size-base: 16px;
+    --font-size-sm: 14px;
+    --font-size-lg: 18px;
+    --h1-size: 24px;
+    --h2-size: 20px;
+
+    /* Espaciado (usar escala) */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+}
+
+/* Variante dark: activar al aplicar la clase .dark en el root (html o body) */
+.dark {
+    --color-surface: #0f172a;
+    --color-bg: #071033;
+    --color-text: #e6eef8;
+    --color-muted: #94a3b8;
+    --color-border: rgba(255,255,255,0.04);
+    --shadow-sm: 0 2px 12px rgba(2,6,23,0.12);
+    --color-primary: #2563eb;
+}
+
+/* Load Inter from Google Fonts for consistent typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+/* Tipografía base del dashboard */
+body {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Escala tipográfica modular (útil para títulos y labels) */
+:root {
+    --fs-0: 12px;
+    --fs-1: 14px;
+    --fs-2: 16px;
+    --fs-3: 18px;
+    --fs-4: 20px;
+    --fs-5: 24px;
+}
+
+/* Espaciado extendido */
+:root {
+    --space-xxs: 2px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-xxl: 48px;
+}
+
+@media (max-width: 640px) {
+    :root {
+        --space-md: 8px;
+    }
+}
+
+h1 { font-size: var(--h1-size); margin: 0 0 var(--space-sm) 0; }
+h2 { font-size: var(--h2-size); margin: 0 0 var(--space-sm) 0; }
+
+.text-muted { color: var(--color-muted); }
+
+/* Botones de uso común para mantener consistencia */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+.btn-primary { background: var(--color-primary); color: var(--color-surface); border-color: transparent; }
+.btn-primary:focus { outline: 3px solid rgba(59,130,246,0.18); outline-offset: 2px; }
+
+.btn-outline-danger { background: transparent; color: var(--color-danger); border: 1px solid var(--color-danger); }
+.btn-outline-danger:hover { background: rgba(239,68,68,0.06); }
+
+/* Utilities útiles */
+.card {
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+}
+
+.muted-bg { background: rgba(15,23,42,0.03); }
+
+/* Ejemplo: tamaños tipográficos para tarjetas/labels */
+.label-small { font-size: var(--font-size-sm); }
+.label-base { font-size: var(--font-size-base); }
+.label-lg { font-size: var(--font-size-lg); }
+
+/* Fin del archivo de variables de tema */

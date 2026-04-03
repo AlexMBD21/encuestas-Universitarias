@@ -1,0 +1,37 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (nunca subir claves)
+.env
+.env.local
+.env.*.local
+.env.production
+
+# Build
+dist/
+dist-ssr/
+*.local
+
+# Firebase / Google credentials (legado, ya no se usa)
+encuestas-*-firebase-adminsdk-*.json
+*-firebase-adminsdk-*.json
+firebase-*.json
+serviceAccountKey.json
+
+# Scripts de migración one-time (ya ejecutados, no tienen uso futuro)
+backend/scripts/migrate_rtdb_to_supabase.js
+backend/scripts/list_supabase_tables.js
+
+# Exports de base de datos vieja
+*.rtdb-export*.json
+encuestas-*-default-rtdb-export*.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/settings.json
+.DS_Store
+Thumbs.db
+

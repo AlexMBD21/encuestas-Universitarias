@@ -1,0 +1,62 @@
+import React from 'react'
+
+type Props = {
+  value: number // 0-100
+  height?: number
+  showPercent?: boolean // show numeric percent (either inside or on the right)
+  showInsideThreshold?: number // when to prefer showing percent inside the bar
+  className?: string
+  color?: string // optional gradient override, e.g. '#ef4444'
+}
+
+export default function ProgressBar({ value, height = 12, showPercent = true, showInsideThreshold = 101, className, color }: Props) {
+  const pct = Math.max(0, Math.min(100, Math.round(Number(value) || 0)))
+  // showInsideThreshold default set high so by default percent is shown at the right
+  const showInside = pct >= showInsideThreshold
+  const [animatedPct, setAnimatedPct] = React.useState(0)
+
+  React.useEffect(() => {
+    // animate from 0 to pct after mount
+    const t = setTimeout(() => setAnimatedPct(pct), 20)
+    return () => clearTimeout(t)
+  }, [pct])
+
+  const barBackground = color
+    ? `linear-gradient(90deg, ${color}cc 0%, ${color} 100%)`
+    : 'linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)'
+
+  return (
+    <div className={`flex items-center gap-3 ${className || ''}`}>
+      <div style={{ flex: 1 }}>
+        <div style={{ background: '#f1f5f9', borderRadius: 9999, height, overflow: 'hidden', position: 'relative' }} aria-hidden>
+          <div
+            role="progressbar"
+            aria-valuenow={pct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            style={{
+              width: `${animatedPct}%`,
+              height: '100%',
+              borderRadius: 9999,
+              boxShadow: '0 6px 18px rgba(59,130,246,0.08)',
+              background: barBackground,
+              transition: 'width 720ms cubic-bezier(.2,.9,.2,1)'
+            }}
+          />
+
+          {showPercent && showInside && (
+            <div style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+              <span style={{ color: '#fff', fontWeight: 700, fontSize: Math.max(12, height - 2) }}>{pct}%</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showPercent && !showInside && (
+        <div style={{ width: 64, textAlign: 'right', fontWeight: 700, color: '#0f172a', fontSize: 13 }}>
+          {pct}%
+        </div>
+      )}
+    </div>
+  )
+}
