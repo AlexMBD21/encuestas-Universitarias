@@ -218,24 +218,24 @@ export default function Reports(): JSX.Element {
   }, [surveys, filterOwner, view])
 
   return (
-    <div id="reports-root" className="p-6">
+    <div id="reports-root" className="px-4 py-4 sm:p-6">
 
       {/* Título */}
       <div className="mb-4">
-        <h1 className="text-3xl font-black">Reportes</h1>
+        <h1 className="text-2xl sm:text-3xl font-black">Reportes</h1>
       </div>
 
       {/* Barra de filtros */}
-      <div className="bg-white border rounded-xl px-4 py-3 mb-6 shadow-sm flex flex-wrap items-center gap-3">
+      <div className="bg-white border rounded-xl px-3 sm:px-4 py-3 mb-6 shadow-sm flex flex-wrap items-center gap-2 sm:gap-3">
         {/* Buscador */}
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input
             type="text"
             value={titleSearch}
             onChange={e => setTitleSearch(e.target.value)}
             placeholder="Buscar por titulo..."
-            className="pl-8 pr-7 py-1.5 border rounded-lg text-sm w-52 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="pl-8 pr-7 py-1.5 border rounded-lg text-sm w-full sm:w-52 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           {titleSearch && (
             <button type="button" onClick={() => setTitleSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" title="Limpiar">
@@ -282,10 +282,10 @@ export default function Reports(): JSX.Element {
       {!loading && (
         <div className="rounded-2xl border border-slate-200 bg-white shadow-md overflow-hidden">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
-            <div>
+          <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3 bg-white">
+            <div className="min-w-0">
               <h3 className="text-base font-semibold text-slate-800">Todas las encuestas</h3>
-              <p className="text-xs text-slate-400 mt-0.5">{filterOwner ? `Propietario: ${((availableOwners||[]).find(o=>o.id===filterOwner)||{label:filterOwner}).label}` : 'Mostrando encuestas de todos los propietarios'}</p>
+              <p className="text-xs text-slate-400 mt-0.5 truncate">{filterOwner ? `Propietario: ${((availableOwners||[]).find(o=>o.id===filterOwner)||{label:filterOwner}).label}` : 'Mostrando encuestas de todos los propietarios'}</p>
             </div>
             {allSurveysSummary && allSurveysSummary.length > 0 && (
               <span className="text-xs bg-slate-100 text-slate-500 rounded-full px-3 py-1 font-medium">

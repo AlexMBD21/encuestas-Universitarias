@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import ReactDOM from 'react-dom'
 
 type Props = { report: any, usersCache?: Record<string, any> }
 
@@ -234,44 +235,46 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* ── Cumulative responses chart ── */}
-      <div className="p-6 rounded border bg-white">
-        <div className="flex items-baseline justify-between mb-3">
-          <h3 className="font-semibold">Respuestas acumuladas <span className="text-xs font-normal text-slate-400 ml-1">{granLabel[gran]}</span></h3>
-          <span className="text-2xl font-bold text-slate-800">{totalResponses}</span>
+      <div className="rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-4 pb-2">
+          <div>
+            <span className="text-sm font-semibold text-slate-700 tracking-tight">Respuestas acumuladas</span>
+            <span className="ml-2 text-xs text-slate-400 font-normal">{granLabel[gran]}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-2xl font-black text-slate-800 tabular-nums leading-none">{totalResponses}</span>
+            <span className="text-xs text-slate-400 mt-1">total</span>
+          </div>
         </div>
 
         {!hasData && (
-          <div className="text-slate-400 text-sm italic py-6 text-center">Sin respuestas registradas aún.</div>
+          <div className="text-slate-400 text-sm italic py-8 text-center px-5">Sin respuestas registradas aún.</div>
         )}
 
         {hasData && (
           <div style={{ width: '100%', overflow: 'hidden' }}>
-            <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 200 }} preserveAspectRatio="xMinYMin meet">
+            <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', display: 'block' }} preserveAspectRatio="xMidYMid meet">
               <defs>
-                {/* Area gradient: strong at top, fades to almost zero */}
                 <linearGradient id="gArea2" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.45" />
-                  <stop offset="75%" stopColor="#06b6d4" stopOpacity="0.08" />
+                  <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.40" />
+                  <stop offset="80%" stopColor="#06b6d4" stopOpacity="0.04" />
                   <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
                 </linearGradient>
-                {/* Line gradient: green → cyan */}
                 <linearGradient id="gLine2" x1="0" x2="1" y1="0" y2="0">
                   <stop offset="0%" stopColor="#10b981" />
                   <stop offset="100%" stopColor="#0891b2" />
                 </linearGradient>
-                {/* Drop shadow for the line */}
                 <filter id="lineShadow" x="-10%" y="-40%" width="120%" height="200%">
-                  <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#06b6d4" floodOpacity="0.35" />
+                  <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#06b6d4" floodOpacity="0.30" />
                 </filter>
-                {/* Glow for dots */}
                 <filter id="dotGlow" x="-80%" y="-80%" width="260%" height="260%">
-                  <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#06b6d4" floodOpacity="0.6" />
+                  <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#06b6d4" floodOpacity="0.55" />
                 </filter>
               </defs>
 
-              {/* Y grid lines + labels */}
               {yTicks.map((t, i) => {
                 const yy = topPad + (innerH - innerH * (t / maxVal))
                 const isBaseline = t === 0
@@ -288,10 +291,8 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
                 )
               })}
 
-              {/* Area fill (closed path) */}
               {areaD && <path d={areaD} fill="url(#gArea2)" stroke="none" />}
 
-              {/* Smooth line with drop shadow */}
               {lineD && (
                 <path
                   d={lineD}
@@ -304,16 +305,14 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
                 />
               )}
 
-              {/* Data points (skip synthetic origin) */}
               {rawPoints.map((p, i) => (
                 <g key={i} filter="url(#dotGlow)">
-                  <circle cx={p.x} cy={p.y} r={7} fill="#0891b2" opacity="0.15" />
+                  <circle cx={p.x} cy={p.y} r={7} fill="#0891b2" opacity="0.12" />
                   <circle cx={p.x} cy={p.y} r={4.5} fill="#fff" stroke="#0891b2" strokeWidth={2.5} />
                   <title>{p.label}: {p.cumulative} respuesta{p.cumulative !== 1 ? 's' : ''}</title>
                 </g>
               ))}
 
-              {/* X labels for real points (evenly spaced, max 8) */}
               {rawPoints.filter((_, i) => i % labelStep === 0 || i === rawPoints.length - 1).map((p, i) => (
                 <text key={i} x={p.x} y={height - 6} fontSize={11} fill="#6b7280" textAnchor="middle">{p.label}</text>
               ))}
@@ -323,30 +322,28 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
       </div>
 
       {/* ── Per-user activity ── */}
-      <div className="p-6 rounded border bg-white">
-        <div className="survey-activity-header flex flex-wrap items-center justify-between gap-3 mb-3">
+      <div className="rounded-2xl bg-white border border-slate-100 shadow-sm">
+        {/* Header */}
+          <div className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-5 py-3 border-b border-slate-100 rounded-t-2xl overflow-hidden">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold">Actividad por usuario</h3>
+            <span className="text-sm font-semibold text-slate-700 tracking-tight">Actividad por usuario</span>
             {(userSearch || userSelected) && (
-              <button onClick={clearFilters} className="text-xs text-blue-500 hover:text-blue-700 font-medium">Limpiar filtros</button>
+              <button onClick={clearFilters} className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors">× Limpiar</button>
             )}
           </div>
-          <div className="survey-activity-controls flex flex-wrap items-center gap-2">
-            {/* Dropdown: pick one user */}
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
             <select
               value={userSelected}
               onChange={e => { setUserSelected(e.target.value); setUserSearch('') }}
-              className="text-xs rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 max-w-[160px] transition-all"
+              className="text-xs rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-300 flex-1 sm:flex-none sm:max-w-[150px] min-w-0 transition-all"
             >
               <option value="">Todos los usuarios</option>
               {userList.map(u => (
                 <option key={u.id} value={u.id}>{u.label}</option>
               ))}
             </select>
-
-            {/* Text search */}
-            <div className="relative">
-              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <div className="relative flex-1 sm:flex-none">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none">
                 <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
                 <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
@@ -355,40 +352,37 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
                 placeholder="Buscar..."
                 value={userSearch}
                 onChange={e => { setUserSearch(e.target.value); setUserSelected('') }}
-                className="pl-7 pr-6 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 w-36 transition-all"
+                className="pl-7 pr-6 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-300 w-full sm:w-32 transition-all"
               />
               {userSearch && (
-                <button
-                  onClick={() => setUserSearch('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+                <button onClick={() => setUserSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
                 </button>
               )}
             </div>
           </div>
         </div>
-        <table className="w-full table-auto border-collapse">
-          <thead>
-            <tr className="text-left">
-              <th className="border px-2 py-2">USUARIO</th>
-              <th className="border px-2 py-2">{isProjectSurvey ? 'PROYECTOS CALIFICADOS' : 'RESPUESTAS'}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUserList.length === 0 ? (
-              <tr><td colSpan={2} className="border px-3 py-4 text-xs text-slate-400 text-center italic">Sin resultados para "{userSearch}"</td></tr>
-            ) : filteredUserList.map(u => (
-              <UserActivityRow
-                key={u.id}
-                u={u}
-                isProjectSurvey={isProjectSurvey}
-                totalProjects={totalProjects}
-                projectMap={projectMap}
-              />
-            ))}
-          </tbody>
-        </table>
+
+        {/* Column headers */}
+        <div className="grid grid-cols-[1fr_auto] px-5 py-2 bg-slate-50 border-b border-slate-100">
+          <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Usuario</span>
+          <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase text-right">{isProjectSurvey ? 'Proyectos calificados' : 'Respuestas'}</span>
+        </div>
+
+        {/* Rows */}
+        <div className="divide-y divide-slate-50">
+          {filteredUserList.length === 0 ? (
+            <div className="px-5 py-6 text-xs text-slate-400 text-center italic">Sin resultados para "{userSearch}"</div>
+          ) : filteredUserList.map(u => (
+            <UserActivityRow
+              key={u.id}
+              u={u}
+              isProjectSurvey={isProjectSurvey}
+              totalProjects={totalProjects}
+              projectMap={projectMap}
+            />
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -401,6 +395,7 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
   projectMap: Record<string, string>
 }) {
   const [open, setOpen] = useState(false)
+  const [popStyle, setPopStyle] = useState<React.CSSProperties>({})
   const btnRef = useRef<HTMLButtonElement>(null)
   const popRef = useRef<HTMLDivElement>(null)
   const ratedCount = u.ratedProjects.length
@@ -408,6 +403,20 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
   const allRated = isProjectSurvey && totalProjects > 0 && missingCount === 0
   const ratedSet = new Set(u.ratedProjects)
   const missingProjects = Object.keys(projectMap).filter(id => !ratedSet.has(id))
+
+  // Compute dropdown position anchored to the button, clamped to viewport
+  const openDropdown = () => {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect()
+      const popWidth = 240
+      const margin = 8
+      let left = r.right - popWidth
+      if (left < margin) left = margin
+      if (left + popWidth > window.innerWidth - margin) left = window.innerWidth - popWidth - margin
+      setPopStyle({ top: r.bottom + 6, left })
+    }
+    setOpen(v => !v)
+  }
 
   // Close on outside click
   useEffect(() => {
@@ -423,76 +432,70 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
   }, [open])
 
   return (
-    <tr className="align-middle">
-      <td className="border px-2 py-2">
-        <div className="flex items-center gap-3">
-          <div style={{ width: 32, height: 32, borderRadius: 9999, background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#0f172a' }}>
-            {String((u.label || u.id)[0] || '?').toUpperCase()}
-          </div>
-          <div className="text-sm">{u.label}</div>
-        </div>
-      </td>
-      <td className="border px-2 py-2">
-        {isProjectSurvey ? (
-          <div className="flex items-center justify-end gap-2">
-            {totalProjects > 0 && (
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                allRated ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-              }`}>
-                {ratedCount}&nbsp;/&nbsp;{totalProjects}
-              </span>
-            )}
-            {!allRated && missingCount > 0 && (
-              <span className="text-xs text-rose-500 font-medium">Falta {missingCount}</span>
-            )}
-            <div className="relative">
-              <button
-                ref={btnRef}
-                onClick={() => setOpen(v => !v)}
-                className="flex items-center gap-1 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-colors"
-              >
-                Ver
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
-                  <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
+    <div className="flex items-center gap-3 px-5 py-2.5 hover:bg-slate-50 transition-colors">
+      {/* Avatar */}
+      <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center font-bold text-slate-700 text-sm border border-indigo-100">
+        {String((u.label || u.id)[0] || '?').toUpperCase()}
+      </div>
 
-              {open && (
-                <div
-                  ref={popRef}
-                  className="absolute right-0 top-full mt-2 z-50 min-w-[240px] max-w-xs bg-white border border-slate-200 rounded-xl shadow-lg p-3 space-y-1.5"
-                >
-                  {u.ratedProjects.map(pid => (
-                    <div key={pid} className="flex items-center gap-2 text-xs text-slate-700">
-                      <span className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
-                          <path d="M5 13l4 4L19 7" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                      <span className="truncate">{projectMap[pid] || pid}</span>
-                    </div>
-                  ))}
-                  {missingProjects.map(pid => (
-                    <div key={pid} className="flex items-center gap-2 text-xs text-rose-500">
-                      <span className="w-4 h-4 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
-                          <path d="M18 6L6 18M6 6l12 12" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                      <span className="truncate">{projectMap[pid] || pid}</span>
-                      <span className="text-rose-400 shrink-0">sin calificar</span>
-                    </div>
-                  ))}
+      {/* Label */}
+      <div className="flex-1 min-w-0 text-xs text-slate-600 truncate">{u.label}</div>
+
+      {/* Right: score or count */}
+      {isProjectSurvey ? (
+        <div className="flex items-center gap-2 shrink-0">
+          {totalProjects > 0 && (
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-full tabular-nums ${
+              allRated ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-600 border border-amber-200'
+            }`}>
+              {ratedCount}&nbsp;/&nbsp;{totalProjects}
+            </span>
+          )}
+          <button
+            ref={btnRef}
+            onClick={openDropdown}
+            className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-colors"
+          >
+            Ver
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
+              <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+
+          {open && ReactDOM.createPortal(
+            <div
+              ref={popRef}
+              style={{ position: 'fixed', width: 240, ...popStyle }}
+              className="z-[9999] bg-white border border-slate-200 rounded-xl shadow-lg p-3 space-y-1.5"
+            >
+              {u.ratedProjects.map(pid => (
+                <div key={pid} className="flex items-center gap-2 text-xs text-slate-700">
+                  <span className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
+                      <path d="M5 13l4 4L19 7" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  <span className="truncate">{projectMap[pid] || pid}</span>
                 </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="flex justify-end">
-            <span className="inline-flex items-center bg-green-50 text-green-700 px-3 py-1 rounded">{u.count}</span>
-          </div>
-        )}
-      </td>
-    </tr>
+              ))}
+              {missingProjects.map(pid => (
+                <div key={pid} className="flex items-center gap-2 text-xs text-rose-500">
+                  <span className="w-4 h-4 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
+                      <path d="M18 6L6 18M6 6l12 12" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  <span className="truncate">{projectMap[pid] || pid}</span>
+                  <span className="text-rose-400 shrink-0">pendiente</span>
+                </div>
+              ))}
+            </div>,
+            document.body
+          )}
+        </div>
+      ) : (
+        <span className="text-xs font-bold tabular-nums px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">{u.count}</span>
+      )}
+    </div>
   )
 }

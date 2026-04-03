@@ -112,7 +112,7 @@ export default function ReportDetail(): JSX.Element {
   }
 
   return (
-    <div id="report-detail-root" className="p-6">
+    <div id="report-detail-root" className="px-4 py-4 sm:p-6">
 
       {/* Breadcrumb */}
       <nav className="page-breadcrumb" aria-label="Ruta de navegación">
@@ -124,7 +124,7 @@ export default function ReportDetail(): JSX.Element {
         <span className="page-breadcrumb-current">{surveyTitle}</span>
       </nav>
 
-      <h1 className="text-2xl font-semibold mb-6">{surveyTitle}</h1>
+      <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">{surveyTitle}</h1>
 
       {loading && (
         <div className="mt-10 flex flex-col items-center justify-center gap-3">
@@ -179,28 +179,27 @@ export default function ReportDetail(): JSX.Element {
               {report.projectSummaries && (
                 <div>
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-lg">Ranking de proyectos</h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-base text-slate-800 tracking-tight">Ranking de proyectos</h3>
                     <span className="text-xs bg-slate-100 text-slate-500 rounded-full px-3 py-1 font-medium">
                       {report.projectSummaries.length} proyecto{report.projectSummaries.length !== 1 ? 's' : ''}
                     </span>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {report.projectSummaries.map((ps: any, i: number) => {
                       const overall: number | null = ps.overall ?? null
                       const overallPct = overall !== null
                         ? Math.max(0, Math.min(100, Math.round(((overall - 1) / 4) * 100)))
                         : null
 
-                      // Detect tie with adjacent projects
+                      // Detect tie
                       const prevOverall = i > 0 ? (report.projectSummaries[i - 1].overall ?? null) : null
                       const isTied = overall !== null && prevOverall !== null && Number(overall) === Number(prevOverall)
                       const nextOverall = i < report.projectSummaries.length - 1 ? (report.projectSummaries[i + 1].overall ?? null) : null
                       const tiedWithNext = overall !== null && nextOverall !== null && Number(overall) === Number(nextOverall)
                       const showTieBadge = isTied || tiedWithNext
 
-                      // All tied projects share the color of the first project in the tie group
                       let colorIdx = i
                       if (isTied) {
                         let j = i
@@ -208,12 +207,10 @@ export default function ReportDetail(): JSX.Element {
                         colorIdx = j
                       }
 
-                      const rankColors = [
-                        { bg: 'bg-amber-50', border: 'border-amber-300', bar: '#f59e0b', barBg: '#fef3c7', badge: 'bg-amber-100 text-amber-700', score: 'text-amber-700' },
-                        { bg: 'bg-slate-50', border: 'border-slate-300', bar: '#64748b', barBg: '#e2e8f0', badge: 'bg-slate-100 text-slate-600', score: 'text-slate-600' },
-                        { bg: 'bg-orange-50', border: 'border-orange-200', bar: '#f97316', barBg: '#ffedd5', badge: 'bg-orange-100 text-orange-600', score: 'text-orange-600' },
-                      ]
-                      const theme = rankColors[colorIdx] ?? { bg: 'bg-white', border: 'border-slate-200', bar: '#06b6d4', barBg: '#e0f2fe', badge: 'bg-blue-50 text-blue-600', score: 'text-blue-600' }
+                      const rankAccents = ['#f59e0b', '#94a3b8', '#f97316']
+                      const rankBgs = ['#fffbeb', '#f8fafc', '#fff7ed']
+                      const accentColor = rankAccents[colorIdx] ?? '#6366f1'
+                      const cardBg = rankBgs[colorIdx] ?? '#ffffff'
                       const medals = ['🥇', '🥈', '🥉']
 
                       const members: string[] = Array.isArray(ps.project.members)
@@ -223,19 +220,35 @@ export default function ReportDetail(): JSX.Element {
                           : []
 
                       return (
-                        <div key={ps.project.id} className={`rounded-xl border-2 ${theme.border} ${theme.bg} p-4 transition-shadow hover:shadow-md`}>
+                        <div
+                          key={ps.project.id}
+                          className="flex items-stretch rounded-xl overflow-hidden border border-slate-200 transition-all duration-200 hover:shadow-md hover:-translate-y-px"
+                          style={{ background: cardBg }}
+                        >
+                          {/* Left accent stripe */}
+                          <div className="w-1 self-stretch shrink-0" style={{ background: accentColor }} />
 
-                          {/* Top row: rank + name + badges + button */}
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-start gap-3 min-w-0">
-                              <span className="text-2xl w-9 shrink-0 text-center leading-tight mt-0.5">
-                                {medals[colorIdx] ?? <span className="text-sm font-bold text-slate-400">#{colorIdx + 1}</span>}
-                              </span>
-                              <div className="min-w-0">
-                                <div className="font-semibold text-slate-800">{ps.project.name}</div>
-                                {ps.project.description && (
-                                  <div className="text-xs text-slate-500 mt-0.5 line-clamp-1">{ps.project.description}</div>
-                                )}
+                          {/* Main content */}
+                          <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center">
+                            {/* Row 1: rank + project info */}
+                            <div className="flex items-center flex-1 min-w-0">
+                              {/* Rank badge */}
+                              <div className="shrink-0 w-10 sm:w-12 flex flex-col items-center justify-center py-3 sm:py-4 px-1 gap-0.5 self-stretch">
+                                <span className="text-base sm:text-lg leading-none">{medals[colorIdx] ?? '🏅'}</span>
+                                <span className="text-[10px] font-black tabular-nums" style={{ color: accentColor }}>#{colorIdx + 1}</span>
+                              </div>
+
+                              {/* Divider */}
+                              <div className="w-px self-stretch bg-slate-100 shrink-0" />
+
+                              {/* Project info */}
+                              <div className="flex-1 min-w-0 py-2.5 px-3">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-semibold text-slate-800 text-sm leading-snug">{ps.project.name}</span>
+                                  {showTieBadge && (
+                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-600 whitespace-nowrap">= Empate</span>
+                                  )}
+                                </div>
                                 {members.length > 0 && (
                                   <div className="text-xs text-slate-400 mt-0.5 truncate">
                                     {members.slice(0, 3).join(' · ')}{members.length > 3 ? ` +${members.length - 3}` : ''}
@@ -244,53 +257,46 @@ export default function ReportDetail(): JSX.Element {
                               </div>
                             </div>
 
-                            <div className="flex flex-col items-end gap-1.5 shrink-0">
-                              <button
-                                onClick={() => setModalProject(ps)}
-                                className="px-2.5 py-1 text-xs font-medium bg-white border border-slate-200 hover:border-slate-400 text-slate-600 rounded-lg transition-colors shadow-sm whitespace-nowrap"
-                              >
-                                Ver detalle
-                              </button>
-                              {showTieBadge && (
-                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">= Empate</span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Stats row: overall bar + score + response count */}
-                          <div className="mt-4 flex items-center gap-4">
-                            {/* Response count pill */}
-                            <div className="shrink-0 text-center">
-                              <div className={`text-2xl font-black ${theme.score}`}>{ps.responses}</div>
-                              <div className="text-xs text-slate-400 leading-none mt-0.5">calificaciones</div>
-                            </div>
-
-                            {/* Overall bar + labels */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs text-slate-500 font-medium">Promedio global</span>
-                                <div className="flex items-center gap-2">
-                                  {overall !== null && (
-                                    <span className={`text-xs font-bold ${theme.score}`}>{overall.toFixed(2)} / 5</span>
-                                  )}
-                                  {overallPct !== null && (
-                                    <span className="text-sm font-black text-slate-700">{overallPct}%</span>
-                                  )}
-                                </div>
+                            {/* Row 2 (mobile) / right section (sm+): score + button */}
+                            <div className="flex items-center border-t border-slate-100 sm:border-t-0 sm:border-l">
+                              {/* Score block */}
+                              <div className="flex-1 sm:flex-none sm:w-32 py-2.5 sm:py-3 px-3">
+                                {overall !== null ? (
+                                  <>
+                                    <div className="flex items-baseline gap-1 sm:justify-end mb-1.5">
+                                      <span className="text-sm sm:text-base font-black tabular-nums leading-none" style={{ color: accentColor }}>{overall.toFixed(2)}</span>
+                                      <span className="text-[10px] text-slate-400 font-medium">/5</span>
+                                      {overallPct !== null && (
+                                        <span className="text-xs font-bold text-slate-500 ml-0.5">{overallPct}%</span>
+                                      )}
+                                    </div>
+                                    {overallPct !== null && (
+                                      <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: accentColor + '22' }}>
+                                        <div
+                                          className="h-full rounded-full transition-all duration-700"
+                                          style={{ width: `${overallPct}%`, background: accentColor }}
+                                        />
+                                      </div>
+                                    )}
+                                    <div className="text-[10px] text-slate-400 mt-1 sm:text-right">{ps.responses} calificación{ps.responses !== 1 ? 'es' : ''}</div>
+                                  </>
+                                ) : (
+                                  <span className="text-xs text-slate-400 italic">Sin datos</span>
+                                )}
                               </div>
-                              {overallPct !== null ? (
-                                <div className="w-full rounded-full h-3 overflow-hidden" style={{ background: theme.barBg }}>
-                                  <div
-                                    className="h-3 rounded-full transition-all duration-700"
-                                    style={{ width: `${overallPct}%`, background: theme.bar }}
-                                  />
-                                </div>
-                              ) : (
-                                <div className="text-xs text-slate-400 italic">Sin calificaciones aún</div>
-                              )}
+
+                              {/* Action */}
+                              <div className="shrink-0 pr-3 pl-2">
+                                <button
+                                  onClick={() => setModalProject(ps)}
+                                  className="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-150 whitespace-nowrap hover:opacity-80"
+                                  style={{ color: accentColor, borderColor: accentColor + '66', background: accentColor + '10' }}
+                                >
+                                  Ver detalle
+                                </button>
+                              </div>
                             </div>
                           </div>
-
                         </div>
                       )
                     })}
@@ -309,7 +315,7 @@ export default function ReportDetail(): JSX.Element {
             </div>
 
             <div className="lg:col-span-2">
-              <div className="p-4 rounded border bg-white">
+              <div className="rounded border bg-white">
                 <SurveyDetailPanel report={report} usersCache={usersCache} />
               </div>
             </div>

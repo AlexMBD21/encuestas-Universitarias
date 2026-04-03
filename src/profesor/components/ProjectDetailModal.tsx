@@ -73,16 +73,16 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
           </div>
         </div>
 
-        <div className="p-5" style={{ maxHeight: 'calc(85vh - 56px)', overflowY: 'auto' }}>
+        <div className="p-4 sm:p-5" style={{ maxHeight: 'calc(85vh - 56px)', overflowY: 'auto' }}>
 
           {/* Overall score card */}
           {ps.overall !== null && (
-            <div className="mb-5 p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-5">
+            <div className="mb-5 p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center gap-4 sm:gap-5">
               <div className="text-center shrink-0">
                 <div className="text-3xl font-black text-slate-800">{ps.overall.toFixed(2)}</div>
                 <div className="text-xs text-slate-400 mt-0.5">de 5.00</div>
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-[140px]">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-medium text-slate-500">Promedio general</span>
                   <span className="text-sm font-black text-slate-700">{toPercent(ps.overall)}</span>
@@ -137,8 +137,8 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
               ))}
             </div>
 
-            <div style={{ maxHeight: '40vh', overflowY: 'auto', paddingRight: '8px' }}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div style={{ maxHeight: '40vh', overflowY: 'auto', paddingRight: '4px' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {ps.criteria.map(c => {
                   const hasScore = c.avg !== null && c.avg !== undefined
                   const pct = toPercentNum(c.avg)
