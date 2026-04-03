@@ -395,28 +395,13 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
   projectMap: Record<string, string>
 }) {
   const [open, setOpen] = useState(false)
-  const [popStyle, setPopStyle] = useState<React.CSSProperties>({})
-  const btnRef = useRef<HTMLButtonElement>(null)
   const popRef = useRef<HTMLDivElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
   const ratedCount = u.ratedProjects.length
   const missingCount = totalProjects - ratedCount
   const allRated = isProjectSurvey && totalProjects > 0 && missingCount === 0
   const ratedSet = new Set(u.ratedProjects)
   const missingProjects = Object.keys(projectMap).filter(id => !ratedSet.has(id))
-
-  // Compute dropdown position anchored to the button, clamped to viewport
-  const openDropdown = () => {
-    if (btnRef.current) {
-      const r = btnRef.current.getBoundingClientRect()
-      const popWidth = 240
-      const margin = 8
-      let left = r.right - popWidth
-      if (left < margin) left = margin
-      if (left + popWidth > window.innerWidth - margin) left = window.innerWidth - popWidth - margin
-      setPopStyle({ top: r.bottom + 6, left })
-    }
-    setOpen(v => !v)
-  }
 
   // Close on outside click
   useEffect(() => {
@@ -451,47 +436,47 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
               {ratedCount}&nbsp;/&nbsp;{totalProjects}
             </span>
           )}
-          <button
-            ref={btnRef}
-            onClick={openDropdown}
-            className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-colors"
-          >
-            Ver
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
-              <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-
-          {open && ReactDOM.createPortal(
-            <div
-              ref={popRef}
-              style={{ position: 'fixed', width: 240, ...popStyle }}
-              className="z-[9999] bg-white border border-slate-200 rounded-xl shadow-lg p-3 space-y-1.5"
+          <div className="relative">
+            <button
+              ref={btnRef}
+              onClick={() => setOpen(v => !v)}
+              className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-colors"
             >
-              {u.ratedProjects.map(pid => (
-                <div key={pid} className="flex items-center gap-2 text-xs text-slate-700">
-                  <span className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
-                      <path d="M5 13l4 4L19 7" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                  <span className="truncate">{projectMap[pid] || pid}</span>
-                </div>
-              ))}
-              {missingProjects.map(pid => (
-                <div key={pid} className="flex items-center gap-2 text-xs text-rose-500">
-                  <span className="w-4 h-4 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
-                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
-                      <path d="M18 6L6 18M6 6l12 12" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                  <span className="truncate">{projectMap[pid] || pid}</span>
-                  <span className="text-rose-400 shrink-0">pendiente</span>
-                </div>
-              ))}
-            </div>,
-            document.body
-          )}
+              Ver
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
+                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            {open && (
+              <div
+                ref={popRef}
+                className="absolute bottom-full right-0 mb-2 z-50 w-56 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-xl shadow-lg p-3 space-y-1.5"
+              >
+                {u.ratedProjects.map(pid => (
+                  <div key={pid} className="flex items-center gap-2 text-xs text-slate-700">
+                    <span className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 13l4 4L19 7" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <span className="truncate">{projectMap[pid] || pid}</span>
+                  </div>
+                ))}
+                {missingProjects.map(pid => (
+                  <div key={pid} className="flex items-center gap-2 text-xs text-rose-500">
+                    <span className="w-4 h-4 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <span className="truncate">{projectMap[pid] || pid}</span>
+                    <span className="text-rose-400 shrink-0">pendiente</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <span className="text-xs font-bold tabular-nums px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">{u.count}</span>
