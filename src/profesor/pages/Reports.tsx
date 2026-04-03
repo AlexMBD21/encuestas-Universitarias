@@ -3,59 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import reportHelpers from '../services/reportHelpers'
 import supabaseClient from '../../services/supabaseClient'
 
-function CustomSelect({ value, onChange, options, width }: {
-  value: string;
-  onChange: (val: string) => void;
-  options: { value: string; label: string }[];
-  width?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const selected = options.find(o => o.value === value);
-
-  return (
-    <div ref={ref} className="relative" style={{ width: width || 'auto' }}>
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        className="flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors w-full"
-      >
-        <span>{selected?.label}</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className={`text-slate-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}>
-          <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </button>
-      {open && (
-        <div className="absolute z-50 mt-1 left-0 min-w-full bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
-          {options.map(o => (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => { onChange(o.value); setOpen(false); }}
-              className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
-                o.value === value
-                  ? 'font-semibold text-blue-600 bg-blue-50'
-                  : 'text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              {o.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 
 export default function Reports(): JSX.Element {
   const navigate = useNavigate();
@@ -78,6 +25,7 @@ export default function Reports(): JSX.Element {
   const [usersCache, setUsersCache] = useState<Record<string, any>>({})
   const [ownerEmailMap, setOwnerEmailMap] = useState<Record<string, string>>({})
   const [allSurveysSummary, setAllSurveysSummary] = useState<any[] | null>(null)
+  const [titleSearch, setTitleSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const loadIdRef = useRef(0)
   
@@ -272,46 +220,67 @@ export default function Reports(): JSX.Element {
   return (
     <div id="reports-root" className="p-6">
 
-      {/* Filtros */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+      {/* Título */}
+      <div className="mb-4">
         <h1 className="text-3xl font-black">Reportes</h1>
-        <div className="flex flex-wrap items-center gap-2">
+      </div>
 
-          {/* Select: propietario */}
-          <CustomSelect
-            value={filterOwner ?? ''}
-            onChange={val => setFilterOwner(val || null)}
-            width="208px"
-            options={[
-              { value: '', label: 'Todos los propietarios' },
-              ...(availableOwners || []).map(o => ({ value: o.id, label: o.label }))
-            ]}
+      {/* Barra de filtros */}
+      <div className="bg-white border rounded-xl px-4 py-3 mb-6 shadow-sm flex flex-wrap items-center gap-3">
+        {/* Buscador */}
+        <div className="relative">
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input
+            type="text"
+            value={titleSearch}
+            onChange={e => setTitleSearch(e.target.value)}
+            placeholder="Buscar por titulo..."
+            className="pl-8 pr-7 py-1.5 border rounded-lg text-sm w-52 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+          {titleSearch && (
+            <button type="button" onClick={() => setTitleSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" title="Limpiar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          )}
+        </div>
 
-          {/* Select: tipo */}
-          <CustomSelect
-            value={view}
-            onChange={val => setView(val as any)}
-            width="176px"
-            options={[
-              { value: 'auto', label: 'Todos los tipos' },
-              { value: 'simple', label: 'Solo encuestas simples' },
-              { value: 'projects', label: 'Solo proyectos' },
-            ]}
-          />
+        <div className="w-px h-5 bg-slate-200 hidden sm:block" />
 
-          {/* Limpiar filtros */}
+        {/* Tipo */}
+        <div className="flex items-center gap-1.5 text-sm text-slate-700">
+          <span className="whitespace-nowrap">Tipo:</span>
+          <select value={view} onChange={e => setView(e.target.value as any)} className="py-1 px-2 border rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <option value="auto">Todos</option>
+            <option value="simple">Solo simples</option>
+            <option value="projects">Solo proyectos</option>
+          </select>
+        </div>
+
+        {/* Propietario */}
+        {(availableOwners || []).length > 0 && (
+          <div className="flex items-center gap-1.5 text-sm text-slate-700">
+            <span className="whitespace-nowrap">Propietario:</span>
+            <select value={filterOwner ?? ''} onChange={e => setFilterOwner(e.target.value || null)} className="py-1 px-2 border rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-400 max-w-[200px]">
+              <option value="">Todos</option>
+              {(availableOwners || []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+            </select>
+          </div>
+        )}
+
+        {/* Limpiar filtros */}
+        {(titleSearch.trim() || view !== 'auto' || filterOwner) && (
           <button
-            onClick={() => { setFilterOwner(null); setView('auto') }}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 hover:border-blue-200 transition-colors"
+            type="button"
+            onClick={() => { setTitleSearch(''); setView('auto'); setFilterOwner(null) }}
+            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-500 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 hover:border-red-200 transition-colors whitespace-nowrap"
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
             Limpiar filtros
           </button>
-        </div>
+        )}
       </div>
       {!loading && (
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-white shadow-md overflow-hidden">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-md overflow-hidden">
           {/* Header */}
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
             <div>
@@ -319,7 +288,9 @@ export default function Reports(): JSX.Element {
               <p className="text-xs text-slate-400 mt-0.5">{filterOwner ? `Propietario: ${((availableOwners||[]).find(o=>o.id===filterOwner)||{label:filterOwner}).label}` : 'Mostrando encuestas de todos los propietarios'}</p>
             </div>
             {allSurveysSummary && allSurveysSummary.length > 0 && (
-              <span className="text-xs bg-slate-100 text-slate-500 rounded-full px-3 py-1 font-medium">{allSurveysSummary.length} encuesta{allSurveysSummary.length !== 1 ? 's' : ''}</span>
+              <span className="text-xs bg-slate-100 text-slate-500 rounded-full px-3 py-1 font-medium">
+                {(() => { const c = allSurveysSummary.filter(su => !titleSearch.trim() || su.title.toLowerCase().includes(titleSearch.trim().toLowerCase())).length; return `${c} encuesta${c !== 1 ? 's' : ''}` })()}
+              </span>
             )}
           </div>
 
@@ -360,7 +331,7 @@ export default function Reports(): JSX.Element {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-sm">
-                    {(allSurveysSummary || []).map((su: any) => (
+                    {(allSurveysSummary || []).filter(su => !titleSearch.trim() || su.title.toLowerCase().includes(titleSearch.trim().toLowerCase())).map((su: any) => (
                       <tr key={su.id} className="hover:bg-blue-50/40 transition-colors group">
                         <td className="px-6 py-4 font-medium text-slate-800">{su.title}</td>
                         <td className="px-5 py-4">
@@ -396,7 +367,7 @@ export default function Reports(): JSX.Element {
 
               {/* Cards — mobile (below md) */}
               <div className="md:hidden divide-y divide-slate-100">
-                {(allSurveysSummary || []).map((su: any) => (
+                {(allSurveysSummary || []).filter(su => !titleSearch.trim() || su.title.toLowerCase().includes(titleSearch.trim().toLowerCase())).map((su: any) => (
                   <div key={su.id} className="px-4 py-4 flex flex-col gap-3">
                     {/* Title + type badge */}
                     <div className="flex items-start justify-between gap-3">
