@@ -433,8 +433,8 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
     <div
       id="notifications-panel"
       ref={rootRef}
-      className={`fixed right-0 z-20 w-full max-w-md bg-white dark:bg-gray-900 shadow-2xl border-l border-gray-200 dark:border-gray-700 rounded-b-2xl flex flex-col ${cls}`}
-      style={{ top: topPx != null ? `${topPx}px` : '76px', maxHeight: topPx != null ? `calc(100vh - ${topPx}px)` : 'calc(100vh - 76px)', minHeight: 0 }}
+      className={`fixed right-0 z-20 w-full max-w-md dark:bg-gray-900 shadow-2xl border-l border-blue-100 dark:border-gray-700 rounded-b-2xl flex flex-col ${cls}`}
+      style={{ top: topPx != null ? `${topPx}px` : '76px', maxHeight: topPx != null ? `calc(100vh - ${topPx}px)` : 'calc(100vh - 76px)', minHeight: 0, backgroundColor: '#f0f7ff' }}
     >
       <div className="flex flex-col h-full">
         <div ref={innerRef} className="p-6 space-y-4 custom-scrollbar" style={{ overflowY: 'auto', maxHeight: itemHeight ? `${itemHeight * 5 + 16}px` : (topPx != null ? `calc(100vh - ${topPx}px - 48px)` : 'calc(100vh - 124px)') }}>
