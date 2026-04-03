@@ -17,6 +17,7 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
   const effectiveId = surveyId ?? idFromQuery
 
   const [survey, setSurvey] = useState<any | null>(null)
+  const [surveyLoading, setSurveyLoading] = useState(true)
   const [respondent, setRespondent] = useState('')
   const [answers, setSurveyAnswers] = useState<any>({})
   const [submitted, setSubmitted] = useState<boolean>(false)
@@ -76,24 +77,28 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
     const id = surveyId ?? idFromQuery
     if (!id) return
     const load = async () => {
+      setSurveyLoading(true)
       try {
         if (!dataClientNow || !(dataClientNow as any).isEnabled || !(dataClientNow as any).isEnabled()) {
           // Enforce DB-only mode: do not use localStorage fallback
           setSurvey(null)
+          setSurveyLoading(false)
           return
         }
         // Firebase is enabled: fetch from RTDB
         if ((dataClientNow as any).getSurveyById) {
           try {
             const remote = await (dataClientNow as any).getSurveyById(String(id))
-            if (remote) { setSurvey(remote); return }
+            if (remote) { setSurvey(remote); setSurveyLoading(false); return }
           } catch (e) {
-            setSurvey(null); return
+            setSurvey(null); setSurveyLoading(false); return
           }
         }
         setSurvey(null)
+        setSurveyLoading(false)
       } catch (e) {
         setSurvey(null)
+        setSurveyLoading(false)
       }
     }
     load()
@@ -153,6 +158,21 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
       }
     })()
   }, [survey])
+
+  if (surveyLoading) {
+    return (
+      <div className="bg-white dark:bg-slate-900 rounded-xl border p-6 shadow mb-6">
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 0',gap:10}}>
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{animation:'spin 0.9s linear infinite'}}>
+            <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4"/>
+            <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round"/>
+          </svg>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          <div style={{fontSize:'0.8rem',color:'#94a3b8',fontWeight:500}}>Cargando...</div>
+        </div>
+      </div>
+    )
+  }
 
   if (!survey) {
     return (
