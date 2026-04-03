@@ -26,6 +26,9 @@ backend/scripts/list_supabase_tables.js
 *.rtdb-export*.json
 encuestas-*-default-rtdb-export*.json
 
+# Scripts locales de desarrollo
+run-dev.cmd
+
 # Logs
 *.log
 npm-debug.log*
