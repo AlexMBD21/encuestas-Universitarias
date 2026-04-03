@@ -5,6 +5,9 @@
    Use las variables para mantener congruencia en colores y tipografía.
 */
 
+/* Load Inter from Google Fonts for consistent typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
 :root {
     /* Colores principales */
     --color-primary: #61A8F4; /* azul exacto (coincide con la cabecera/modal) */
@@ -55,9 +58,6 @@
     --shadow-sm: 0 2px 12px rgba(2,6,23,0.12);
     --color-primary: #2563eb;
 }
-
-/* Load Inter from Google Fonts for consistent typography */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
 
 /* Tipografía base del dashboard */
 body {
