@@ -43,6 +43,8 @@ export default function Configuracion() {
   const [modalShowPassword, setModalShowPassword] = useState(false)
   const [modalMsg, setModalMsg] = useState<string | null>(null)
   const [modalMsgType, setModalMsgType] = useState<'success' | 'error'>('success')
+  // confirm password-change modal
+  const [confirmPwdOpen, setConfirmPwdOpen] = useState(false)
   // toast state
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [toastKind, setToastKind] = useState<'create' | 'edit' | 'delete' | 'info'>('info')
@@ -102,7 +104,7 @@ export default function Configuracion() {
     if (isAdmin) setAdminVisible(true)
   }, [isAdmin])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setMessage(null)
     if (!newPassword || !confirmPassword) {
@@ -115,7 +117,14 @@ export default function Configuracion() {
       setMessage('La nueva contraseña y la confirmación no coinciden')
       return
     }
+    // Show confirmation modal before executing
+    setConfirmPwdOpen(true)
+  }
+
+  const doChangePassword = async () => {
+    setConfirmPwdOpen(false)
     setLoading(true)
+    setMessage(null)
     try {
       await (dataClientNow as any).changePassword('', newPassword)
       setMsgType('success')
@@ -437,23 +446,40 @@ export default function Configuracion() {
                     const pageItems = filtered.slice(start, start + pageSize)
                     return (
                       <>
-                        <table className="w-full text-left border-collapse">
+                        {/* Desktop table */}
+                        <table className="hidden sm:table w-full text-left border-collapse">
                           <thead>
                             <tr className="border-b"><th className="p-2">Email</th><th className="p-2">Rol</th><th className="p-2">Acciones</th></tr>
                           </thead>
                           <tbody>
                             {pageItems.map(u => (
-                                  <tr key={u.id} className="border-b">
-                                      <td className="p-2 text-sm" data-label="Email">{u.email}</td>
-                                      <td className="p-2 text-sm" data-label="Rol">{u.role || 'profesor'}</td>
-                                      <td className="p-2 text-sm" data-label="Acciones">
-                                        <button className="px-2 py-1 mr-2 rounded btn btn-outline" onClick={() => openEditModal(u)}>Editar</button>
-                                        <button className="px-2 py-1 rounded btn btn-danger" onClick={() => openDeleteModal(u)}>Eliminar</button>
-                                      </td>
-                                    </tr>
+                              <tr key={u.id} className="border-b">
+                                <td className="p-2 text-sm">{u.email}</td>
+                                <td className="p-2 text-sm">{u.role || 'profesor'}</td>
+                                <td className="p-2 text-sm">
+                                  <button className="px-2 py-1 mr-2 rounded btn btn-outline" onClick={() => openEditModal(u)}>Editar</button>
+                                  <button className="px-2 py-1 rounded btn btn-danger" onClick={() => openDeleteModal(u)}>Eliminar</button>
+                                </td>
+                              </tr>
                             ))}
                           </tbody>
                         </table>
+
+                        {/* Mobile cards */}
+                        <div className="sm:hidden space-y-2">
+                          {pageItems.map(u => (
+                            <div key={u.id} className="border rounded-xl p-3 bg-slate-50 dark:bg-slate-800 flex flex-col gap-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <span className="text-sm font-medium break-all">{u.email}</span>
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 whitespace-nowrap shrink-0">{u.role || 'profesor'}</span>
+                              </div>
+                              <div className="flex gap-2">
+                                <button className="flex-1 py-1.5 text-sm rounded-lg btn btn-outline" onClick={() => openEditModal(u)}>Editar</button>
+                                <button className="flex-1 py-1.5 text-sm rounded-lg btn btn-danger" onClick={() => openDeleteModal(u)}>Eliminar</button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                         <div className="flex items-center justify-between mt-2 text-sm pagination-row">
                           <div className="pagination-summary">{total === 0 ? 'Sin usuarios' : `Mostrando ${start + 1}-${Math.min(start + pageSize, total)} de ${total}`}</div>
                           <div className="flex items-center gap-2 pagination-controls">
@@ -475,16 +501,19 @@ export default function Configuracion() {
       </div>
       {/* Modal overlay */}
       {isAdmin && modalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="relative w-full max-w-lg mx-4">
-            <div className={`bg-white rounded shadow-lg overflow-hidden`} role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
+          <div className="relative w-full sm:max-w-lg sm:mx-4 sm:mb-0 flex flex-col h-[100dvh] sm:h-auto">
+            <div className="bg-white dark:bg-slate-900 sm:rounded shadow-lg overflow-hidden flex flex-col h-full sm:h-auto" role="dialog" aria-modal="true" aria-labelledby="modal-title">
               {/* Header */}
-              <div id="modal-header" className="sticky top-0 z-10 border-b px-5 py-3 flex items-center text-white" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
+              <div id="modal-header" className="sticky top-0 z-10 border-b px-5 py-3 flex items-center text-white flex-shrink-0" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
                 <div id="modal-title" className="text-lg font-semibold truncate mr-4">{modalType === 'edit' ? 'Editar usuario' : (modalType === 'delete' ? 'Confirmar eliminación' : 'Crear usuario')}</div>
+                <button type="button" onClick={closeModal} aria-label="Cerrar" className="ml-auto w-9 h-9 rounded-full bg-white bg-opacity-10 text-white flex items-center justify-center border border-white border-opacity-20 hover:bg-white hover:bg-opacity-20">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                </button>
               </div>
 
               {/* Content */}
-              <div className="p-6">
+              <div className="p-6 flex-1 overflow-y-auto">
                 {modalType === 'delete' ? (
                   <div>
                     <p>¿Eliminar usuario <strong>{modalData.email}</strong>?</p>
@@ -545,6 +574,27 @@ export default function Configuracion() {
                     </div>
                   </form>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )} 
+      {/* Confirm password change modal */}
+      {confirmPwdOpen && (
+        <div className="fixed inset-0 z-[10001] flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setConfirmPwdOpen(false)} />
+          <div className="relative w-full sm:max-w-sm sm:mx-4 bg-white dark:bg-slate-900 sm:rounded shadow-lg overflow-hidden" role="dialog" aria-modal="true">
+            <div className="px-5 py-3 flex items-center text-white flex-shrink-0" style={{ background: 'var(--color-primary)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' }}>
+              <span className="text-base font-semibold">Confirmar cambio de contraseña</span>
+              <button type="button" onClick={() => setConfirmPwdOpen(false)} aria-label="Cerrar" className="ml-auto w-8 h-8 rounded-full bg-white bg-opacity-10 text-white flex items-center justify-center border border-white border-opacity-20 hover:bg-white hover:bg-opacity-20">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div className="p-5">
+              <p className="text-sm text-slate-600 dark:text-slate-300 mb-5">¿Confirmas que deseas cambiar tu contraseña? Esta acción no se puede deshacer.</p>
+              <div className="flex gap-3 justify-end">
+                <button type="button" onClick={() => setConfirmPwdOpen(false)} className="btn btn-ghost">Cancelar</button>
+                <button type="button" onClick={doChangePassword} className="btn btn-primary">Sí, cambiar</button>
               </div>
             </div>
           </div>
