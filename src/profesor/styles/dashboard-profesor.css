@@ -174,10 +174,10 @@
     top: calc(100% + 8px);
     right: 0;
     min-width: 180px;
-    background: var(--color-primary);
+    background: #ffffff;
     border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(15,23,42,0.28);
-    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 8px 30px rgba(15,23,42,0.18);
+    border: 1px solid #e2e8f0;
     padding: 8px;
     z-index: 200001;
     animation: chipDropIn 160ms cubic-bezier(.2,.9,.2,1) both;
@@ -198,13 +198,13 @@
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 500;
-    color: rgba(255,255,255,0.90);
+    color: #0f172a;
     font-family: inherit;
     text-align: left;
     transition: background 140ms;
 }
-.chip-dropdown-item:hover { background: rgba(255,255,255,0.15); color: #ffffff; }
-.chip-dropdown-item .material-symbols-outlined { font-size: 19px; color: rgba(255,255,255,0.70); }
+.chip-dropdown-item:hover { background: #f0f7ff; color: var(--color-primary); }
+.chip-dropdown-item .material-symbols-outlined { font-size: 19px; color: var(--color-primary); }
 
 /* ========================= */
 /*  PROFILE MODAL             */

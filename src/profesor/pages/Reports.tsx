@@ -234,7 +234,7 @@ export default function Reports(): JSX.Element {
             <option value="projects">Solo proyectos</option>
           </select>
 
-          <button onClick={() => { setFilterOwner(null); setView('auto') }} className="px-3 py-2 border rounded w-full sm:w-auto">Limpiar filtros</button>
+          <button onClick={() => { setFilterOwner(null); setView('auto') }} className="px-3 py-2 rounded w-full sm:w-auto text-sm font-medium transition-colors duration-150" style={{ background: '#f0f7ff', color: 'var(--color-primary)', border: '1px solid #bfdbfe' }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#dbeafe' }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f0f7ff' }}>Limpiar filtros</button>
         </div>
       </div>
       {!loading && (
