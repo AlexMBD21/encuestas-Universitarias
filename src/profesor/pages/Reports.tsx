@@ -3,6 +3,59 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import reportHelpers from '../services/reportHelpers'
 import supabaseClient from '../../services/supabaseClient'
 
+function CustomSelect({ value, onChange, options, width }: {
+  value: string;
+  onChange: (val: string) => void;
+  options: { value: string; label: string }[];
+  width?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const selected = options.find(o => o.value === value);
+
+  return (
+    <div ref={ref} className="relative" style={{ width: width || 'auto' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors w-full"
+      >
+        <span>{selected?.label}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className={`text-slate-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}>
+          <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 left-0 min-w-full bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
+          {options.map(o => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => { onChange(o.value); setOpen(false); }}
+              className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
+                o.value === value
+                  ? 'font-semibold text-blue-600 bg-blue-50'
+                  : 'text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 export default function Reports(): JSX.Element {
   const navigate = useNavigate();
@@ -220,27 +273,47 @@ export default function Reports(): JSX.Element {
     <div id="reports-root" className="p-6">
 
       {/* Filtros */}
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
-        <h1 className="text-2xl font-semibold">Reportes</h1>
-        <div className="flex flex-wrap items-center gap-2 action-buttons">
-          <select value={filterOwner ?? ''} onChange={e => setFilterOwner(e.target.value || null)} className="p-2 border rounded w-full sm:w-64">
-            <option value="">Todos los propietarios</option>
-            {(availableOwners || []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-          </select>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <h1 className="text-3xl font-black">Reportes</h1>
+        <div className="flex flex-wrap items-center gap-2">
 
-          <select value={view} onChange={e => setView(e.target.value as any)} className="p-2 border rounded flex-1 sm:flex-none">
-            <option value="auto">Todos los tipos</option>
-            <option value="simple">Solo encuestas simples</option>
-            <option value="projects">Solo proyectos</option>
-          </select>
+          {/* Select: propietario */}
+          <CustomSelect
+            value={filterOwner ?? ''}
+            onChange={val => setFilterOwner(val || null)}
+            width="208px"
+            options={[
+              { value: '', label: 'Todos los propietarios' },
+              ...(availableOwners || []).map(o => ({ value: o.id, label: o.label }))
+            ]}
+          />
 
-          <button onClick={() => { setFilterOwner(null); setView('auto') }} className="px-3 py-2 rounded w-full sm:w-auto text-sm font-medium transition-colors duration-150" style={{ background: '#f0f7ff', color: 'var(--color-primary)', border: '1px solid #bfdbfe' }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#dbeafe' }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f0f7ff' }}>Limpiar filtros</button>
+          {/* Select: tipo */}
+          <CustomSelect
+            value={view}
+            onChange={val => setView(val as any)}
+            width="176px"
+            options={[
+              { value: 'auto', label: 'Todos los tipos' },
+              { value: 'simple', label: 'Solo encuestas simples' },
+              { value: 'projects', label: 'Solo proyectos' },
+            ]}
+          />
+
+          {/* Limpiar filtros */}
+          <button
+            onClick={() => { setFilterOwner(null); setView('auto') }}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 hover:border-blue-200 transition-colors"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            Limpiar filtros
+          </button>
         </div>
       </div>
       {!loading && (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-white shadow-md overflow-hidden">
           {/* Header */}
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
             <div>
               <h3 className="text-base font-semibold text-slate-800">Todas las encuestas</h3>
               <p className="text-xs text-slate-400 mt-0.5">{filterOwner ? `Propietario: ${((availableOwners||[]).find(o=>o.id===filterOwner)||{label:filterOwner}).label}` : 'Mostrando encuestas de todos los propietarios'}</p>
@@ -279,19 +352,19 @@ export default function Reports(): JSX.Element {
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
-                      <th className="px-5 py-3 text-left font-semibold">Encuesta</th>
-                      <th className="px-4 py-3 text-left font-semibold">Tipo</th>
-                      <th className="px-4 py-3 text-left font-semibold">Respuestas</th>
-                      <th className="px-4 py-3 text-right font-semibold">Acción</th>
+                    <tr className="bg-slate-50 text-slate-400 text-xs uppercase tracking-widest border-b border-slate-200">
+                      <th className="px-6 py-3 text-left font-semibold">Encuesta</th>
+                      <th className="px-5 py-3 text-left font-semibold">Tipo</th>
+                      <th className="px-5 py-3 text-left font-semibold">Respuestas</th>
+                      <th className="px-5 py-3 text-right font-semibold">Acción</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 text-sm">
                     {(allSurveysSummary || []).map((su: any) => (
-                      <tr key={su.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-5 py-3 font-medium text-slate-800">{su.title}</td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full ${su.type === 'project' ? 'bg-indigo-600 text-white' : 'bg-green-600 text-white'}`}>
+                      <tr key={su.id} className="hover:bg-blue-50/40 transition-colors group">
+                        <td className="px-6 py-4 font-medium text-slate-800">{su.title}</td>
+                        <td className="px-5 py-4">
+                          <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${su.type === 'project' ? 'bg-indigo-100 text-indigo-700' : 'bg-green-100 text-green-700'}`}>
                             {su.type === 'project' ? (
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M3 7h18M3 12h18M3 17h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                             ) : (
@@ -300,16 +373,16 @@ export default function Reports(): JSX.Element {
                             {su.type === 'project' ? 'Proyecto' : 'Simple'}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex items-center gap-1 text-slate-600">
+                        <td className="px-5 py-4">
+                          <span className="inline-flex items-center gap-1.5 text-slate-600 font-medium">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" className="text-slate-400"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                             {su.totalResponses}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-5 py-4 text-right">
                           <button
                             onClick={() => navigate('/profesor/encuestas/reports/' + String(su.id))}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                            className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-colors"
                           >
                             Ver informe
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>

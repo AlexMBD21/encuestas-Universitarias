@@ -375,7 +375,8 @@ export default function Configuracion() {
   return (
     <div id="configuration-root" className="p-6" aria-hidden={modalOpen}>
 
-      
+      <h1 className="text-3xl font-black mb-6">Configuración</h1>
+
       {/* Account configuration (visible to professors) and Admin users management */}
       <div className={isAdmin ? 'max-w-5xl mx-auto mt-8' : 'max-w-3xl mx-auto mt-8'}>
         <div className="flex flex-col md:flex-row gap-6">

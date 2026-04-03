@@ -1233,13 +1233,15 @@ export default function Surveys(): JSX.Element {
                         return
                       }
                       setConfirmReporting(true)
+                      const _reportSurvey = (surveys || []).find((sv: any) => String(sv.id) === String(confirmReportId))
                       const report = {
                         id: `${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
                         surveyId: confirmReportId,
                         reporterId: currentUserId,
                         reporterEmail: currentUser && (currentUser.email || null),
                         comment: reportComment.trim(),
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date().toISOString(),
+                        payload: { surveyTitle: (_reportSurvey && (_reportSurvey.title || _reportSurvey.name)) || '' }
                       }
                       if (backendEnabled) {
                         try {

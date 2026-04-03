@@ -399,6 +399,7 @@ export async function pushSurveyReport(report: any) {
     reporter_id: uid || report.reporterId || report.reporter_id || undefined,
     reporter_email: report.reporterEmail || report.reporter_email || (currentUserCache ? currentUserCache.email : undefined) || undefined,
     comment: report.comment || undefined,
+    payload: (report.payload && Object.keys(report.payload).length > 0) ? report.payload : undefined,
     // created_at omitted — DB DEFAULT now() handles it, avoids PostgREST schema cache errors
   }
   // Remove undefined fields so PostgREST doesn't receive unexpected nulls

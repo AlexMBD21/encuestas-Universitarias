@@ -374,7 +374,7 @@ export default function Dashboard() {
         const g = grouped[k]
         const r = g.latest
         const s = g.survey
-        const surveyTitle = (s && (s.title || s.name)) || (r && (r.surveyTitle || r.surveyName || r.title)) || 'Encuesta'
+        const surveyTitle = (s && (s.title || s.name)) || (r && (r.payload?.surveyTitle || r.surveyTitle || r.surveyName || r.title)) || 'Encuesta'
         const latestMsg = (r && (r.comment || r.message)) || ''
         const message = latestMsg ? `${latestMsg}` : `Hay ${g.count} reporte${g.count > 1 ? 's' : ''} en la encuesta "${surveyTitle}"`
         return {
