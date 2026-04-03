@@ -521,16 +521,16 @@ export default function Surveys(): JSX.Element {
       </div>
 
       {/* ── Fila 2: Barra de filtros ───────────────────────────────── */}
-      <div className="bg-white dark:bg-slate-900 border rounded-xl px-4 py-3 mb-4 shadow-sm flex flex-wrap items-center gap-3">
-        {/* Buscador */}
-        <div className="relative">
+      <div className="bg-white dark:bg-slate-900 border rounded-xl px-4 py-3 mb-4 shadow-sm flex flex-col gap-3">
+        {/* Fila superior: buscador (full width) */}
+        <div className="relative w-full">
           <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input
             type="text"
             value={titleSearch}
             onChange={e => setTitleSearch(e.target.value)}
             placeholder="Buscar por título..."
-            className="pl-8 pr-7 py-1.5 border rounded-lg text-sm w-52 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="pl-8 pr-7 py-1.5 border rounded-lg text-sm w-full bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           {titleSearch && (
             <button type="button" onClick={() => setTitleSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" title="Limpiar">
@@ -539,53 +539,54 @@ export default function Surveys(): JSX.Element {
           )}
         </div>
 
-        <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 hidden sm:block" />
+        {/* Fila inferior: controles de filtro */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          {/* Sin calificar */}
+          <label className="text-sm flex items-center gap-1.5 cursor-pointer select-none text-slate-700 dark:text-slate-300">
+            <input type="checkbox" checked={showOnlyPending} onChange={e => setShowOnlyPending(e.target.checked)} className="rounded" />
+            Sin calificar
+          </label>
 
-        {/* Sin calificar */}
-        <label className="text-sm flex items-center gap-1.5 cursor-pointer select-none text-slate-700 dark:text-slate-300">
-          <input type="checkbox" checked={showOnlyPending} onChange={e => setShowOnlyPending(e.target.checked)} className="rounded" />
-          Sin calificar
-        </label>
+          {/* Estado */}
+          <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
+            <span className="whitespace-nowrap">Estado:</span>
+            <select value={publishedFilter} onChange={e => setPublishedFilter(e.target.value as any)} className="py-1 px-2 border rounded-lg text-sm bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
+              <option value="all">Todas</option>
+              <option value="published">Publicadas</option>
+              <option value="unpublished">No publicadas</option>
+              <option value="reported">Reportadas</option>
+            </select>
+          </div>
 
-        {/* Estado */}
-        <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
-          <span className="whitespace-nowrap">Estado:</span>
-          <select value={publishedFilter} onChange={e => setPublishedFilter(e.target.value as any)} className="py-1 px-2 border rounded-lg text-sm bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <option value="all">Todas</option>
-            <option value="published">Publicadas</option>
-            <option value="unpublished">No publicadas</option>
-            <option value="reported">Reportadas</option>
-          </select>
+          {/* Propietario */}
+          {(() => {
+            const uniqueOwners = Array.from(
+              new Set(surveys.map(s => getOwnerDisplay(s)).filter(Boolean))
+            ).sort()
+            if (uniqueOwners.length === 0) return null
+            return (
+              <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
+                <span className="whitespace-nowrap">Propietario:</span>
+                <select value={ownerFilter} onChange={e => setOwnerFilter(e.target.value)} className="py-1 px-2 border rounded-lg text-sm bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 max-w-[160px]">
+                  <option value="all">Todos</option>
+                  {uniqueOwners.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+            )
+          })()}
+
+          {/* Limpiar filtros */}
+          {(showOnlyPending || publishedFilter !== 'all' || ownerFilter !== 'all' || titleSearch.trim()) && (
+            <button
+              type="button"
+              onClick={() => { setShowOnlyPending(false); setPublishedFilter('all'); setOwnerFilter('all'); setTitleSearch('') }}
+              className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-500 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 hover:border-red-200 transition-colors whitespace-nowrap"
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              Limpiar filtros
+            </button>
+          )}
         </div>
-
-        {/* Propietario */}
-        {(() => {
-          const uniqueOwners = Array.from(
-            new Set(surveys.map(s => getOwnerDisplay(s)).filter(Boolean))
-          ).sort()
-          if (uniqueOwners.length === 0) return null
-          return (
-            <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
-              <span className="whitespace-nowrap">Propietario:</span>
-              <select value={ownerFilter} onChange={e => setOwnerFilter(e.target.value)} className="py-1 px-2 border rounded-lg text-sm bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 max-w-[200px]">
-                <option value="all">Todos</option>
-                {uniqueOwners.map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
-            </div>
-          )
-        })()}
-
-        {/* Chips de filtros activos */}
-        {(showOnlyPending || publishedFilter !== 'all' || ownerFilter !== 'all' || titleSearch.trim()) && (
-          <button
-            type="button"
-            onClick={() => { setShowOnlyPending(false); setPublishedFilter('all'); setOwnerFilter('all'); setTitleSearch('') }}
-            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-500 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 hover:border-red-200 transition-colors whitespace-nowrap"
-          >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            Limpiar filtros
-          </button>
-        )}
       </div>
 
       {/* If the query param view=create, show inline CreateSurvey panel; if view=details show ViewSurvey */}
@@ -838,17 +839,17 @@ export default function Surveys(): JSX.Element {
       })()}
         {/* Modal for viewing a survey */}
         {(modalSurveyId !== null || isModalVisible) && ReactDOM.createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+          <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
             <div className="absolute inset-0 bg-black opacity-40" onClick={() => closeModal()} />
-            <div className="relative w-full max-w-4xl mx-4">
+            <div className="relative w-full sm:max-w-4xl sm:mx-4 sm:mb-0">
               <div
                 ref={modalRef}
                 role="dialog"
                 aria-modal="true"
                 tabIndex={-1}
-                className={`bg-white dark:bg-slate-900 rounded shadow-lg transform transition-all duration-200 max-h-[85vh] overflow-hidden ${isModalVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'}`}>
+                className={`bg-white dark:bg-slate-900 sm:rounded shadow-lg transform transition-all duration-200 h-[100dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col ${isModalVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'}`}>
                 {/* Header (sticky) */}
-                <div className="sticky top-0 z-10 border-b px-5 py-3 flex items-center justify-between text-white" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
+                <div className="sticky top-0 z-10 border-b px-5 py-3 flex items-center justify-between text-white flex-shrink-0" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
                   <div className="text-lg font-semibold truncate mr-4">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
                   <div className="ml-auto">
                     <button type="button" onClick={() => closeModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white bg-opacity-10 text-white flex items-center justify-center border border-white border-opacity-20 hover:bg-white hover:bg-opacity-20">
@@ -860,7 +861,7 @@ export default function Surveys(): JSX.Element {
                   </div>
                 </div>
                 {/* Scrollable content area */}
-                <div className="p-5" style={{ maxHeight: 'calc(85vh - 56px)', overflowY: 'auto' }}>
+                <div className="p-5 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 56px)' }}>
                   {/* If survey is a project-type, show projects list or the RateProject UI */}
                   {(() => {
                     const s = surveys.find(x => String(x.id) === String(modalSurveyId))
@@ -1172,14 +1173,22 @@ export default function Surveys(): JSX.Element {
           )}
         {/* Reports viewer modal (owner) */}
         {viewReportsFor && ReactDOM.createPortal(
-          <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+          <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
             <div className="absolute inset-0 bg-black opacity-40" onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} />
-            <div className={`relative w-full max-w-2xl mx-4 bg-white dark:bg-slate-900 rounded p-6 shadow-lg` } role="dialog" aria-modal="true">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Reportes de la encuesta</h3>
-                <button onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} className="px-3 py-1 bg-gray-200 rounded">Cerrar</button>
+            <div className="relative w-full sm:max-w-2xl sm:mx-4 sm:mb-0 bg-white dark:bg-slate-900 sm:rounded shadow-lg flex flex-col h-[100dvh] sm:h-auto sm:max-h-[80vh]" role="dialog" aria-modal="true">
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b flex-shrink-0" style={{ background: 'var(--color-primary)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' }}>
+                <h3 className="text-lg font-semibold text-white">Reportes de la encuesta</h3>
+                <button
+                  onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }}
+                  aria-label="Cerrar"
+                  className="w-9 h-9 rounded-full bg-white bg-opacity-10 text-white flex items-center justify-center border border-white border-opacity-20 hover:bg-white hover:bg-opacity-20"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                </button>
               </div>
-              <div className="space-y-3" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+              {/* Scrollable list */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {(() => {
                   if (!reportsLoaded) return (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 0', gap: 10 }}>
@@ -1192,7 +1201,7 @@ export default function Surveys(): JSX.Element {
                     </div>
                   )
                   const reports = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
-                  if (!reports || reports.length === 0) return <div className="text-slate-600">No hay reportes para esta encuesta.</div>
+                  if (!reports || reports.length === 0) return <div className="text-slate-600 text-sm">No hay reportes para esta encuesta.</div>
                   return reports.map(r => {
                     const isHighlighted = highlightedReportId && String(r.id) === String(highlightedReportId)
                     return (
@@ -1200,11 +1209,11 @@ export default function Surveys(): JSX.Element {
                         key={r.id}
                         id={`report-item-${r.id}`}
                         ref={isHighlighted ? (el) => { if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80) } : undefined}
-                        className={`p-3 border rounded ${isHighlighted ? 'bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400' : 'bg-gray-50 dark:bg-slate-800'}`}
+                        className={`p-3 border rounded-lg ${isHighlighted ? 'bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400' : 'bg-gray-50 dark:bg-slate-800'}`}
                       >
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="text-sm font-medium">{r.reporterEmail || r.reporterId || 'Anónimo'}</div>
-                          <div className="text-xs text-slate-500">{new Date(r.createdAt).toLocaleString()}</div>
+                        <div className="flex flex-wrap items-center justify-between gap-1 mb-1">
+                          <div className="text-sm font-medium truncate max-w-[70%]">{r.reporterEmail || r.reporterId || 'Anónimo'}</div>
+                          <div className="text-xs text-slate-500 whitespace-nowrap">{new Date(r.createdAt).toLocaleString()}</div>
                         </div>
                         <div className="text-sm text-slate-700 dark:text-slate-200">{r.comment}</div>
                         {isHighlighted && <div className="mt-1 text-xs text-yellow-700 dark:text-yellow-400 font-medium">← Este es el reporte al que se hizo referencia</div>}
@@ -1279,11 +1288,11 @@ export default function Surveys(): JSX.Element {
           )}
         {/* Create modal */}
         {createModalOpen && ReactDOM.createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+          <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
             <div className="absolute inset-0 bg-black opacity-40" onClick={() => setCreateModalOpen(false)} />
-            <div className="relative w-full max-w-xl mx-4">
-              <div className={`bg-white dark:bg-slate-900 rounded shadow-lg max-h-[85vh] overflow-hidden`}>
-                <div className="sticky top-0 z-10 border-b px-5 py-3 flex items-center justify-between text-white" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
+            <div className="relative w-full sm:max-w-xl sm:mx-4 sm:mb-0">
+              <div className={`bg-white dark:bg-slate-900 sm:rounded shadow-lg h-[100dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col`}>
+                <div className="sticky top-0 z-10 border-b px-5 py-3 flex items-center justify-between text-white flex-shrink-0" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
                   <div className="text-lg font-semibold truncate mr-4">{editSurvey ? 'Editar encuesta' : 'Crear encuesta'}</div>
                   <div className="ml-auto">
                     <button onClick={() => setCreateModalOpen(false)} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white bg-opacity-10 text-white flex items-center justify-center border border-white border-opacity-20 hover:bg-white hover:bg-opacity-20">
@@ -1294,7 +1303,7 @@ export default function Surveys(): JSX.Element {
                     </button>
                   </div>
                 </div>
-                <div className="p-4" style={{ maxHeight: 'calc(85vh - 56px)', overflowY: 'auto' }}>
+                <div className="p-4 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 56px)' }}>
                   <CreateSurvey
                     hideTypeSelector={true}
                     initialType={createInitialType}

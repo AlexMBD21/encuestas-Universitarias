@@ -58,9 +58,9 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
   const advisor = typeof ps.project.advisor === 'string' ? ps.project.advisor.trim() : ''
 
   const modal = (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center">
-      <div className="absolute inset-0 bg-black opacity-40" onClick={onClose} />
-      <div role="dialog" aria-modal="true" className={`relative w-full max-w-3xl mx-4 bg-white dark:bg-slate-900 rounded shadow-lg transform transition-all duration-200 max-h-[85vh] overflow-hidden`}>
+    <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
+      <div className="absolute inset-0 bg-black opacity-40 hidden sm:block" onClick={onClose} />
+      <div role="dialog" aria-modal="true" className="relative w-full sm:max-w-3xl sm:mx-4 sm:rounded sm:max-h-[85vh] bg-white dark:bg-slate-900 shadow-lg transform transition-all duration-200 overflow-hidden h-full sm:h-auto max-h-full">
         <div className="sticky top-0 z-10 border-b px-5 py-3 flex items-center justify-between text-white" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
           <div className="text-lg font-semibold truncate mr-4">{ps.project.name}</div>
           <div className="ml-auto">
@@ -73,7 +73,7 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
           </div>
         </div>
 
-        <div className="p-4 sm:p-5" style={{ maxHeight: 'calc(85vh - 56px)', overflowY: 'auto' }}>
+        <div className="p-4 sm:p-5" style={{ maxHeight: 'calc(100dvh - 56px)', overflowY: 'auto' }}>
 
           {/* Overall score card */}
           {ps.overall !== null && (
