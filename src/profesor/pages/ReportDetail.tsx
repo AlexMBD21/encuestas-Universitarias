@@ -114,6 +114,15 @@ export default function ReportDetail(): JSX.Element {
   return (
     <div id="report-detail-root" className="p-6">
 
+      {/* Breadcrumb */}
+      <nav className="page-breadcrumb" aria-label="Ruta de navegación">
+        <button className="page-breadcrumb-link" onClick={() => navigate('/profesor/encuestas/reports')}>
+          <span className="material-symbols-outlined">bar_chart</span>
+          Reportes
+        </button>
+        <span className="material-symbols-outlined page-breadcrumb-sep">chevron_right</span>
+        <span className="page-breadcrumb-current">{surveyTitle}</span>
+      </nav>
 
       <h1 className="text-2xl font-semibold mb-6">{surveyTitle}</h1>
 

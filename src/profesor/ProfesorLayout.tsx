@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import Topbar from './components/Topbar'
+import Sidebar from './components/Sidebar'
 import NotificationsPanel from './components/NotificationsPanel'
-import BackButton from './components/BackButton'
 import './styles/dashboard-profesor.css'
 import './styles/notifications-panel-anim.css'
 import initDashboardLegacy from './legacy/dashboardLegacyWrapper'
@@ -17,6 +17,7 @@ export default function ProfesorLayout({ onBack }: Props) {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [sharedNotifications, setSharedNotifications] = useState<any[]>([])
   const [visibleNotifCount, setVisibleNotifCount] = useState(0)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const navigate = useNavigate();
   const location = useLocation()
   const isDashboardRoot = String(location.pathname || '').replace(/\/+$/,'') === '/profesor'
@@ -74,15 +75,17 @@ export default function ProfesorLayout({ onBack }: Props) {
   // Use react-router (`NavLink` / `useNavigate`) instead of setting globals.
 
   return (
-    <div className="profesor-root bg-background-light dark:bg-background-dark font-display min-h-screen">
+    <div className={`profesor-root layout-with-sidebar${sidebarCollapsed ? ' sidebar-is-collapsed' : ''}`}>
       <Topbar notificationsOpen={notificationsOpen} onToggleNotifications={toggleNotifications} notifications={sharedNotifications} badgeCount={visibleNotifCount} />
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(v => !v)}
+      />
       <NotificationsPanel open={notificationsOpen} onClose={closeNotifications} notifications={sharedNotifications} onVisibleCountChange={setVisibleNotifCount} />
-      <BackButton />
 
-      <main id="main-content" className="flex-1 bg-background-light dark:bg-background-dark ml-0 transition-all duration-300 ease-in-out">
+      <main id="main-content" className="sidebar-main-content">
         <div className="layout-container flex h-full grow flex-col">
-          <div style={{padding: 'var(--space-md)'}}> 
-            {/* Aquí comienza el contenido de cada sección */}
+          <div style={{padding: 'var(--space-md)'}}>
             <Outlet />
           </div>
         </div>

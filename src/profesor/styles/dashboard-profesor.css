@@ -1,35 +1,237 @@
 
 @import './theme-dashboard.css';
 
-/* Navbar color personalizado (según imagen proporcionada) */
+/* ========================= */
+/*  LAYOUT CON SIDEBAR        */
+/* ========================= */
+:root {
+    --topbar-height: 56px;
+    --sidebar-width: 220px;
+    --sidebar-collapsed-width: 56px;
+    --sidebar-transition: 260ms cubic-bezier(.4,0,.2,1);
+}
+
+.layout-with-sidebar {
+    display: flex;
+    min-height: 100vh;
+    background: var(--color-bg, #f8fafc);
+}
+
+/* ========================= */
+/*  TOPBAR (barra superior)   */
+/* ========================= */
 #top-bar {
-    background: var(--color-primary) !important; /* usar el color primario del tema para coincidencia exacta */
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--topbar-height);
+    background: var(--color-primary) !important;
     color: #ffffff !important;
     border-bottom: none !important;
-    /* sombras idénticas a la cabecera del modal */
-    box-shadow: inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08);
-    z-index: 100000 !important;
+    padding: 0 16px !important;
+    display: flex;
+    align-items: center;
+    gap: 0 !important;
+    box-shadow: 0 2px 12px rgba(15,23,42,0.15);
+    z-index: 100001 !important;
 }
-/* Forzar texto e iconos internos a blanco para buen contraste */
 #top-bar .text-slate-600,
 #top-bar .text-slate-700,
 #top-bar .text-slate-500,
-#top-bar .material-symbols-outlined,
 #top-bar .user-menu-button .chev,
 #top-bar #user-avatar,
 #top-bar .user-avatar {
     color: #ffffff !important;
 }
-#top-bar button:hover {
-    background: rgba(255,255,255,0.06) !important;
+
+/* Brand en topbar */
+.topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 7px;
+    transition: background 180ms ease;
+    flex-shrink: 0;
+    color: #ffffff;
+}
+.topbar-brand:hover { background: rgba(255,255,255,0.10); }
+.topbar-brand-icon { font-size: 22px; color: #ffffff; }
+.topbar-brand-name { font-size: 1rem; font-weight: 700; color: #ffffff; letter-spacing: 0.01em; }
+
+/* Acciones derechas del topbar */
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+.topbar-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 9999px;
+    background: transparent;
+    color: rgba(255,255,255,0.85);
+    border: none;
+    cursor: pointer;
+    transition: background 180ms ease, color 180ms ease;
+}
+.topbar-action-btn:hover {
+    background: rgba(255,255,255,0.12) !important;
+    color: #ffffff;
+}
+.topbar-action-btn .material-symbols-outlined { font-size: 22px; color: inherit !important; }
+
+/* Botón usuario */
+.user-menu { position: relative; }
+.user-menu-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px 4px 4px;
+    border-radius: 9999px;
+    background: rgba(255,255,255,0.12);
+    color: #ffffff;
+    border: 1px solid rgba(255,255,255,0.20);
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease;
+}
+.user-menu-button:hover { background: rgba(255,255,255,0.20) !important; }
+.user-menu-button .chev { font-size: 18px; color: rgba(255,255,255,0.80); transition: transform 220ms; display: inline-flex; align-items: center; }
+.user-menu-button[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.user-menu-button[aria-expanded="true"] { background: rgba(255,255,255,0.22) !important; }
+
+/* ========================= */
+/*  SIDEBAR (navegación)      */
+/* ========================= */
+.app-sidebar {
+    position: fixed;
+    top: var(--topbar-height);
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background: var(--color-primary);
+    border-right: none;
+    display: flex;
+    flex-direction: column;
+    z-index: 100000;
+    transition: width var(--sidebar-transition);
+    overflow: hidden;
+    box-shadow: 2px 0 12px rgba(15,23,42,0.18);
+}
+.app-sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
 }
 
-/* Ensure full-screen overlays (modals, backdrops) appear above the topbar */
+/* Fila del botón colapsar */
+.sidebar-collapse-row {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 8px 0;
+}
+.sidebar-collapse-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: rgba(255,255,255,0.80);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 180ms ease, color 180ms ease;
+}
+.sidebar-collapse-btn:hover { background: rgba(255,255,255,0.22); color: #ffffff; }
+.sidebar-collapse-btn .material-symbols-outlined { font-size: 18px; }
+
+/* Navegación */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px;
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: transparent;
+    color: rgba(255,255,255,0.72);
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: inherit;
+    white-space: nowrap;
+    text-align: left;
+    width: 100%;
+    transition: background 160ms ease, color 160ms ease;
+    position: relative;
+    overflow: hidden;
+}
+.sidebar-nav-item:hover {
+    background: rgba(255,255,255,0.12);
+    color: #ffffff;
+}
+.sidebar-nav-item.active {
+    background: rgba(255,255,255,0.20);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 #ffffff;
+}
+.sidebar-nav-icon { font-size: 20px; flex-shrink: 0; line-height: 1; color: inherit; }
+.sidebar-nav-label { overflow: hidden; text-overflow: ellipsis; }
+
+/* ========================= */
+/*  CONTENIDO PRINCIPAL       */
+/* ========================= */
+.sidebar-main-content {
+    flex: 1;
+    min-width: 0;
+    margin-left: var(--sidebar-width);
+    margin-top: var(--topbar-height);
+    transition: margin-left var(--sidebar-transition);
+    min-height: calc(100vh - var(--topbar-height));
+    background: var(--color-bg, #f8fafc);
+}
+.sidebar-is-collapsed .sidebar-main-content {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+/* ========================= */
+/*  MOBILE: sidebar overlay   */
+/* ========================= */
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 220px;
+    }
+    .app-sidebar {
+        transform: translateX(-100%);
+        transition: transform var(--sidebar-transition), width var(--sidebar-transition);
+    }
+    .app-sidebar.mobile-open {
+        transform: translateX(0);
+    }
+    .sidebar-main-content {
+        margin-left: 0 !important;
+    }
+}
+
+/* Ensure full-screen overlays (modals, backdrops) appear above the sidebar */
 .fixed.inset-0 {
     z-index: 100001 !important;
 }
-
-/* Also boost generic modal-overlay selector so non-tailwind modals stack correctly */
 .modal-overlay {
     z-index: 100002 !important;
 }
@@ -557,48 +759,57 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     #surveys-root .survey-menu-panel { animation: surveyMenuUp 160ms ease both; }
 }
 
-/* Compensar topbar fija (≈52px) siempre, + espacio para BackButton cuando está presente */
+/* Contenido principal — sin padding-top extra pues sidebar-main-content ya lo tiene */
 #main-content {
-    padding-top: 52px;
+    padding-top: 0;
 }
 #main-content.has-back-button {
-    padding-top: calc(52px + 66px);
+    padding-top: 60px;
 }
 
-/* Botón "Volver al Dashboard" — fixed, pegado al borde izquierdo */
-.back-to-dashboard-btn {
-    position: fixed !important;
-    left: 0 !important;
-    z-index: 29;
-    margin-left: 0 !important;
-    padding: 7px 22px 7px 16px !important;
-    background: var(--color-primary);
-    color: #ffffff;
-    border: none !important;
-    border-radius: 0 7px 7px 0 !important;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 1rem;
+/* ========================= */
+/*  BREADCRUMB DE PÁGINA      */
+/* ========================= */
+.page-breadcrumb {
     display: flex;
     align-items: center;
-    gap: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    gap: 4px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+}
+.page-breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background 150ms ease;
+}
+.page-breadcrumb-link:hover {
+    background: var(--color-primary-100, #dbeafe);
+}
+.page-breadcrumb-link .material-symbols-outlined {
+    font-size: 16px;
+}
+.page-breadcrumb-sep {
+    font-size: 16px;
+    color: var(--color-muted);
+    user-select: none;
+}
+.page-breadcrumb-current {
+    color: var(--color-muted);
+    font-weight: 400;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
-    width: auto;
-    transition: background 0.2s ease,
-                top 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
-                border-radius 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
-                width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
-                box-shadow 0.4s ease;
-}
-.back-to-dashboard-btn.is-scrolled {
-    border-radius: 0 !important;
-    width: 100vw !important;
-    box-shadow: inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08);
-    justify-content: center;
-}
-.back-to-dashboard-btn:hover {
-    background: var(--color-primary-600);
 }
 
 /* Botón en móvil */
@@ -808,18 +1019,59 @@ body:not(.sidebar-closed) #close-sidebar-btn {
 }
 
 /* Top-bar user dropdown */
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.topbar-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 9999px;
+    background: transparent;
+    color: rgba(255,255,255,0.85);
+    border: none;
+    cursor: pointer;
+    transition: background 180ms ease, color 180ms ease;
+}
+.topbar-action-btn:hover {
+    background: rgba(255,255,255,0.12) !important;
+    color: #ffffff;
+}
+.topbar-action-btn .material-symbols-outlined {
+    font-size: 22px;
+    color: inherit !important;
+}
+
 .user-menu { position: relative; }
-.user-menu-button { display: inline-flex; align-items: center; gap: 0.5rem; padding: 4px 8px; border-radius: 9999px; background: transparent; color: inherit; border: none; cursor: pointer; }
-.user-menu-button .user-handle { font-weight: 600; color: var(--color-text); }
-.dark .user-menu-button .user-handle { color: var(--color-surface); }
+.user-menu-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px 4px 4px;
+    border-radius: 9999px;
+    background: rgba(255,255,255,0.12);
+    color: #ffffff;
+    border: 1px solid rgba(255,255,255,0.20);
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease;
+}
+.user-menu-button:hover {
+    background: rgba(255,255,255,0.20) !important;
+    border-color: rgba(255,255,255,0.35);
+}
 
 /* Chevron indicator next to user avatar */
-.user-menu-button .chev { font-size: 20px; line-height: 1; color: rgba(15,23,42,0.6); transition: transform 220ms cubic-bezier(.2,.9,.2,1), color 180ms ease; display: inline-flex; align-items: center; justify-content: center; margin-left: 4px; }
-.dark .user-menu-button .chev { color: rgba(255,255,255,0.9); }
+.user-menu-button .chev { font-size: 18px; line-height: 1; color: rgba(255,255,255,0.8); transition: transform 220ms cubic-bezier(.2,.9,.2,1); display: inline-flex; align-items: center; justify-content: center; }
 
 /* Rotate chevron when the menu is expanded */
-.user-menu-button[aria-expanded="true"] .chev { transform: rotate(180deg); color: rgba(15,23,42,0.9); }
-.dark .user-menu-button[aria-expanded="true"] .chev { color: #fff; }
+.user-menu-button[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.user-menu-button[aria-expanded="true"] { background: rgba(255,255,255,0.22) !important; }
 
 .user-dropdown {
     position: absolute;

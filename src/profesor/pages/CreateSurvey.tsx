@@ -192,6 +192,19 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
 
   return (
     <div className="create-survey bg-white dark:bg-slate-900 rounded-xl border p-6 shadow mb-6">
+
+      {/* Breadcrumb — solo visible cuando no hay onClose (es página completa) */}
+      {!onClose && (
+        <nav className="page-breadcrumb" aria-label="Ruta de navegación">
+          <button className="page-breadcrumb-link" onClick={() => navigate('/profesor/encuestas')}>
+            <span className="material-symbols-outlined">assignment</span>
+            Encuestas
+          </button>
+          <span className="material-symbols-outlined page-breadcrumb-sep">chevron_right</span>
+          <span className="page-breadcrumb-current">{editSurvey ? 'Editar encuesta' : 'Nueva encuesta'}</span>
+        </nav>
+      )}
+
       <form onSubmit={onSubmit}>
         {!hideTypeSelector && (
           <div className="mb-4">

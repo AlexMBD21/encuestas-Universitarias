@@ -354,11 +354,23 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
 
   return (
     <>
-      <div id="top-bar" className="fixed top-0 right-0 left-0 z-30 flex justify-end items-center gap-1 py-2 px-3 shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out"
+      <div id="top-bar" className="fixed top-0 right-0 left-0 z-30 flex items-center gap-1 py-2 px-3 shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out"
         style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', color: 'var(--color-text)'}}>
+
+        {/* Brand / Logo */}
+        <div className="topbar-brand" onClick={() => { try { navigate('/profesor') } catch (e) {} }}>
+          <span className="material-symbols-outlined topbar-brand-icon">school</span>
+          <span className="topbar-brand-name">Encuestas</span>
+        </div>
+
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Acciones derecha */}
+        <div className="topbar-actions">
       <button
         id="btn-notifications"
-        className="relative p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
+        className="topbar-action-btn relative"
         aria-label="Notificaciones"
         aria-expanded={notificationsOpen}
         onClick={(e) => { e.stopPropagation(); onToggleNotifications() }}
@@ -392,7 +404,6 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
           onClick={onToggle}
         >
           <div id="user-avatar" className="user-avatar placeholder">{(currentUser && (currentUser.name || currentUser.email) ? String((currentUser.name || currentUser.email)).slice(0,2).toUpperCase() : 'PM')}</div>
-          <span className="ml-2 mr-2 text-sm hidden sm:inline-block text-slate-700 dark:text-slate-200">{currentUser ? (currentUser.name || currentUser.displayName || currentUser.email) : 'Invitado'}</span>
           <span className="material-symbols-outlined chev" aria-hidden="true">expand_more</span>
         </button>
         {dropdownMounted && portalRect && ReactDOM.createPortal(
@@ -403,37 +414,23 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
             role="menu"
             style={{ position: 'fixed', top: portalRect.top, left: portalRect.left, width: portalRect.width }}
           >
-            {
-              (() => {
-                const curPath = location.pathname || ''
-                // define top-level menu paths and pick the most specific match
-                const menuPaths = ['/profesor', '/profesor/encuestas', '/profesor/encuestas/reports', '/profesor/configuracion']
-                let activePath = ''
-                for (const p of menuPaths) {
-                  if (!p) continue
-                  if (curPath === p || curPath === p + '/' || curPath.startsWith(p + '/')) {
-                    if (!activePath || p.length > activePath.length) activePath = p
-                  }
-                }
-                const isActive = (p: string) => activePath === p
-                return (
-                  <>
-                    <div tabIndex={0} className={`item ${isActive('/profesor') ? 'active' : ''}`} data-path="/profesor" onClick={() => { closeMenu(); try { navigate('/profesor') } catch (e) {} }}>Dashboard</div>
-
-                    <div tabIndex={0} className={`item ${isActive('/profesor/encuestas') ? 'active' : ''}`} data-path="/profesor/encuestas" onClick={() => { closeMenu(); try { navigate('/profesor/encuestas') } catch (e) {} }}>Encuestas</div>
-                    <div tabIndex={0} className={`item ${isActive('/profesor/encuestas/reports') ? 'active' : ''}`} data-path="/profesor/encuestas/reports" onClick={() => { closeMenu(); try { navigate('/profesor/encuestas/reports') } catch (e) {} }}>Reportes encuestas</div>
-                    {/* Notificaciones removed */}
-                    <div tabIndex={0} className={`item ${isActive('/profesor/configuracion') ? 'active' : ''}`} data-path="/profesor/configuracion" onClick={() => { closeMenu(); try { navigate('/profesor/configuracion') } catch (e) {} }}>Configuración</div>
-
-                    <div className="divider" />
-                    <div tabIndex={0} onClick={onLogout} className="item logout-item">Cerrar sesión</div>
-                  </>
-                )
-              })()
-            }
+            {/* User info header */}
+            <div className="user-dropdown-header">
+              <div className="user-avatar placeholder">{(currentUser && (currentUser.name || currentUser.email) ? String((currentUser.name || currentUser.email)).slice(0,2).toUpperCase() : 'PM')}</div>
+              <div className="user-dropdown-info">
+                <span className="user-dropdown-name">{currentUser ? (currentUser.name || currentUser.displayName || currentUser.email) : 'Invitado'}</span>
+                {currentUser?.email && <span className="user-dropdown-email">{currentUser.email}</span>}
+              </div>
+            </div>
+            <div className="divider" />
+            <div tabIndex={0} onClick={onLogout} className="item logout-item">
+              <span className="material-symbols-outlined" style={{fontSize:'18px'}}>logout</span>
+              Cerrar sesión
+            </div>
           </div>, document.body
         )}
       </div>
+        </div>{/* end topbar-actions */}
     </div>
       {/* logout toast (uses styles from login.css) */}
       {logoutMessage && (
