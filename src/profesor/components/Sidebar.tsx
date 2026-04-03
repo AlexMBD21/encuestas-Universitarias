@@ -20,6 +20,15 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
   const navigate = useNavigate()
   const location = useLocation()
 
+  const handleNavClick = (path: string) => {
+    navigate(path)
+    if (mobileOpen && onMobileClose) {
+      setTimeout(() => {
+        onMobileClose()
+      }, 300)
+    }
+  }
+
   const handleLogout = () => {
     try {
       if ((window as any).logout) return (window as any).logout()
@@ -65,7 +74,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
           <button
             key={item.path}
             className={`sidebar-nav-item${activePath === item.path ? ' active' : ''}`}
-            onClick={() => navigate(item.path)}
+            onClick={() => handleNavClick(item.path)}
             aria-current={activePath === item.path ? 'page' : undefined}
             title={collapsed ? item.label : undefined}
           >
