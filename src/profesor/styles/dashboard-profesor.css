@@ -174,29 +174,8 @@
         border-radius: 0;
         box-shadow: none;
         transition: transform var(--sidebar-transition), width var(--sidebar-transition);
-        /* allow internal scrolling on mobile and respect safe areas */
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        box-sizing: border-box;
-        padding-bottom: env(safe-area-inset-bottom, 0);
-    }
-
-    /* ensure internal nav has bottom padding so footer doesn't overlap content */
-    .app-sidebar .sidebar-nav {
-        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0));
-    }
-
-    /* pin the logout footer to the bottom of the sidebar on mobile */
-    .app-sidebar .sidebar-footer {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: calc(8px + env(safe-area-inset-bottom, 0));
-        z-index: 10;
-        background: transparent;
     }
 }
-
 
 /* Chip dropdown */
 .user-chip-wrapper { position: relative; }
