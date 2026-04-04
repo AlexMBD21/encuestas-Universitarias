@@ -169,18 +169,12 @@ export default function ReportDetail(): JSX.Element {
                       <QuestionStatCard key={i} question={q.question} counts={q.counts} answered={q.answered} options={q.options || []} texts={q.texts} questionType={q.questionType} />
                     ))}
                   </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-4">
                     <button
                       onClick={() => reportHelpers.exportSimpleSurveyPdf(report, usersCache, 'preview')}
                       className="px-3 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded text-sm transition-colors"
                     >
                       Visualizar informe
-                    </button>
-                    <button
-                      onClick={() => reportHelpers.exportSimpleSurveyPdf(report, usersCache, 'print')}
-                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
-                    >
-                      Imprimir / PDF
                     </button>
                   </div>
                 </div>
@@ -312,18 +306,12 @@ export default function ReportDetail(): JSX.Element {
                     })}
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-4">
                     <button
                       onClick={() => reportHelpers.exportProjectSurveyPdf(report, usersCache, 'preview')}
                       className="px-3 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded text-sm transition-colors"
                     >
-                      Visualizar informe
-                    </button>
-                    <button
-                      onClick={() => reportHelpers.exportProjectSurveyPdf(report, usersCache, 'print')}
-                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
-                    >
-                      Imprimir / PDF
+                      Visualizar / imprimir informe
                     </button>
                   </div>
                 </div>
