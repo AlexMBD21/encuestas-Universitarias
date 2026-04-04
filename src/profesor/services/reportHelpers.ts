@@ -578,16 +578,10 @@ export function exportSimpleSurveyPdf(report: {
 
   const _simpleToolbar = autoPrint
     ? ''
-    : `<div class="toolbar">
-  <div class="toolbar-inner">
-    <span class="toolbar-brand">&#128196; Vista previa</span>
-    <div class="t-sep"></div>
-    <label class="ctrl"><span class="ctrl-lbl">Encabezado</span><input type="color" id="c-header" value="#1565c0" oninput="setHdrColor(this.value)"></label>
-    <label class="ctrl"><span class="ctrl-lbl">Acento</span><input type="color" id="c-accent" value="#0891b2" oninput="setAccent(this.value)"></label>
-    <label class="ctrl ctrl-check"><input type="checkbox" id="editChk" onchange="toggleEdit(this.checked)"><span class="ctrl-lbl">&#9999;&#65039; Editar texto</span></label>
-    <button class="btn-print" onclick="window.print()">&#128424;&#65039; Imprimir / Guardar PDF</button>
-  </div>
-</div>`
+    : `<div style="position:sticky;top:0;z-index:9999;background:#1e293b;padding:8px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.3);">
+        <span style="font-size:13px;font-weight:700;color:#e2e8f0;white-space:nowrap;flex:1">&#128196; Vista previa</span>
+        <button onclick="window.print()" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;">&#128424;&#65039; Imprimir / Guardar PDF</button>
+      </div>`
   const _simpleAutoprint = ''
 
   const html = `<!DOCTYPE html>
@@ -683,9 +677,9 @@ ${_simpleToolbar}
   <h1>${esc(title)}</h1>
   ${description ? `<p>${esc(description)}</p>` : ''}
   <div class="meta-pills">
+    <div class="meta-pill">📊 ${report.questionStats.length} pregunta${report.questionStats.length !== 1 ? 's' : ''}</div>
     <div class="meta-pill">📋 ${report.totalResponses} respuesta${report.totalResponses !== 1 ? 's' : ''}</div>
     <div class="meta-pill">📅 ${esc(exportDate)}</div>
-    <div class="meta-pill">📊 ${report.questionStats.length} pregunta${report.questionStats.length !== 1 ? 's' : ''}</div>
   </div>
 </div>
 

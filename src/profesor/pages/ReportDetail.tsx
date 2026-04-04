@@ -174,7 +174,7 @@ export default function ReportDetail(): JSX.Element {
                       onClick={() => reportHelpers.exportSimpleSurveyPdf(report, usersCache, 'preview')}
                       className="px-3 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded text-sm transition-colors"
                     >
-                      Visualizar informe
+                        Visualizar / Imprimir
                     </button>
                   </div>
                 </div>
@@ -311,7 +311,7 @@ export default function ReportDetail(): JSX.Element {
                       onClick={() => reportHelpers.exportProjectSurveyPdf(report, usersCache, 'preview')}
                       className="px-3 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded text-sm transition-colors"
                     >
-                      Visualizar / imprimir informe
+                      Visualizar / Imprimir
                     </button>
                   </div>
                 </div>
