@@ -305,3 +305,50 @@ CREATE POLICY avatars_delete ON storage.objects
     bucket_id = 'avatars'
     AND auth.uid()::text = (storage.foldername(name))[1]
   );
+
+-- ============================================================
+-- MIGRATION: survey_reports cascade on survey deletion
+-- Run this in Supabase SQL editor to fix orphaned reports and
+-- ensure future survey deletions automatically remove reports.
+-- ============================================================
+
+-- Step 1: Remove orphaned survey_reports where the survey no longer exists
+DELETE FROM public.survey_reports
+WHERE survey_id NOT IN (SELECT id FROM public.surveys);
+
+-- Step 2: Update survey_reports_delete RLS policy to also allow:
+--   a) The reporter to delete their own report
+--   b) Survey owner matched even when owner_id stores email (identity fallback)
+DROP POLICY IF EXISTS survey_reports_delete ON public.survey_reports;
+CREATE POLICY survey_reports_delete ON public.survey_reports
+  FOR DELETE USING (
+    (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
+    OR auth.uid()::text = reporter_id
+    OR EXISTS (
+      SELECT 1 FROM public.surveys s
+      WHERE s.id = survey_id AND (
+        s.owner_uid = auth.uid()::text
+        OR s.owner_id = auth.uid()::text
+      )
+    )
+  );
+
+-- Step 3: Add FK with ON DELETE CASCADE so deleting a survey automatically
+--         removes all its reports at the database level (no RLS blocking).
+ALTER TABLE public.survey_reports
+  DROP CONSTRAINT IF EXISTS fk_survey_reports_survey;
+ALTER TABLE public.survey_reports
+  ADD CONSTRAINT fk_survey_reports_survey
+  FOREIGN KEY (survey_id) REFERENCES public.surveys(id) ON DELETE CASCADE;
+
+-- Step 4: Same FK cascade for notifications so they are also removed at DB level
+--         when a survey is deleted, regardless of RLS policies.
+-- First remove orphaned notifications whose survey no longer exists.
+DELETE FROM public.notifications
+WHERE survey_id IS NOT NULL
+  AND survey_id NOT IN (SELECT id FROM public.surveys);
+ALTER TABLE public.notifications
+  DROP CONSTRAINT IF EXISTS fk_notifications_survey;
+ALTER TABLE public.notifications
+  ADD CONSTRAINT fk_notifications_survey
+  FOREIGN KEY (survey_id) REFERENCES public.surveys(id) ON DELETE CASCADE;

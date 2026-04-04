@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import ReactDOM from 'react-dom'
 import { useNavigate, useLocation } from 'react-router-dom'
 import AuthAdapter from '../../services/AuthAdapter'
 
@@ -22,6 +23,17 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null)
   const sidebarRef = useRef<HTMLElement | null>(null)
   const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  const effectiveCollapsed = isMobile ? false : collapsed
 
   const showTooltipBriefly = (key: string) => {
     if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current)
@@ -59,10 +71,11 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
 
   const handleLogout = () => {
     setActiveTooltip(null)
-    try {
-      if ((window as any).logout) return (window as any).logout()
-      if ((window as any).showLogoutModal) return (window as any).showLogoutModal()
-    } catch (e) {}
+    setShowLogoutConfirm(true)
+  }
+
+  const confirmLogout = () => {
+    setShowLogoutConfirm(false)
     try { AuthAdapter.logout() } catch (e) {}
     try { navigate('/', { replace: true }) } catch (e) { window.location.href = '/' }
   }
@@ -81,9 +94,10 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
   const activePath = getActivePath()
 
   return (
-    <aside id="app-sidebar" ref={sidebarRef} className={`app-sidebar${collapsed ? ' collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}`} aria-label="Navegación principal">
+    <>
+    <aside id="app-sidebar" ref={sidebarRef} className={`app-sidebar${effectiveCollapsed ? ' collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}`} aria-label="Navegación principal">
 
-      {/* Collapse toggle */}
+      {/* Collapse toggle — oculto en mobile via CSS */}
       <div className="sidebar-collapse-row">
         <button
           className="sidebar-collapse-btn"
@@ -105,13 +119,13 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
             className={`sidebar-nav-item${activePath === item.path ? ' active' : ''}`}
             onClick={() => handleNavClick(item.path)}
             aria-current={activePath === item.path ? 'page' : undefined}
-            onMouseEnter={() => collapsed && setActiveTooltip(item.path)}
+            onMouseEnter={() => effectiveCollapsed && setActiveTooltip(item.path)}
             onMouseLeave={() => setActiveTooltip(null)}
-            onTouchStart={() => collapsed && showTooltipBriefly(item.path)}
+            onTouchStart={() => effectiveCollapsed && showTooltipBriefly(item.path)}
           >
             <span className="material-symbols-outlined sidebar-nav-icon">{item.icon}</span>
-            {!collapsed && <span className="sidebar-nav-label">{item.label}</span>}
-            {collapsed && <span className={`sidebar-tooltip${activeTooltip === item.path ? ' visible' : ''}`}>{item.label}</span>}
+            {!effectiveCollapsed && <span className="sidebar-nav-label">{item.label}</span>}
+            {effectiveCollapsed && <span className={`sidebar-tooltip${activeTooltip === item.path ? ' visible' : ''}`}>{item.label}</span>}
           </button>
         ))}
       </nav>
@@ -122,15 +136,30 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
           className="sidebar-logout-btn"
           onClick={handleLogout}
           aria-label="Cerrar sesión"
-          onMouseEnter={() => collapsed && setActiveTooltip('logout')}
+          onMouseEnter={() => effectiveCollapsed && setActiveTooltip('logout')}
           onMouseLeave={() => setActiveTooltip(null)}
-          onTouchStart={() => collapsed && showTooltipBriefly('logout')}
+          onTouchStart={() => effectiveCollapsed && showTooltipBriefly('logout')}
         >
           <span className="material-symbols-outlined sidebar-nav-icon">logout</span>
-          {!collapsed && <span className="sidebar-nav-label">Cerrar sesión</span>}
-          {collapsed && <span className={`sidebar-tooltip${activeTooltip === 'logout' ? ' visible' : ''}`}>Cerrar sesión</span>}
+          {!effectiveCollapsed && <span className="sidebar-nav-label">Cerrar sesión</span>}
+          {effectiveCollapsed && <span className={`sidebar-tooltip${activeTooltip === 'logout' ? ' visible' : ''}`}>Cerrar sesión</span>}
         </button>
       </div>
     </aside>
+
+    {showLogoutConfirm && ReactDOM.createPortal(
+      <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+        <div className="absolute inset-0 bg-black opacity-40" onClick={() => setShowLogoutConfirm(false)} />
+        <div className="relative w-full max-w-sm mx-4 bg-white dark:bg-slate-900 rounded p-6 shadow-lg" role="dialog" aria-modal="true">
+          <h3 className="text-lg font-semibold mb-2">¿Cerrar sesión?</h3>
+          <p className="text-sm text-slate-600 mb-4">¿Estás seguro de que deseas cerrar la sesión?</p>
+          <div className="flex justify-end gap-3">
+            <button type="button" onClick={() => setShowLogoutConfirm(false)} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+            <button type="button" onClick={confirmLogout} className="px-4 py-2 bg-red-600 text-white rounded">Cerrar sesión</button>
+          </div>
+        </div>
+      </div>, document.body
+    )}
+  </>
   )
 }

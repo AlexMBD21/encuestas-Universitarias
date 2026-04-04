@@ -551,6 +551,9 @@
     .sidebar-main-content {
         margin-left: 0 !important;
     }
+    .sidebar-collapse-row {
+        display: none;
+    }
 }
 
 /* Ensure full-screen overlays (modals, backdrops) appear above the sidebar */

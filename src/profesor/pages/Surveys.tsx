@@ -828,6 +828,7 @@ export default function Surveys(): JSX.Element {
                   }
                   return null
                 })() }
+                <button type="button" onClick={() => { setConfirmReportId(String(s.id)); setMenuOpenFor(null) }} className="block w-full text-left px-3 py-2 hover:bg-slate-100">Reportar</button>
               </>
             ) : (
               <>

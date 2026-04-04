@@ -325,6 +325,8 @@ export default function Dashboard() {
       const reportNotices = Array.isArray(surveyReports) ? surveyReports.map((r: any) => {
         try {
           const s = Array.isArray(surveys) ? surveys.find(x => String(x.id) === String(r.surveyId)) : null
+          // Skip orphaned reports whose survey was already deleted
+          if (!s) return null
           // Admin sees all reports regardless of ownership
           if (isAdmin) return { report: r, survey: s }
           // Check ownerUid first (Supabase UUID stored in owner_uid column), then fallback to ownerId
