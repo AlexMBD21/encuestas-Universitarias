@@ -1,6 +1,6 @@
 
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Login from './components/Login'
 import ProfesorLayout from './profesor/ProfesorLayout'
 import Dashboard from './profesor/pages/Dashboard'
@@ -11,9 +11,18 @@ import ReportDetail from './profesor/pages/ReportDetail'
 import Configuracion from './profesor/pages/Configuracion'
 import RequireAuth from './components/RequireAuth'
 
+function ScrollToTop(): null {
+  const { pathname } = useLocation()
+  React.useEffect(() => {
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }) } catch (e) {}
+  }, [pathname])
+  return null
+}
+
 export default function App() {
   return (
     <div style={{fontFamily: 'Inter, Arial, sans-serif'}}>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/profesor" element={
