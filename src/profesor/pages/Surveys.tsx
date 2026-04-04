@@ -160,7 +160,7 @@ export default function Surveys(): JSX.Element {
   const activeSurvey = surveys.find(x => String(x.id) === String(modalSurveyId))
   // refs for per-survey menu toggle buttons so we can position a portal menu
   const menuButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({})
-  const [portalMenuRect, setPortalMenuRect] = useState<{ top: number, left: number, width: number } | null>(null)
+  const [portalMenuRect, setPortalMenuRect] = useState<{ top?: number, bottom?: number, left: number, width: number } | null>(null)
   const [portalMenuSurveyId, setPortalMenuSurveyId] = useState<string | null>(null)
 
   // compute portal menu position when a menu is opened
@@ -172,8 +172,17 @@ export default function Surveys(): JSX.Element {
       const r = btn.getBoundingClientRect()
       const maxW = Math.min(240, Math.max(160, Math.floor(window.innerWidth * 0.45)))
       const left = Math.min(Math.max(r.right - maxW, 8), Math.max(8, window.innerWidth - maxW - 8))
-      const top = Math.max(8, r.bottom + 8)
-      setPortalMenuRect({ top, left, width: maxW })
+      const margin = 8
+      const spaceBelow = Math.max(0, window.innerHeight - r.bottom - margin)
+      const spaceAbove = Math.max(0, r.top - margin)
+      // Prefer showing below; if there's not enough space below and more above, anchor above using `bottom`.
+      if (spaceBelow < 220 && spaceAbove > spaceBelow) {
+        const bottom = Math.max(margin, Math.floor(window.innerHeight - r.top + margin))
+        setPortalMenuRect({ bottom, left, width: maxW })
+      } else {
+        const top = Math.max(margin, Math.floor(r.bottom + margin))
+        setPortalMenuRect({ top, left, width: maxW })
+      }
       setPortalMenuSurveyId(String(menuOpenFor))
     } catch (e) { setPortalMenuRect(null); setPortalMenuSurveyId(null) }
     const onScrollResize = () => {
@@ -183,8 +192,16 @@ export default function Surveys(): JSX.Element {
         const r = btn.getBoundingClientRect()
         const maxW = Math.min(240, Math.max(160, Math.floor(window.innerWidth * 0.45)))
         const left = Math.min(Math.max(r.right - maxW, 8), Math.max(8, window.innerWidth - maxW - 8))
-        const top = Math.max(8, r.bottom + 8)
-        setPortalMenuRect({ top, left, width: maxW })
+        const margin = 8
+        const spaceBelow = Math.max(0, window.innerHeight - r.bottom - margin)
+        const spaceAbove = Math.max(0, r.top - margin)
+        if (spaceBelow < 220 && spaceAbove > spaceBelow) {
+          const bottom = Math.max(margin, Math.floor(window.innerHeight - r.top + margin))
+          setPortalMenuRect({ bottom, left, width: maxW })
+        } else {
+          const top = Math.max(margin, Math.floor(r.bottom + margin))
+          setPortalMenuRect({ top, left, width: maxW })
+        }
       } catch (e) {}
     }
     window.addEventListener('scroll', onScrollResize, { passive: true })
@@ -803,7 +820,13 @@ export default function Surveys(): JSX.Element {
       {portalMenuRect && portalMenuSurveyId && (() => {
         const s = surveys.find(x => String(x.id) === String(portalMenuSurveyId))
         if (!s) return null
-        const style: React.CSSProperties = { position: 'fixed', top: portalMenuRect.top, left: portalMenuRect.left, width: portalMenuRect.width, zIndex: 99999 }
+        const style: React.CSSProperties = {
+          position: 'fixed',
+          left: portalMenuRect.left,
+          width: portalMenuRect.width,
+          zIndex: 99999,
+          ...(portalMenuRect.bottom !== undefined ? { bottom: portalMenuRect.bottom } : { top: portalMenuRect.top })
+        }
         return ReactDOM.createPortal(
           <div className="bg-white border rounded shadow z-50 survey-menu-panel" style={style} onClick={e => e.stopPropagation()}>
             {isOwnerOf(s) ? (
@@ -828,7 +851,9 @@ export default function Surveys(): JSX.Element {
                   }
                   return null
                 })() }
-                <button type="button" onClick={() => { setConfirmReportId(String(s.id)); setMenuOpenFor(null) }} className="block w-full text-left px-3 py-2 hover:bg-slate-100">Reportar</button>
+                { isAdmin ? (
+                  <button type="button" onClick={() => { setConfirmReportId(String(s.id)); setMenuOpenFor(null) }} className="block w-full text-left px-3 py-2 hover:bg-slate-100">Reportar</button>
+                ) : null }
               </>
             ) : (
               <>
