@@ -73,10 +73,14 @@ export default function ReportDetail(): JSX.Element {
           if (authUser && authUser.id && authUser.email) idx[String(authUser.id)] = authUser
         } catch (e) {}
         // Extract unique respondent IDs from report rows
-        if (report && Array.isArray(report.rows)) {
+        // For project surveys individual responses live in rawResponses; for simple surveys in rows
+        const responseRows = (report && Array.isArray(report.rawResponses) && report.rawResponses.length > 0)
+          ? report.rawResponses
+          : (report && Array.isArray(report.rows) ? report.rows : [])
+        if (report && responseRows.length > 0) {
           const uids = Array.from(new Set(
-            report.rows
-              .map((r: any) => String(r.userId || r.user || r.reporterId || ''))
+            responseRows
+              .map((r: any) => String(r.userId || r.user || r.reporterId || r.reporterUid || ''))
               .filter((id: string) => id && id.length > 10 && !idx[id])
           ))
           if (uids.length > 0 && dataClientNow.resolveOwnerEmails) {
