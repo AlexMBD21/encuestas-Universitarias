@@ -446,12 +446,66 @@ export function exportSimpleSurveyReport(report: {
  * Opens a new browser window with a styled HTML report and triggers the
  * print/Save-as-PDF dialog. No external libraries required.
  */
+function _openOrDownload(html: string, filename: string, autoPrint: boolean) {
+  if (autoPrint) {
+    // Use a hidden iframe so no popup window is needed — works on mobile
+    try {
+      const iframe = document.createElement('iframe')
+      iframe.setAttribute('aria-hidden', 'true')
+      iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:0;height:0;opacity:0;border:none;'
+      document.body.appendChild(iframe)
+      const iDoc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document)
+      if (!iDoc) throw new Error('no iframe doc')
+      iDoc.open(); iDoc.write(html); iDoc.close()
+      const iWin = iframe.contentWindow
+      if (!iWin) throw new Error('no iframe window')
+      let printed = false
+      const cleanup = () => { try { iframe.remove() } catch (e2) {} }
+      const triggerPrint = () => {
+        if (printed) return
+        printed = true
+        try { iWin.focus(); iWin.print() } catch (e) {}
+        setTimeout(cleanup, 2000)
+      }
+      // Most browsers fire onload after content is ready
+      iWin.onload = triggerPrint
+      // Fallback: if onload doesn't fire, try after a short delay
+      setTimeout(triggerPrint, 600)
+      return
+    } catch (e) {}
+    // Last resort: download HTML file
+    try {
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = filename
+      document.body.appendChild(a); a.click()
+      setTimeout(() => { try { URL.revokeObjectURL(url); a.remove() } catch (e) {} }, 1500)
+    } catch (e) {}
+    return
+  }
+  // Preview mode: open in new window, fallback to download
+  try {
+    const win = window.open('', '_blank', 'width=960,height=720')
+    if (win) { win.document.write(html); win.document.close(); return }
+  } catch (e) {}
+  try {
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = filename
+    document.body.appendChild(a); a.click()
+    setTimeout(() => { try { URL.revokeObjectURL(url); a.remove() } catch (e) {} }, 1500)
+  } catch (e) {}
+}
+
 export function exportSimpleSurveyPdf(report: {
   survey: any
   questionStats: Array<{ question: string; counts: Record<string,number>; answered: number; options?: string[]; texts?: string[]; questionType?: string }>
   rows: any[]
   totalResponses: number
-}, usersCache?: Record<string, any>) {
+}, usersCache?: Record<string, any>, mode?: 'preview' | 'print') {
+  const autoPrint = mode === 'print'
   const title = report.survey?.title || 'Encuesta'
   const description = report.survey?.description || ''
   const exportDate = new Date().toLocaleString('es', { dateStyle: 'long', timeStyle: 'short' })
@@ -521,6 +575,20 @@ export function exportSimpleSurveyPdf(report: {
   }).join('')
 
   const tableHeaders = questions.map(q => `<th>${esc(q)}</th>`).join('')
+
+  const _simpleToolbar = autoPrint
+    ? ''
+    : `<div class="toolbar">
+  <div class="toolbar-inner">
+    <span class="toolbar-brand">&#128196; Vista previa</span>
+    <div class="t-sep"></div>
+    <label class="ctrl"><span class="ctrl-lbl">Encabezado</span><input type="color" id="c-header" value="#1565c0" oninput="setHdrColor(this.value)"></label>
+    <label class="ctrl"><span class="ctrl-lbl">Acento</span><input type="color" id="c-accent" value="#0891b2" oninput="setAccent(this.value)"></label>
+    <label class="ctrl ctrl-check"><input type="checkbox" id="editChk" onchange="toggleEdit(this.checked)"><span class="ctrl-lbl">&#9999;&#65039; Editar texto</span></label>
+    <button class="btn-print" onclick="window.print()">&#128424;&#65039; Imprimir / Guardar PDF</button>
+  </div>
+</div>`
+  const _simpleAutoprint = ''
 
   const html = `<!DOCTYPE html>
 <html lang="es">
@@ -592,9 +660,24 @@ export function exportSimpleSurveyPdf(report: {
     body { background: #fff; }
     .report-header { border-radius: 0; }
   }
+  .toolbar{position:sticky;top:0;z-index:9999;background:#1e293b;padding:8px 16px;display:flex;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+  .toolbar-inner{display:flex;align-items:center;flex-wrap:wrap;gap:10px;width:100%;}
+  .toolbar-brand{font-size:13px;font-weight:700;color:#e2e8f0;white-space:nowrap;}
+  .t-sep{width:1px;height:22px;background:rgba(255,255,255,.15);flex-shrink:0;}
+  .ctrl{display:flex;align-items:center;gap:5px;cursor:pointer;}
+  .ctrl-lbl{font-size:11px;color:#94a3b8;white-space:nowrap;user-select:none;}
+  .ctrl input[type=color]{width:26px;height:26px;border:2px solid rgba(255,255,255,.2);border-radius:6px;cursor:pointer;padding:1px;background:transparent;}
+  .ctrl-check{gap:6px;}
+  .ctrl-check input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:#3b82f6;}
+  .ctrl-check .ctrl-lbl{color:#e2e8f0;}
+  .btn-print{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;margin-left:auto;}
+  .btn-print:hover{background:#1d4ed8;}
+  @media print{.toolbar{display:none!important;}body{padding-top:0!important;}}
+  .edit-active{outline:2px dashed #3b82f6!important;min-width:10px;}
 </style>
 </head>
 <body>
+${_simpleToolbar}
 
 <div class="report-header">
   <h1>${esc(title)}</h1>
@@ -624,15 +707,26 @@ export function exportSimpleSurveyPdf(report: {
 
 <div class="footer">Generado el ${esc(exportDate)} · ${esc(title)}</div>
 
-<script>window.onload = function(){ window.print(); }; window.onafterprint = function(){ window.close(); };<\/script>
+<script>
+function setHdrColor(v){document.querySelectorAll('.report-header').forEach(function(e){e.style.background=v;});}
+function setAccent(v){
+  var s=document.getElementById('dyn');
+  if(!s){s=document.createElement('style');s.id='dyn';document.head.appendChild(s);}
+  s.textContent='.section-title{border-left-color:'+v+' !important}.q-num{background:'+v+' !important}.user-cell{color:'+v+' !important}';
+  document.querySelectorAll('.bar-fill').forEach(function(e){e.style.background=v;});
+}
+function toggleEdit(on){
+  var sel='h1,p,.q-title,.comment,.bar-label,.meta-pill,.section-title,.footer';
+  document.querySelectorAll(sel).forEach(function(e){
+    if(on){e.contentEditable='true';e.classList.add('edit-active');}
+    else{e.removeAttribute('contenteditable');e.classList.remove('edit-active');}
+  });
+}
+${_simpleAutoprint}<\/script>
 </body>
 </html>`
 
-  const win = window.open('', '_blank', 'width=900,height=700')
-  if (win) {
-    win.document.write(html)
-    win.document.close()
-  }
+  _openOrDownload(html, title.replace(/\s+/g, '_') + '_informe.html', autoPrint)
 }
 
 /**
@@ -648,7 +742,8 @@ export function exportProjectSurveyPdf(report: {
   }>
   totalResponses: number
   rawResponses?: any[]
-}, usersCache?: Record<string, any>) {
+}, usersCache?: Record<string, any>, mode?: 'preview' | 'print') {
+  const autoPrint = mode !== 'preview'
   const title = report.survey?.title || 'Encuesta de Proyectos'
   const description = report.survey?.description || ''
   const exportDate = new Date().toLocaleString('es', { dateStyle: 'long', timeStyle: 'short' })
@@ -791,6 +886,11 @@ export function exportProjectSurveyPdf(report: {
     </tr>`
   }).join('')
 
+  const _projToolbar = autoPrint
+    ? ''
+    : `<div style="position:sticky;top:0;z-index:9999;background:#1e293b;padding:8px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.3);"><span style="font-size:13px;font-weight:700;color:#e2e8f0;white-space:nowrap;flex:1">&#128196; Vista previa</span><button onclick="window.print()" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;">&#128424;&#65039; Imprimir / Guardar PDF</button></div>`
+  const _projAutoprint = ''
+
   const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -863,6 +963,7 @@ export function exportProjectSurveyPdf(report: {
 </style>
 </head>
 <body>
+${_projToolbar}
 
 <div class="report-header">
   <h1>${esc(title)}</h1>
@@ -901,15 +1002,18 @@ ${Object.keys(userMap).length > 0 ? `
 
 <div class="footer">Generado el ${esc(exportDate)} · ${esc(title)}</div>
 
-<script>window.onload = function(){ window.print(); }; window.onafterprint = function(){ window.close(); };<\/script>
+<script>
+function setHdrColor(v){document.querySelectorAll('.report-header').forEach(function(e){e.style.background=v;});}
+function setAccent(v){
+  var s=document.getElementById('dyn');
+  if(!s){s=document.createElement('style');s.id='dyn';document.head.appendChild(s);}
+  s.textContent='.section-title{border-left-color:'+v+' !important}.user-cell{color:'+v+' !important}';
+}
+${_projAutoprint}<\/script>
 </body>
 </html>`
 
-  const win = window.open('', '_blank', 'width=960,height=720')
-  if (win) {
-    win.document.write(html)
-    win.document.close()
-  }
+  _openOrDownload(html, title.replace(/\s+/g, '_') + '_informe.html', autoPrint)
 }
 
 const reportHelpers = { getSurveyList, getSimpleSurveyReport, getProjectSurveyReport, exportCsv, exportSimpleSurveyReport, exportSimpleSurveyPdf, exportProjectSurveyPdf }
