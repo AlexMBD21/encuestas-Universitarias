@@ -520,19 +520,30 @@ export default function Configuracion() {
           <div className="relative w-full sm:max-w-lg sm:mx-4 sm:mb-0">
             <div
               className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90dvh] sm:max-h-[80vh] transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-              style={pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined}
+              style={{
+                overscrollBehaviorY: 'contain',
+                ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
+              }}
               onTouchStart={(e) => { const sc = e.currentTarget.querySelector('.overflow-y-auto'); touchStartRef.current = { y: e.touches[0].clientY, scrollY: sc ? sc.scrollTop : 0 } }}
-              onTouchMove={(e) => { if (touchStartRef.current.scrollY <= 0) { const delta = e.touches[0].clientY - touchStartRef.current.y; if (delta > 0) setPullDownY(delta) } }}
+              onTouchMove={(e) => {
+                if (touchStartRef.current.scrollY <= 0) {
+                  const delta = e.touches[0].clientY - touchStartRef.current.y;
+                  if (delta > 0) {
+                    if (e.cancelable) e.preventDefault();
+                    setPullDownY(delta)
+                  }
+                }
+              }}
               onTouchEnd={() => { if (pullDownY > 80) closeModal(); setPullDownY(0) }}
               role="dialog" aria-modal="true" aria-labelledby="modal-title"
             >
               {/* Drag handle — absolute inside modal, only mobile */}
-              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)' }} onClick={closeModal}>
+              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={closeModal}>
                 <div className="w-12 h-1.5 rounded-full bg-white/40" />
               </div>
 
               {/* Header — pt-7 mobile to clear the handle, pt-4 desktop */}
-              <div id="modal-header" className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 flex items-center text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
+              <div id="modal-header" className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 flex items-center text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
                 <div id="modal-title" className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{modalType === 'edit' ? 'Editar usuario' : (modalType === 'delete' ? 'Confirmar eliminación' : 'Crear usuario')}</div>
                 {/* X button: hidden on mobile, visible on desktop */}
                 <div className="ml-auto hidden sm:block">
@@ -609,18 +620,27 @@ export default function Configuracion() {
           <div className="relative w-full sm:max-w-sm sm:mx-4 sm:mb-0">
             <div
               className={`bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 ${isPwdModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-              style={pullDownPwdY > 0 ? { transform: `translateY(${pullDownPwdY}px)`, transition: 'none' } : undefined}
+              style={{
+                overscrollBehaviorY: 'contain',
+                ...(pullDownPwdY > 0 ? { transform: `translateY(${pullDownPwdY}px)`, transition: 'none' } : undefined)
+              }}
               onTouchStart={(e) => { touchStartRef.current = { y: e.touches[0].clientY, scrollY: 0 } }}
-              onTouchMove={(e) => { const delta = e.touches[0].clientY - touchStartRef.current.y; if (delta > 0) setPullDownPwdY(delta) }}
+              onTouchMove={(e) => {
+                const delta = e.touches[0].clientY - touchStartRef.current.y;
+                if (delta > 0) {
+                  if (e.cancelable) e.preventDefault();
+                  setPullDownPwdY(delta);
+                }
+              }}
               onTouchEnd={() => { if (pullDownPwdY > 80) { setIsPwdModalVisible(false); setPullDownPwdY(0); setTimeout(() => setConfirmPwdOpen(false), 300) } else setPullDownPwdY(0) }}
               role="dialog" aria-modal="true"
             >
               {/* Drag handle — absolute inside, only mobile */}
-              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)' }} onClick={() => { setIsPwdModalVisible(false); setPullDownPwdY(0); setTimeout(() => setConfirmPwdOpen(false), 300) }}>
+              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={() => { setIsPwdModalVisible(false); setPullDownPwdY(0); setTimeout(() => setConfirmPwdOpen(false), 300) }}>
                 <div className="w-12 h-1.5 rounded-full bg-white/40" />
               </div>
               {/* Header */}
-              <div className="px-4 sm:px-6 py-4 flex items-center text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' }}>
+              <div className="px-4 sm:px-6 py-4 flex items-center text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', touchAction: 'none' }}>
                 <span className="text-base sm:text-lg font-bold tracking-wide">Confirmar cambio de contraseña</span>
                 <div className="ml-auto hidden sm:block">
                   <button type="button" onClick={() => { setIsPwdModalVisible(false); setPullDownPwdY(0); setTimeout(() => setConfirmPwdOpen(false), 300) }} aria-label="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">

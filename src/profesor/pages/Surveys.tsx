@@ -1008,7 +1008,10 @@ export default function Surveys(): JSX.Element {
                 aria-modal="true"
                 tabIndex={-1}
                 className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-                style={pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined}
+                style={{
+                  overscrollBehaviorY: 'contain',
+                  ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
+                }}
                 onTouchStart={(e) => {
                   const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
                   touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
@@ -1016,7 +1019,10 @@ export default function Surveys(): JSX.Element {
                 onTouchMove={(e) => {
                   if (touchStartRef.current.scrollY <= 0) {
                     const delta = e.touches[0].clientY - touchStartRef.current.y;
-                    if (delta > 0) setPullDownY(delta);
+                    if (delta > 0) {
+                      if (e.cancelable) e.preventDefault();
+                      setPullDownY(delta);
+                    }
                   }
                 }}
                 onTouchEnd={() => {
@@ -1024,11 +1030,11 @@ export default function Surveys(): JSX.Element {
                   setPullDownY(0);
                 }}>
                 {/* Drag handle for mobile */}
-                <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)' }} onClick={() => closeModal()}>
+                <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={() => closeModal()}>
                   <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
                 </div>
                 {/* Header (sticky) */}
-                <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
+                <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
                   <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
                   <div className="ml-auto hidden sm:block">
                     <button type="button" onClick={() => closeModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
@@ -1376,7 +1382,10 @@ export default function Surveys(): JSX.Element {
           <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} />
             <div className={`relative w-full sm:max-w-2xl sm:mx-4 sm:mb-0 bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col h-[90dvh] sm:h-auto sm:max-h-[80vh] overflow-hidden transform transition-all duration-300 ${isReportsVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`} role="dialog" aria-modal="true"
-                 style={pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined}
+                 style={{
+                   overscrollBehaviorY: 'contain',
+                   ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
+                 }}
                  onTouchStart={(e) => {
                    const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
                    touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
@@ -1384,7 +1393,10 @@ export default function Surveys(): JSX.Element {
                  onTouchMove={(e) => {
                    if (touchStartRef.current.scrollY <= 0) {
                      const delta = e.touches[0].clientY - touchStartRef.current.y;
-                     if (delta > 0) setPullDownY(delta);
+                     if (delta > 0) {
+                       if (e.cancelable) e.preventDefault();
+                       setPullDownY(delta);
+                     }
                    }
                  }}
                  onTouchEnd={() => {
@@ -1392,11 +1404,11 @@ export default function Surveys(): JSX.Element {
                    setPullDownY(0);
                  }}>
               {/* Drag handle */}
-              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" onClick={() => closeReportsModal()}>
+              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => closeReportsModal()}>
                 <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
               </div>
               {/* Header */}
-              <div className="px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10">
+              <div className="px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10" style={{ touchAction: 'none' }}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 flex items-center justify-center">
                     <span className="material-symbols-outlined text-[22px]">flag</span>
@@ -1531,7 +1543,10 @@ export default function Surveys(): JSX.Element {
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => closeCreateModal()} />
             <div className="relative w-full sm:max-w-xl sm:mx-4 sm:mb-0">
               <div className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isCreateVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-                   style={pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined}
+                   style={{
+                     overscrollBehaviorY: 'contain',
+                     ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
+                   }}
                    onTouchStart={(e) => {
                      const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
                      touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
@@ -1539,7 +1554,10 @@ export default function Surveys(): JSX.Element {
                    onTouchMove={(e) => {
                      if (touchStartRef.current.scrollY <= 0) {
                        const delta = e.touches[0].clientY - touchStartRef.current.y;
-                       if (delta > 0) setPullDownY(delta);
+                       if (delta > 0) {
+                         if (e.cancelable) e.preventDefault();
+                         setPullDownY(delta);
+                       }
                      }
                    }}
                    onTouchEnd={() => {
@@ -1547,11 +1565,11 @@ export default function Surveys(): JSX.Element {
                      setPullDownY(0);
                    }}>
                 {/* Drag handle for mobile */}
-                <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)' }} onClick={() => closeCreateModal()}>
+                <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={() => closeCreateModal()}>
                   <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
                 </div>
                 {/* Header (sticky) */}
-                <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
+                <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
                   <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{editSurvey ? 'Editar encuesta' : 'Crear encuesta'}</div>
                   <div className="ml-auto hidden sm:block">
                     <button type="button" onClick={() => closeCreateModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
