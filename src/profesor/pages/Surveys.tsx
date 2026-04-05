@@ -617,16 +617,53 @@ export default function Surveys(): JSX.Element {
       <div className="bg-white dark:bg-slate-900 rounded-xl border p-4 shadow">
         <h3 className="text-lg font-semibold mb-4">Encuestas guardadas</h3>
         {!surveysLoaded ? (
-          <div className="flex flex-col justify-center items-center py-10" style={{gap:10}}>
-            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{animation:'spin 0.9s linear infinite'}}>
-              <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4"/>
-              <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round"/>
-            </svg>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-            <div style={{fontSize:'0.8rem', color:'#94a3b8', fontWeight:500}}>Cargando...</div>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 animate-pulse">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <div key={i} className="relative p-5 border border-slate-100 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 flex flex-col justify-between h-[280px] overflow-hidden">
+                {/* Acento superior placeholder */}
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-200 dark:bg-slate-800"></div>
+                <div className="flex-1 mt-1">
+                  {/* Badges placeholder */}
+                  <div className="flex gap-1.5 mb-3">
+                    <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-full w-20"></div>
+                    <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-full w-16"></div>
+                  </div>
+                  {/* Título placeholder */}
+                  <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-lg w-11/12 mb-2.5"></div>
+                  {/* Propietario placeholder */}
+                  <div className="h-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg w-1/2 mb-6"></div>
+                  
+                  {/* Detalles placeholder */}
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-4 flex flex-col gap-3">
+                    <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-2/3"></div>
+                    <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/3"></div>
+                  </div>
+                </div>
+                {/* Botonera placeholder */}
+                <div className="mt-5 flex justify-end gap-2">
+                   <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded-lg w-24"></div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : surveys.length === 0 ? (
-          <p className="text-slate-600">No hay encuestas aún. Usa "Nueva Encuesta" para crear una.</p>
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/20 border-2 border-dashed border-slate-300 dark:border-slate-700">
+            <div className="w-20 h-20 mb-6 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shadow-inner">
+              <span className="material-symbols-outlined text-4xl">inventory_2</span>
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Aún no tienes encuestas</h3>
+            <p className="text-slate-500 max-w-md mx-auto mb-6 leading-relaxed">
+              Comienza a recopilar información valiosa. Crea tu primera campaña, ya sea una encuesta simple para recabar opiniones o un proyecto de calificación avanzada.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button type="button" onClick={() => handleCreate()} className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/30 transition duration-200">
+                <span className="material-symbols-outlined text-lg">add_circle</span> Encuesta Simple
+              </button>
+              <button type="button" onClick={() => { setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true) }} className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/30 transition duration-200">
+                <span className="material-symbols-outlined text-lg">fact_check</span> Proyecto
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {(() => {
@@ -731,73 +768,117 @@ export default function Surveys(): JSX.Element {
                 const userResponded = !isProjectType ? (userRespondedLocal || surveyHelpers.hasUserResponded(String(s.id))) : false
                 const firstPending = allProjects.find((p: any) => !surveyHelpers.hasUserRated(String(s.id), String(p.id)))
                 return (
-                  <div key={s.id} id={`survey-${s.id}`} className="relative p-4 border dark:border-slate-600 rounded-2xl dark:bg-slate-800 flex flex-col justify-between shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition duration-150 focus-within:ring-2 focus-within:ring-blue-200" style={{ background: '#f1f5fb', borderColor: 'rgba(59,130,246,0.20)', boxShadow: '0 2px 6px rgba(2,6,23,0.07), 0 8px 24px rgba(59,130,246,0.10)' }}>
-                    <div>
-                      <div>
-                        <div className="font-semibold text-sm truncate pr-9">{s.title}</div>
-                        {getOwnerDisplay(s) && (
-                          <div className="text-xs text-slate-400 mt-0.5 truncate" title={getOwnerDisplay(s)}>
-                            <span className="font-medium text-slate-500">Propietario:</span> {getOwnerDisplay(s)}
+                  <div key={s.id} id={`survey-${s.id}`} className={`group relative p-5 border rounded-2xl flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-xl transform hover:-translate-y-1 transition duration-200 ease-out focus-within:ring-2 bg-white dark:bg-slate-900 ${isProjectType ? 'border-indigo-100 dark:border-indigo-900/50 hover:border-indigo-300 dark:hover:border-indigo-700/50 focus-within:ring-indigo-200' : 'border-emerald-100 dark:border-emerald-900/50 hover:border-emerald-300 dark:hover:border-emerald-700/50 focus-within:ring-emerald-200'}`}>
+                    {/* Acento superior de color */}
+                    <div className={`absolute top-0 left-0 w-full h-1.5 ${isProjectType ? 'bg-gradient-to-r from-indigo-500 to-purple-500' : 'bg-gradient-to-r from-emerald-500 to-teal-500'}`}></div>
+                    
+                    <div className="flex-1">
+                      {/* Badges y status */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-3 mt-1">
+                        <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1 ${isProjectType ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300 dark:border-indigo-800 border' : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800 border'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${isProjectType ? 'bg-indigo-600 dark:bg-indigo-400' : 'bg-emerald-600 dark:bg-emerald-400'}`}></span>
+                          {isProjectType ? 'Proyecto' : 'Simple'}
+                        </span>
+                        
+                        {s.published && (
+                          <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 px-2.5 py-0.5 rounded-full shadow-sm">
+                            Publicado
+                          </span>
+                        )}
+                        
+                        {isOwnerOf(s) && (() => {
+                          const count = surveyReports.filter(r => String(r.surveyId) === String(s.id)).length
+                          if (count > 0) return (
+                            <span className="text-[10px] uppercase font-bold tracking-wider bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/40 dark:text-rose-400 dark:border-rose-800 px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 bg-rose-600 dark:bg-rose-400 rounded-full animate-pulse"></span>
+                              {count} Reporte{count !== 1 ? 's' : ''}
+                            </span>
+                          )
+                          return null
+                        })()}
+                      </div>
+
+                      {/* Info principal */}
+                      <h4 className="font-bold text-slate-800 dark:text-slate-100 text-base leading-tight pr-8 line-clamp-2">{s.title}</h4>
+                      {getOwnerDisplay(s) && (
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 flex items-center gap-1.5 truncate" title={getOwnerDisplay(s)}>
+                          <svg className="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                          {getOwnerDisplay(s)}
+                        </div>
+                      )}
+                      
+                      {/* Detalles técnicos */}
+                      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex flex-col gap-2">
+                          <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[15px] opacity-70">{isProjectType ? 'rule' : 'help_center'}</span>
+                            {isProjectType ? (
+                              <span>{(s.rubric?.length || 0)} criterios • {(s.projects || []).length} proyectos</span>
+                            ) : (
+                              <span>{(s.questions?.length || 0)} preguntas guardadas</span>
+                            )}
+                          </div>
+                          <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[15px] opacity-70">event</span>
+                            <span>{new Date(s.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+
+                        {/* Metricas mini */}
+                        {typeof respCnt === 'number' && respCnt > 0 && !isProjectType && (
+                          <div className="mt-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg p-2.5 flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
+                             <span>Respuestas emitidas</span>
+                             <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 px-2 py-0.5 rounded-md shadow-sm">{respCnt}</span>
                           </div>
                         )}
-                        <div className="mt-2 flex items-center gap-2">
-                          {s.published && <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Publicado</span>}
-                          {/* show report badge for owner */}
-                          {isOwnerOf(s) && (() => {
-                            const count = surveyReports.filter(r => String(r.surveyId) === String(s.id)).length
-                            if (count > 0) return (<span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Reportes {count}</span>)
-                            return null
-                          })()}
-                        </div>
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        {s.type === 'project' ? (
-                          <>{(s.rubric?.length || 0)} criterios · {(s.projects || []).length} proyectos · {new Date(s.createdAt).toLocaleString()}</>
-                        ) : (
-                          <>{(s.questions?.length || 0)} preguntas · {new Date(s.createdAt).toLocaleString()}</>
+                        {progress && isProjectType && (
+                           <div className="mt-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg p-2.5">
+                             <div className="flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                               <span>Progreso de calificación</span>
+                               <span className="font-bold">{progress.rated} / {progress.total}</span>
+                             </div>
+                             <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                               <div className="bg-indigo-500 h-1.5 transition-all duration-700 ease-out" style={{ width: `${progress.total > 0 ? (progress.rated / progress.total) * 100 : 0}%` }}></div>
+                             </div>
+                           </div>
                         )}
                       </div>
-                      {typeof respCnt === 'number' && respCnt > 0 && (
-                        <div className="text-xs text-slate-500 mt-2 font-medium">Respondidas: {respCnt}</div>
-                      )}
-                      {progress && (
-                        <div className="text-xs text-slate-500 mt-2 font-medium">Calificados {progress.rated} / {progress.total}</div>
-                      )}
                     </div>
-                    <div className="mt-3 flex justify-end">
+                    
+                    {/* Botonera inferior */}
+                    <div className="mt-5 flex justify-end items-center gap-2">
                       {isProjectType ? (
                         fullyRated ? (
                           <button type="button" onClick={() => {
                             setModalSurveyId(String(s.id))
                             setModalKind('projects')
-                            // show project list (all are graded) — clear viewingProjectId
                             setViewingProjectId(null)
-                          }} title="Ver proyectos (todos calificados)" className="px-3 py-1 text-sm btn btn-outline rounded">Calificado</button>
+                          }} title="Ver proyectos (todos calificados)" className="px-4 py-1.5 text-sm font-semibold border-2 border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors dark:border-indigo-800 dark:text-indigo-400 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50">Revisar Notas</button>
                         ) : (
                           <button type="button" onClick={() => {
                             setModalSurveyId(String(s.id))
                             setModalKind('projects')
-                            // show project list first; user can pick which project to grade
                             setViewingProjectId(null)
-                          }} className="px-3 py-1 text-sm btn btn-primary rounded">Calificar</button>
+                          }} className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all">Calificar</button>
                         )
                         ) : (
                           userResponded ? (
-                          <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-3 py-1 text-sm btn btn-outline rounded">Respondido</button>
+                          <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50">Respondido</button>
                           ) : (
-                          <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-3 py-1 text-sm btn btn-primary rounded">Responder</button>
+                          <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all">Responder</button>
                         )
                       )}
-                      <div className="absolute top-2 right-3">
+
+                      {/* Dropdown 3 dots Menu absolute */}
+                      <div className="absolute top-4 right-4">
                         <div className="relative inline-block text-left">
-                          <button ref={el => { menuButtonRefs.current[String(s.id)] = el as HTMLButtonElement | null }} type="button" onClick={(ev) => { ev.stopPropagation(); setMenuOpenFor(String(s.id) === menuOpenFor ? null : String(s.id)) }} aria-haspopup="true" aria-expanded={menuOpenFor === String(s.id)} className="survey-menu-btn" title="Opciones">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                              <circle cx="12" cy="5" r="1.5" fill="currentColor" />
-                              <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-                              <circle cx="12" cy="19" r="1.5" fill="currentColor" />
+                          <button ref={el => { menuButtonRefs.current[String(s.id)] = el as HTMLButtonElement | null }} type="button" onClick={(ev) => { ev.stopPropagation(); setMenuOpenFor(String(s.id) === menuOpenFor ? null : String(s.id)) }} aria-haspopup="true" aria-expanded={menuOpenFor === String(s.id)} className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-300 transition-colors" title="Opciones">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                              <circle cx="12" cy="6" r="2" fill="currentColor" />
+                              <circle cx="12" cy="12" r="2" fill="currentColor" />
+                              <circle cx="12" cy="18" r="2" fill="currentColor" />
                             </svg>
                           </button>
-                          { /* Menu will be rendered via portal (see bottom of component) */ }
                         </div>
                       </div>
                     </div>
@@ -828,36 +909,60 @@ export default function Surveys(): JSX.Element {
           ...(portalMenuRect.bottom !== undefined ? { bottom: portalMenuRect.bottom } : { top: portalMenuRect.top })
         }
         return ReactDOM.createPortal(
-          <div className="bg-white border rounded shadow z-50 survey-menu-panel" style={style} onClick={e => e.stopPropagation()}>
+          <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-2xl z-50 survey-menu-panel overflow-hidden py-1.5" style={style} onClick={e => e.stopPropagation()}>
             {isOwnerOf(s) ? (
               <>
                 {!s.published ? (
-                  <button type="button" onClick={() => { setConfirmPublish({ id: String(s.id), action: 'publish' }); setMenuOpenFor(null) }} className="block w-full text-left px-3 py-2 text-green-600 hover:bg-slate-100">Publicar</button>
+                  <button type="button" onClick={() => { setConfirmPublish({ id: String(s.id), action: 'publish' }); setMenuOpenFor(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+                    <span className="material-symbols-outlined text-[18px]">visibility</span> Publicar encuesta
+                  </button>
                 ) : (
-                  <button type="button" onClick={() => { setConfirmPublish({ id: String(s.id), action: 'unpublish' }); setMenuOpenFor(null) }} className="block w-full text-left px-3 py-2 text-yellow-700 hover:bg-slate-100">Retirar publicación</button>
+                  <button type="button" onClick={() => { setConfirmPublish({ id: String(s.id), action: 'unpublish' }); setMenuOpenFor(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+                    <span className="material-symbols-outlined text-[18px]">visibility_off</span> Retirar publicación
+                  </button>
                 )}
+                
+                <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
+                
                 <button type="button" onClick={() => {
                   if (!isOwnerOf(s)) { setToastMessage('No tienes permiso para editar esta encuesta'); setTimeout(() => setToastMessage(null), 3000); setMenuOpenFor(null); return }
                   setEditSurvey(s); setCreateInitialType(undefined); setCreateModalOpen(true); setMenuOpenFor(null)
-                }} className="block w-full text-left px-3 py-2 hover:bg-slate-100">Editar</button>
-                <button type="button" onClick={() => {
-                  if (!isOwnerOf(s)) { setToastMessage('No tienes permiso para eliminar esta encuesta'); setTimeout(() => setToastMessage(null), 3000); setMenuOpenFor(null); return }
-                  setConfirmDeleteId(String(s.id)); setMenuOpenFor(null)
-                }} className="block w-full text-left px-3 py-2 text-red-600 hover:bg-slate-100">Eliminar</button>
+                }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+                  <span className="material-symbols-outlined text-[18px]">edit</span> Editar contenidos
+                </button>
+                
                 { (() => {
                   const count = surveyReports.filter(r => String(r.surveyId) === String(s.id)).length
                   if (count > 0) {
-                    return (<button type="button" onClick={() => { setViewReportsFor(String(s.id)); setMenuOpenFor(null) }} className="block w-full text-left px-3 py-2 hover:bg-slate-100">Ver reportes ({count})</button>)
+                    return (
+                      <button type="button" onClick={() => { setViewReportsFor(String(s.id)); setMenuOpenFor(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+                        <span className="material-symbols-outlined text-[18px]">flag</span>Ver reportes ({count})
+                      </button>
+                    )
                   }
                   return null
                 })() }
+                
                 { isAdmin ? (
-                  <button type="button" onClick={() => { setConfirmReportId(String(s.id)); setMenuOpenFor(null) }} className="block w-full text-left px-3 py-2 hover:bg-slate-100">Reportar</button>
+                  <button type="button" onClick={() => { setConfirmReportId(String(s.id)); setMenuOpenFor(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+                    <span className="material-symbols-outlined text-[18px]">warning</span> Reportar
+                  </button>
                 ) : null }
+                
+                <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
+                
+                <button type="button" onClick={() => {
+                  if (!isOwnerOf(s)) { setToastMessage('No tienes permiso para eliminar esta encuesta'); setTimeout(() => setToastMessage(null), 3000); setMenuOpenFor(null); return }
+                  setConfirmDeleteId(String(s.id)); setMenuOpenFor(null)
+                }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                  <span className="material-symbols-outlined text-[18px]">delete</span> Eliminar encuesta
+                </button>
               </>
             ) : (
               <>
-                <button type="button" onClick={() => { setConfirmReportId(String(s.id)); setMenuOpenFor(null) }} className="block w-full text-left px-3 py-2 hover:bg-slate-100">Reportar</button>
+                <button type="button" onClick={() => { setConfirmReportId(String(s.id)); setMenuOpenFor(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+                  <span className="material-symbols-outlined text-[18px]">warning</span> Reportar encuesta
+                </button>
               </>
             )}
           </div>, document.body
@@ -1318,16 +1423,8 @@ export default function Surveys(): JSX.Element {
             <div className="absolute inset-0 bg-black opacity-40" onClick={() => setCreateModalOpen(false)} />
             <div className="relative w-full sm:max-w-xl sm:mx-4 sm:mb-0">
               <div className={`bg-white dark:bg-slate-900 sm:rounded shadow-lg h-[100dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col`}>
-                <div className="sticky top-0 z-10 border-b px-5 py-3 flex items-center justify-between text-white flex-shrink-0" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
-                  <div className="text-lg font-semibold truncate mr-4">{editSurvey ? 'Editar encuesta' : 'Crear encuesta'}</div>
-                  <div className="ml-auto">
-                    <button onClick={() => setCreateModalOpen(false)} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white bg-opacity-10 text-white flex items-center justify-center border border-white border-opacity-20 hover:bg-white hover:bg-opacity-20">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                        <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
-                  </div>
+                <div className="sticky top-0 z-10 border-b px-5 py-4 flex items-center text-white flex-shrink-0" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
+                  <div className="text-lg font-bold truncate">{editSurvey ? 'Editar encuesta' : 'Crear encuesta'}</div>
                 </div>
                 <div className="p-4 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 56px)' }}>
                   <CreateSurvey
