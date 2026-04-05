@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import surveyHelpers from '../../services/surveyHelpers'
 import supabaseClient from '../../services/supabaseClient'
@@ -429,11 +430,13 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
     } catch (e) {}
   }
 
-  return (
+  if (!rendered) return null
+
+  return createPortal(
     <div
       id="notifications-panel"
       ref={rootRef}
-      className={`fixed right-0 z-20 w-full max-w-md dark:bg-gray-900 shadow-2xl border-l border-blue-100 dark:border-gray-700 rounded-b-2xl flex flex-col ${cls}`}
+      className={`fixed right-0 z-[1000] w-full max-w-md dark:bg-gray-900 shadow-2xl border-l border-blue-100 dark:border-gray-700 rounded-b-2xl flex flex-col ${cls}`}
       style={{ top: topPx != null ? `${topPx}px` : '76px', maxHeight: topPx != null ? `calc(100vh - ${topPx}px)` : 'calc(100vh - 76px)', minHeight: 0, backgroundColor: '#f0f7ff' }}
     >
       <div className="flex flex-col h-full">
@@ -450,7 +453,7 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
               <div style={{fontSize:'0.8rem', color:'#94a3b8', fontWeight:500}}>Cargando...</div>
             </div>
           ) : (<>
-          {notifications.length === 0 && <div className="text-slate-500">No hay notificaciones</div>}
+          {notifications.length === 0 && <div className="text-slate-500 text-center py-4">No hay notificaciones</div>}
 
           {/* Filter out notifications that reference surveys that no longer exist or that the user hid */}
           {(() => {
@@ -469,7 +472,7 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
                 return false
               }
             })
-            if (!visible || visible.length === 0) return (<div className="text-slate-500">No hay notificaciones</div>)
+            if (notifications.length > 0 && (!visible || visible.length === 0)) return (<div className="text-slate-500 text-center py-4">No hay notificaciones</div>)
             return visible.map((n: any, i: number) => {
               let status: 'pending' | 'responded' | 'warning' = 'pending'
               let found: any = null
@@ -596,7 +599,8 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
