@@ -411,6 +411,17 @@
 .sidebar-collapse-btn:hover { background: rgba(255,255,255,0.22); color: #ffffff; }
 .sidebar-collapse-btn .material-symbols-outlined { font-size: 18px; }
 
+/* Estilos extra para cuando está colapsado (ancho completo) */
+.app-sidebar.collapsed .sidebar-collapse-row {
+    justify-content: center;
+}
+.app-sidebar.collapsed .sidebar-collapse-btn {
+    width: 100%;
+    height: 40px;
+    border-radius: 8px;
+    transition: all 180ms ease;
+}
+
 /* Navegación */
 .sidebar-nav {
     display: flex;
