@@ -43,15 +43,16 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
     setTimeout(onClose, 210)
   }
 
-  // Handle pull-to-dismiss gesture
+  // Handle pull-to-dismiss gesture (Synced with Surveys.tsx logic)
   useEffect(() => {
     const el = modalRef.current
     if (!el) return
 
     const onTouchStart = (e: TouchEvent) => {
+      const scrollContainer = (e.currentTarget as HTMLElement).querySelector('.overflow-y-auto')
       touchStartRef.current = {
         y: e.touches[0].clientY,
-        scrollTop: el.scrollTop
+        scrollTop: scrollContainer ? scrollContainer.scrollTop : 0
       }
     }
 
@@ -59,8 +60,8 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
       if (!touchStartRef.current) return
       const deltaY = e.touches[0].clientY - touchStartRef.current.y
       
-      // If at the top and pulling down
-      if (el.scrollTop <= 0 && deltaY > 0) {
+      // If at the top and pulling down (works from header too since its scrollY is 0)
+      if (touchStartRef.current.scrollTop <= 0 && deltaY > 0) {
         if (e.cancelable) e.preventDefault()
         setPullDownY(deltaY)
       } else {
@@ -125,6 +126,7 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={handleClose} />
       
       <div 
+        ref={modalRef}
         role="dialog" 
         aria-modal="true" 
         className={`relative w-full sm:max-w-3xl sm:mx-4 rounded-t-3xl sm:rounded-2xl bg-white dark:bg-slate-900 shadow-2xl transition-all duration-300 flex flex-col max-h-[94dvh] sm:max-h-[85vh] overflow-hidden ${isVisible ? 'translate-y-0 sm:scale-100' : 'translate-y-full sm:translate-y-4 sm:scale-95'}`}
@@ -155,7 +157,6 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
 
         {/* Scrollable Content */}
         <div 
-          ref={modalRef}
           className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6"
         >
           {/* Overall score card */}
