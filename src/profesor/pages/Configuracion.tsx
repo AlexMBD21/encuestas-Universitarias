@@ -125,7 +125,7 @@ export default function Configuracion() {
     }
     // Show confirmation modal before executing
     setConfirmPwdOpen(true)
-    setTimeout(() => setIsPwdModalVisible(true), 10)
+    setTimeout(() => setIsPwdModalVisible(true), 50)
   }
 
   const doChangePassword = async () => {
@@ -165,7 +165,7 @@ export default function Configuracion() {
     setModalMsg(null)
     setModalMsgType('success')
     setModalOpen(true)
-    setTimeout(() => setIsModalVisible(true), 10)
+    setTimeout(() => setIsModalVisible(true), 50)
   }
 
   const openEditModal = (u: any) => {
@@ -175,7 +175,7 @@ export default function Configuracion() {
     setModalMsg(null)
     setModalMsgType('success')
     setModalOpen(true)
-    setTimeout(() => setIsModalVisible(true), 10)
+    setTimeout(() => setIsModalVisible(true), 50)
   }
 
   const openDeleteModal = (u: any) => {
@@ -184,7 +184,7 @@ export default function Configuracion() {
     setModalMsg(null)
     setModalMsgType('success')
     setModalOpen(true)
-    setTimeout(() => setIsModalVisible(true), 10)
+    setTimeout(() => setIsModalVisible(true), 50)
   }
 
   const closeModal = () => {

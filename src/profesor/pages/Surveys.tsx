@@ -74,7 +74,7 @@ export default function Surveys(): JSX.Element {
   const [highlightedReportId, setHighlightedReportId] = useState<string | null>(null)
   
   useEffect(() => {
-    if (viewReportsFor) setTimeout(() => setIsReportsVisible(true), 10)
+    if (viewReportsFor) setTimeout(() => setIsReportsVisible(true), 50)
     else setIsReportsVisible(false)
   }, [viewReportsFor])
   
@@ -89,7 +89,7 @@ export default function Surveys(): JSX.Element {
   const [isCreateVisible, setIsCreateVisible] = useState(false)
 
   useEffect(() => {
-    if (createModalOpen) setTimeout(() => setIsCreateVisible(true), 10)
+    if (createModalOpen) setTimeout(() => setIsCreateVisible(true), 50)
     else setIsCreateVisible(false)
   }, [createModalOpen])
 
@@ -532,7 +532,7 @@ export default function Surveys(): JSX.Element {
         setIsModalVisible(true)
         // focus the modal container
         setTimeout(() => modalRef.current?.focus(), 40)
-      }, 10)
+      }, 50)
       return () => {
         clearTimeout(t)
         window.removeEventListener('keydown', onKey)
