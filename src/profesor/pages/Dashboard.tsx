@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import surveyHelpers from '../../services/surveyHelpers'
 import supabaseClient from '../../services/supabaseClient'
 import AuthAdapter from '../../services/AuthAdapter'
 import { useAuth } from '../../services/AuthContext'
 import { loadProfile, loadProfileAsync } from '../components/ProfileModal'
+import { CalendarWidget, CalendarEvent } from '../components/CalendarWidget'
 import '../styles/dashboard-profesor.css'
 
 export default function Dashboard() {
@@ -801,10 +803,50 @@ export default function Dashboard() {
     return () => { cancelled = true }
   }, [publishedSurveys, currentUser, surveysLoaded])
 
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  const calendarEvents = useMemo(() => {
+    const evs: CalendarEvent[] = [];
+    try {
+      (publishedSurveys || []).forEach((s: any) => {
+        if (s && s.createdAt) {
+          const dt = new Date(s.createdAt);
+          if (!isNaN(dt.getTime())) {
+            const isProject = s.surveyType === 'project' || s.type === 'project' || String(s.title || '').toLowerCase().includes('proyecto');
+            evs.push({
+              id: `ev-surv-${s.id}`,
+              type: 'survey',
+              title: `Encuesta: ${s.title || s.name || 'Sin Título'}`,
+              date: `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`,
+              color: isProject ? 'bg-indigo-500' : 'bg-emerald-500'
+            });
+          }
+        }
+      });
+    } catch(e) {}
+    try {
+      (noticesToShow || []).forEach((n: any) => {
+        if (n && n.createdAt) {
+          const dt = new Date(n.createdAt);
+          if (!isNaN(dt.getTime())) {
+            evs.push({
+              id: `ev-not-${n.id}`,
+              type: 'report',
+              title: `Aviso: ${n.surveyTitle || n.title || 'Reporte'}`,
+              date: `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`,
+              color: 'bg-rose-500'
+            });
+          }
+        }
+      });
+    } catch(e) {}
+    return evs;
+  }, [publishedSurveys, noticesToShow]);
+
   return (
-    <div id="dashboard-view" className="layout-content-container flex flex-col max-w-full flex-1 pt-4">
+    <div id="dashboard-view" className="layout-content-container flex flex-col max-w-full flex-1 pt-4 relative">
       {/* Welcome Section */}
-      <div className="flex flex-wrap justify-between gap-3 px-4 py-0.5">
+      <div className="flex flex-wrap justify-between items-start gap-3 px-4 py-0.5 relative z-10">
         <div>
           <h1 className="text-slate-900 dark:text-slate-50 text-3xl font-black leading-tight tracking-[-0.033em] min-w-72 mb-1">
             {profileName ? `¡Bienvenido de nuevo, ${profileName}!` : '¡Bienvenido de nuevo!'}
@@ -1021,7 +1063,30 @@ export default function Dashboard() {
 
         
       </div>
+      
+      {/* Botón flotante derecho (siempre visible incluso al scrollear) */}
+      {!isCalendarOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed right-0 z-[200] flex items-center" style={{ top: 'calc(var(--topbar-height) + 24px)' }}>
+          <button
+            onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+            className="group flex items-center justify-center pl-3 pr-3 py-3 bg-slate-900 dark:bg-slate-800 border-y border-l border-slate-700 hover:bg-slate-800 text-white shadow-2xl rounded-l-xl transition-all duration-300 ease-in-out"
+            title="Abrir Calendario"
+          >
+            <span className="material-symbols-outlined text-xl">calendar_month</span>
+            <span className="overflow-hidden whitespace-nowrap max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 group-hover:ml-2 transition-all duration-300 ease-in-out font-medium text-sm">
+              Calendario
+            </span>
+          </button>
+        </div>,
+        document.body
+      )}
 
+      {isCalendarOpen && (
+        <CalendarWidget 
+          events={calendarEvents} 
+          onClose={() => setIsCalendarOpen(false)} 
+        />
+      )}
 
     </div>
   )
