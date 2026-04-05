@@ -122,25 +122,123 @@
     .user-chip { padding: 4px 6px 4px 4px; gap: 4px; }
 }
 
-/* Botón hamburguesa — solo mobile */
+/* ============================================ */
+/*  BOTÓN HAMBURGUESA — MOBILE (premium)         */
+/* ============================================ */
 .topbar-hamburger {
-    display: none;
+    display: none;       /* hidden on desktop */
     align-items: center;
     justify-content: center;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.25);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1.5px solid rgba(255, 255, 255, 0.22);
     color: #ffffff;
     cursor: pointer;
-    padding: 6px;
-    border-radius: 10px;
-    transition: background 150ms ease;
+    padding: 0;
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    transition:
+        background 200ms ease,
+        border-color 200ms ease,
+        box-shadow 200ms ease,
+        transform 120ms cubic-bezier(.2,.9,.2,1);
+    /* subtle glow pulse animation (idle) */
+    animation: hambGlowIdle 3.5s ease-in-out infinite;
 }
-.topbar-hamburger:hover { background: rgba(255,255,255,0.26); }
-.topbar-hamburger .material-symbols-outlined { font-size: 22px; }
+
+/* ripple / shimmer layer */
+.topbar-hamburger::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.18) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 200ms ease;
+}
+
+.topbar-hamburger:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.40);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.10), 0 4px 16px rgba(0,0,0,0.18);
+    animation: none;   /* pause idle pulse on hover */
+}
+.topbar-hamburger:hover::before { opacity: 1; }
+
+.topbar-hamburger:active {
+    transform: scale(0.90);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.22);
+}
+
+/* State: open — replace idle animation with open glow */
+.topbar-hamburger.is-open {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.38);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.12);
+    animation: none;
+}
+
+/* ----- Hamburger lines container ----- */
+.hamburger-box {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 16px;
+    gap: 0;
+}
+
+.hamburger-line {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: #ffffff;
+    position: absolute;
+    left: 0;
+    transform-origin: center;
+    transition:
+        transform 320ms cubic-bezier(.77,0,.18,1),
+        opacity   200ms ease,
+        top       320ms cubic-bezier(.77,0,.18,1),
+        width     280ms cubic-bezier(.77,0,.18,1);
+}
+
+/* Default (closed) positions */
+.hamburger-line-top { top: 0; }
+.hamburger-line-mid { top: 50%; transform: translateY(-50%); }
+.hamburger-line-bot { top: 100%; transform: translateY(-100%); }
+
+/* ----- OPEN state: morph to X ----- */
+.topbar-hamburger.is-open .hamburger-line-top {
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+}
+.topbar-hamburger.is-open .hamburger-line-mid {
+    opacity: 0;
+    transform: translateY(-50%) scaleX(0);
+}
+.topbar-hamburger.is-open .hamburger-line-bot {
+    top: 50%;
+    transform: translateY(-50%) rotate(-45deg);
+}
+
+/* ----- Idle glow pulse ----- */
+@keyframes hambGlowIdle {
+    0%,  100% { box-shadow: 0 0 0 0px rgba(255,255,255,0.0); }
+    50%        { box-shadow: 0 0 0 3px rgba(255,255,255,0.08); }
+}
+
+/* Show on mobile only */
 @media (max-width: 768px) {
     .topbar-hamburger { display: inline-flex; }
 }
+
 
 /* Backdrop del sidebar en mobile */
 .sidebar-mobile-backdrop {

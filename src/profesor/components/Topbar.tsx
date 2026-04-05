@@ -11,9 +11,10 @@ type Props = {
   notifications?: any[]
   badgeCount?: number
   onToggleMobileSidebar?: () => void
+  mobileSidebarOpen?: boolean
 }
 
-export default function Topbar({ notificationsOpen, onToggleNotifications, notifications: notificationsProp, badgeCount, onToggleMobileSidebar }: Props) {
+export default function Topbar({ notificationsOpen, onToggleNotifications, notifications: notificationsProp, badgeCount, onToggleMobileSidebar, mobileSidebarOpen }: Props) {
   const navigate = useNavigate()
   const { user: currentUser } = useAuth()
   const userId = currentUser?.id || currentUser?.email || null
@@ -216,11 +217,16 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
 
         {/* Hamburger — solo mobile */}
         <button
-          className="topbar-hamburger"
+          className={`topbar-hamburger${mobileSidebarOpen ? ' is-open' : ''}`}
           onClick={onToggleMobileSidebar}
-          aria-label="Abrir menú"
+          aria-label={mobileSidebarOpen ? 'Cerrar menú' : 'Abrir menú'}
+          aria-expanded={mobileSidebarOpen}
         >
-          <span className="material-symbols-outlined">menu</span>
+          <span className="hamburger-box" aria-hidden="true">
+            <span className="hamburger-line hamburger-line-top" />
+            <span className="hamburger-line hamburger-line-mid" />
+            <span className="hamburger-line hamburger-line-bot" />
+          </span>
         </button>
 
         {/* Brand / Logo */}
