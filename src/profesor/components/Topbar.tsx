@@ -231,7 +231,6 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
 
         {/* Brand / Logo */}
         <div className="topbar-brand" onClick={() => { try { navigate('/profesor') } catch (e) {} }}>
-          <span className="material-symbols-outlined topbar-brand-icon">school</span>
           <span className="topbar-brand-name">Encuestas</span>
         </div>
 
