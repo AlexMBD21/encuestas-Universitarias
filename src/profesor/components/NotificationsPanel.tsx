@@ -540,6 +540,10 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
                     : null
                           const kind = found && (found.type === 'project' || (found.projects && found.projects.length > 0)) ? 'projects' : 'view'
                           navigate('/profesor/encuestas', { state: { openSurveyId: String(n.surveyId), openSurveyKind: kind } })
+                          // also dispatch a global event so if we are already on Surveys page it triggers immediately
+                          try {
+                            window.dispatchEvent(new CustomEvent('surveys:open', { detail: { surveyId: String(n.surveyId), kind } }))
+                          } catch (e) {}
                         } catch (e) {
                           navigate('/profesor/encuestas', { state: { openSurveyId: String(n.surveyId), openSurveyKind: 'view' } })
                         }

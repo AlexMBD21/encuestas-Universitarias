@@ -183,6 +183,8 @@ export default function Surveys(): JSX.Element {
   const [projectSearch, setProjectSearch] = useState<string>('')
   const [projectCategory, setProjectCategory] = useState<string>('all')
   const modalRef = useRef<HTMLDivElement | null>(null)
+  const reportsModalRef = useRef<HTMLDivElement | null>(null)
+  const createModalRef = useRef<HTMLDivElement | null>(null)
   const lastActiveElement = useRef<HTMLElement | null>(null)
   const [pullDownY, setPullDownY] = useState(0)
   const touchStartRef = useRef({ y: 0, scrollY: 0 })
@@ -374,50 +376,6 @@ export default function Surveys(): JSX.Element {
     }
     window.addEventListener('realtime:connected', onConnected as EventListener)
 
-    // If navigation passed state requesting to open a survey, handle it (useful when coming from notifications)
-    try {
-      const st = (location && (location as any).state) || null
-      if (st && !st.openReports && (st.openSurveyId || st.surveyId)) {
-        const id = st.openSurveyId || st.surveyId
-        const kind = st.openSurveyKind || st.kind || 'view'
-        setTimeout(() => {
-          try {
-            setModalSurveyId(String(id))
-            setModalKind(kind === 'projects' ? 'projects' : 'view')
-            try { history.replaceState({}, '', location.pathname) } catch (e) {}
-          } catch (e) {}
-        }, 80)
-      }
-      // support opening report viewer directly from navigation state
-      if (st && st.openReports && (st.openSurveyId || st.surveyId)) {
-        try {
-          const idr = st.openSurveyId || st.surveyId
-          const reportId = st.openReportId || null
-          setTimeout(() => {
-            try {
-              setViewReportsFor(String(idr))
-              if (reportId) setHighlightedReportId(String(reportId))
-              try { history.replaceState({}, '', location.pathname) } catch (e) {}
-            } catch (e) {}
-          }, 120)
-        } catch (e) {}
-      }
-      // support opening the CreateSurvey form from other pages via navigation state
-      if (st && st.openCreate) {
-        try {
-          const type = st.initialType || undefined
-          setTimeout(() => {
-            try {
-              setEditSurvey(null)
-              setCreateInitialType(type)
-              setCreateModalOpen(true)
-              try { history.replaceState({}, '', location.pathname) } catch (e) {}
-            } catch (e) {}
-          }, 80)
-        } catch (e) {}
-      }
-    } catch (e) {}
-
     // keep existing window events for compatibility
     const onUpdated = (ev: any) => {
       // Optimistic: apply survey data from event immediately, before server re-fetch
@@ -518,6 +476,53 @@ export default function Surveys(): JSX.Element {
   const dataClientNow: any = supabaseClient
 
   useEffect(() => {
+    // If navigation passed state requesting to open a survey, handle it (useful when coming from notifications)
+    try {
+      const st = (location && (location as any).state) || null
+      if (st && !st.openReports && (st.openSurveyId || st.surveyId)) {
+        const id = st.openSurveyId || st.surveyId
+        const kind = st.openSurveyKind || st.kind || 'view'
+        setTimeout(() => {
+          try {
+            setModalSurveyId(String(id))
+            setModalKind(kind === 'projects' ? 'projects' : 'view')
+            // clear the state after handling so it doesn't reopen on refresh or unrelated nav
+            try { history.replaceState({}, '', location.pathname) } catch (e) {}
+          } catch (e) {}
+        }, 80)
+      }
+      // support opening report viewer directly from navigation state
+      if (st && st.openReports && (st.openSurveyId || st.surveyId)) {
+        try {
+          const idr = st.openSurveyId || st.surveyId
+          const reportId = st.openReportId || null
+          setTimeout(() => {
+            try {
+              setViewReportsFor(String(idr))
+              if (reportId) setHighlightedReportId(String(reportId))
+              try { history.replaceState({}, '', location.pathname) } catch (e) {}
+            } catch (e) {}
+          }, 120)
+        } catch (e) {}
+      }
+      // support opening the CreateSurvey form from other pages via navigation state
+      if (st && st.openCreate) {
+        try {
+          const type = st.initialType || undefined
+          setTimeout(() => {
+            try {
+              setEditSurvey(null)
+              setCreateInitialType(type)
+              setCreateModalOpen(true)
+              try { history.replaceState({}, '', location.pathname) } catch (e) {}
+            } catch (e) {}
+          }, 80)
+        } catch (e) {}
+      }
+    } catch (e) {}
+  }, [location])
+
+  useEffect(() => {
     if (modalSurveyId !== null) {
       // open modal with small delay to trigger animation
       lastActiveElement.current = document.activeElement as HTMLElement | null
@@ -542,6 +547,34 @@ export default function Surveys(): JSX.Element {
       }
     }
   }, [modalSurveyId, closeModal])
+
+  // Helper for non-passive touchmove listeners to prevent browser pull-to-refresh
+  useEffect(() => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (touchStartRef.current.scrollY <= 0) {
+        const delta = e.touches[0].clientY - touchStartRef.current.y;
+        if (delta > 0) {
+          if (e.cancelable) e.preventDefault();
+          setPullDownY(delta);
+        }
+      }
+    };
+
+    const options: AddEventListenerOptions = { passive: false };
+    const m = modalRef.current;
+    const r = reportsModalRef.current;
+    const c = createModalRef.current;
+
+    if (m) m.addEventListener('touchmove', handleTouchMove, options);
+    if (r) r.addEventListener('touchmove', handleTouchMove, options);
+    if (c) c.addEventListener('touchmove', handleTouchMove, options);
+
+    return () => {
+      if (m) m.removeEventListener('touchmove', handleTouchMove);
+      if (r) r.removeEventListener('touchmove', handleTouchMove);
+      if (c) c.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [isModalVisible, isReportsVisible, isCreateVisible]);
 
   const navigate = useNavigate();
   return (
@@ -1016,15 +1049,6 @@ export default function Surveys(): JSX.Element {
                   const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
                   touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
                 }}
-                onTouchMove={(e) => {
-                  if (touchStartRef.current.scrollY <= 0) {
-                    const delta = e.touches[0].clientY - touchStartRef.current.y;
-                    if (delta > 0) {
-                      if (e.cancelable) e.preventDefault();
-                      setPullDownY(delta);
-                    }
-                  }
-                }}
                 onTouchEnd={() => {
                   if (pullDownY > 80) closeModal();
                   setPullDownY(0);
@@ -1382,6 +1406,7 @@ export default function Surveys(): JSX.Element {
           <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} />
             <div className={`relative w-full sm:max-w-2xl sm:mx-4 sm:mb-0 bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col h-[90dvh] sm:h-auto sm:max-h-[80vh] overflow-hidden transform transition-all duration-300 ${isReportsVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`} role="dialog" aria-modal="true"
+                 ref={reportsModalRef}
                  style={{
                    overscrollBehaviorY: 'contain',
                    ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
@@ -1389,15 +1414,6 @@ export default function Surveys(): JSX.Element {
                  onTouchStart={(e) => {
                    const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
                    touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
-                 }}
-                 onTouchMove={(e) => {
-                   if (touchStartRef.current.scrollY <= 0) {
-                     const delta = e.touches[0].clientY - touchStartRef.current.y;
-                     if (delta > 0) {
-                       if (e.cancelable) e.preventDefault();
-                       setPullDownY(delta);
-                     }
-                   }
                  }}
                  onTouchEnd={() => {
                    if (pullDownY > 80) closeReportsModal();
@@ -1543,6 +1559,7 @@ export default function Surveys(): JSX.Element {
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => closeCreateModal()} />
             <div className="relative w-full sm:max-w-xl sm:mx-4 sm:mb-0">
               <div className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isCreateVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
+                   ref={createModalRef}
                    style={{
                      overscrollBehaviorY: 'contain',
                      ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
@@ -1550,15 +1567,6 @@ export default function Surveys(): JSX.Element {
                    onTouchStart={(e) => {
                      const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
                      touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
-                   }}
-                   onTouchMove={(e) => {
-                     if (touchStartRef.current.scrollY <= 0) {
-                       const delta = e.touches[0].clientY - touchStartRef.current.y;
-                       if (delta > 0) {
-                         if (e.cancelable) e.preventDefault();
-                         setPullDownY(delta);
-                       }
-                     }
                    }}
                    onTouchEnd={() => {
                      if (pullDownY > 80) closeCreateModal();

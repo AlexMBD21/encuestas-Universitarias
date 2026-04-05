@@ -51,6 +51,8 @@ export default function Configuracion() {
   const [pullDownY, setPullDownY] = useState(0)
   const [pullDownPwdY, setPullDownPwdY] = useState(0)
   const touchStartRef = useRef({ y: 0, scrollY: 0 })
+  const userModalRef = useRef<HTMLDivElement | null>(null)
+  const pwdModalRef = useRef<HTMLDivElement | null>(null)
   // toast state
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [toastKind, setToastKind] = useState<'create' | 'edit' | 'delete' | 'info'>('info')
@@ -198,6 +200,42 @@ export default function Configuracion() {
       setModalShowPassword(false)
     }, 300)
   }
+
+  // Handle non-passive touchmove for pull-to-dismiss without browser pull-to-refresh
+  useEffect(() => {
+    const handleTouchMove = (e: TouchEvent) => {
+      // For Admin User Modal
+      if (modalOpen && isModalVisible && !confirmPwdOpen) {
+        if (touchStartRef.current.scrollY <= 0) {
+          const delta = e.touches[0].clientY - touchStartRef.current.y;
+          if (delta > 0) {
+            if (e.cancelable) e.preventDefault();
+            setPullDownY(delta);
+          }
+        }
+      }
+      // For Password confirmation modal
+      if (confirmPwdOpen && isPwdModalVisible) {
+        const delta = e.touches[0].clientY - touchStartRef.current.y;
+        if (delta > 0) {
+          if (e.cancelable) e.preventDefault();
+          setPullDownPwdY(delta);
+        }
+      }
+    };
+
+    const opt: AddEventListenerOptions = { passive: false };
+    const u = userModalRef.current;
+    const p = pwdModalRef.current;
+
+    if (u) u.addEventListener('touchmove', handleTouchMove, opt);
+    if (p) p.addEventListener('touchmove', handleTouchMove, opt);
+
+    return () => {
+      if (u) u.removeEventListener('touchmove', handleTouchMove);
+      if (p) p.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [modalOpen, isModalVisible, confirmPwdOpen, isPwdModalVisible]);
 
   const confirmModalSave = async () => {
     if (!isAdmin) return
@@ -520,20 +558,12 @@ export default function Configuracion() {
           <div className="relative w-full sm:max-w-lg sm:mx-4 sm:mb-0">
             <div
               className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90dvh] sm:max-h-[80vh] transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
+              ref={userModalRef}
               style={{
                 overscrollBehaviorY: 'contain',
                 ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
               }}
               onTouchStart={(e) => { const sc = e.currentTarget.querySelector('.overflow-y-auto'); touchStartRef.current = { y: e.touches[0].clientY, scrollY: sc ? sc.scrollTop : 0 } }}
-              onTouchMove={(e) => {
-                if (touchStartRef.current.scrollY <= 0) {
-                  const delta = e.touches[0].clientY - touchStartRef.current.y;
-                  if (delta > 0) {
-                    if (e.cancelable) e.preventDefault();
-                    setPullDownY(delta)
-                  }
-                }
-              }}
               onTouchEnd={() => { if (pullDownY > 80) closeModal(); setPullDownY(0) }}
               role="dialog" aria-modal="true" aria-labelledby="modal-title"
             >
@@ -620,18 +650,12 @@ export default function Configuracion() {
           <div className="relative w-full sm:max-w-sm sm:mx-4 sm:mb-0">
             <div
               className={`bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 ${isPwdModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
+              ref={pwdModalRef}
               style={{
                 overscrollBehaviorY: 'contain',
                 ...(pullDownPwdY > 0 ? { transform: `translateY(${pullDownPwdY}px)`, transition: 'none' } : undefined)
               }}
               onTouchStart={(e) => { touchStartRef.current = { y: e.touches[0].clientY, scrollY: 0 } }}
-              onTouchMove={(e) => {
-                const delta = e.touches[0].clientY - touchStartRef.current.y;
-                if (delta > 0) {
-                  if (e.cancelable) e.preventDefault();
-                  setPullDownPwdY(delta);
-                }
-              }}
               onTouchEnd={() => { if (pullDownPwdY > 80) { setIsPwdModalVisible(false); setPullDownPwdY(0); setTimeout(() => setConfirmPwdOpen(false), 300) } else setPullDownPwdY(0) }}
               role="dialog" aria-modal="true"
             >
