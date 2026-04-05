@@ -70,7 +70,34 @@ export default function Surveys(): JSX.Element {
   const [surveyReports, setSurveyReports] = useState<any[]>([])
   const [reportsLoaded, setReportsLoaded] = useState(false)
   const [viewReportsFor, setViewReportsFor] = useState<string | null>(null)
+  const [isReportsVisible, setIsReportsVisible] = useState(false)
   const [highlightedReportId, setHighlightedReportId] = useState<string | null>(null)
+  
+  useEffect(() => {
+    if (viewReportsFor) setTimeout(() => setIsReportsVisible(true), 10)
+    else setIsReportsVisible(false)
+  }, [viewReportsFor])
+  
+  const closeReportsModal = () => {
+    setIsReportsVisible(false)
+    setTimeout(() => {
+      setViewReportsFor(null)
+      setHighlightedReportId(null)
+    }, 300)
+  }
+
+  const [isCreateVisible, setIsCreateVisible] = useState(false)
+
+  useEffect(() => {
+    if (createModalOpen) setTimeout(() => setIsCreateVisible(true), 10)
+    else setIsCreateVisible(false)
+  }, [createModalOpen])
+
+  const closeCreateModal = () => {
+    setIsCreateVisible(false)
+    setTimeout(() => setCreateModalOpen(false), 300)
+  }
+
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [publishedFilter, setPublishedFilter] = useState<'all'|'published'|'unpublished'|'reported'>('all')
   const [ownerFilter, setOwnerFilter] = useState<string>('all')
@@ -157,6 +184,8 @@ export default function Surveys(): JSX.Element {
   const [projectCategory, setProjectCategory] = useState<string>('all')
   const modalRef = useRef<HTMLDivElement | null>(null)
   const lastActiveElement = useRef<HTMLElement | null>(null)
+  const [pullDownY, setPullDownY] = useState(0)
+  const touchStartRef = useRef({ y: 0, scrollY: 0 })
   const activeSurvey = surveys.find(x => String(x.id) === String(modalSurveyId))
   // refs for per-survey menu toggle buttons so we can position a portal menu
   const menuButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({})
@@ -978,15 +1007,30 @@ export default function Surveys(): JSX.Element {
                 role="dialog"
                 aria-modal="true"
                 tabIndex={-1}
-                className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}>
+                className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
+                style={pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined}
+                onTouchStart={(e) => {
+                  const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
+                  touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
+                }}
+                onTouchMove={(e) => {
+                  if (touchStartRef.current.scrollY <= 0) {
+                    const delta = e.touches[0].clientY - touchStartRef.current.y;
+                    if (delta > 0) setPullDownY(delta);
+                  }
+                }}
+                onTouchEnd={() => {
+                  if (pullDownY > 80) closeModal();
+                  setPullDownY(0);
+                }}>
                 {/* Drag handle for mobile */}
-                <div className="w-full flex justify-center pt-2 pb-1 sm:hidden absolute top-0 z-20" style={{ backgroundColor: 'var(--color-primary)' }}>
+                <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)' }} onClick={() => closeModal()}>
                   <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
                 </div>
                 {/* Header (sticky) */}
                 <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
                   <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
-                  <div className="ml-auto">
+                  <div className="ml-auto hidden sm:block">
                     <button type="button" onClick={() => closeModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
                       <span className="material-symbols-outlined text-[22px]">close</span>
                     </button>
@@ -1331,7 +1375,26 @@ export default function Surveys(): JSX.Element {
         {viewReportsFor && ReactDOM.createPortal(
           <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} />
-            <div className="relative w-full sm:max-w-2xl sm:mx-4 sm:mb-0 bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col h-[90dvh] sm:h-auto sm:max-h-[80vh] overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-200" role="dialog" aria-modal="true">
+            <div className={`relative w-full sm:max-w-2xl sm:mx-4 sm:mb-0 bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col h-[90dvh] sm:h-auto sm:max-h-[80vh] overflow-hidden transform transition-all duration-300 ${isReportsVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`} role="dialog" aria-modal="true"
+                 style={pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined}
+                 onTouchStart={(e) => {
+                   const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
+                   touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
+                 }}
+                 onTouchMove={(e) => {
+                   if (touchStartRef.current.scrollY <= 0) {
+                     const delta = e.touches[0].clientY - touchStartRef.current.y;
+                     if (delta > 0) setPullDownY(delta);
+                   }
+                 }}
+                 onTouchEnd={() => {
+                   if (pullDownY > 80) closeReportsModal();
+                   setPullDownY(0);
+                 }}>
+              {/* Drag handle */}
+              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" onClick={() => closeReportsModal()}>
+                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+              </div>
               {/* Header */}
               <div className="px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10">
                 <div className="flex items-center gap-3">
@@ -1340,14 +1403,16 @@ export default function Surveys(): JSX.Element {
                   </div>
                   <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Buzón de Reportes</h3>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }}
-                  aria-label="Cerrar"
-                  className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center justify-center hover:bg-slate-200 hover:text-slate-800 dark:hover:bg-slate-700 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[20px]">close</span>
-                </button>
+                <div className="ml-auto hidden sm:block">
+                  <button
+                    type="button"
+                    onClick={() => closeReportsModal()}
+                    aria-label="Cerrar"
+                    className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center justify-center hover:bg-slate-200 hover:text-slate-800 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">close</span>
+                  </button>
+                </div>
               </div>
               {/* Scrollable list */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -1463,20 +1528,45 @@ export default function Surveys(): JSX.Element {
         {/* Create modal */}
         {createModalOpen && ReactDOM.createPortal(
           <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
-            <div className="absolute inset-0 bg-black opacity-40" onClick={() => setCreateModalOpen(false)} />
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => closeCreateModal()} />
             <div className="relative w-full sm:max-w-xl sm:mx-4 sm:mb-0">
-              <div className={`bg-white dark:bg-slate-900 sm:rounded shadow-lg h-[100dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col`}>
-                <div className="sticky top-0 z-10 border-b px-5 py-4 flex items-center text-white flex-shrink-0" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
-                  <div className="text-lg font-bold truncate">{editSurvey ? 'Editar encuesta' : 'Crear encuesta'}</div>
+              <div className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isCreateVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
+                   style={pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined}
+                   onTouchStart={(e) => {
+                     const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
+                     touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
+                   }}
+                   onTouchMove={(e) => {
+                     if (touchStartRef.current.scrollY <= 0) {
+                       const delta = e.touches[0].clientY - touchStartRef.current.y;
+                       if (delta > 0) setPullDownY(delta);
+                     }
+                   }}
+                   onTouchEnd={() => {
+                     if (pullDownY > 80) closeCreateModal();
+                     setPullDownY(0);
+                   }}>
+                {/* Drag handle for mobile */}
+                <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)' }} onClick={() => closeCreateModal()}>
+                  <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
                 </div>
-                <div className="flex-1 overflow-y-auto px-0 sm:px-4 pb-4">
+                {/* Header (sticky) */}
+                <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
+                  <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{editSurvey ? 'Editar encuesta' : 'Crear encuesta'}</div>
+                  <div className="ml-auto hidden sm:block">
+                    <button type="button" onClick={() => closeCreateModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+                      <span className="material-symbols-outlined text-[22px]">close</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto px-0 sm:px-4 pb-0 sm:pb-4 w-full">
                   <CreateSurvey
                     hideTypeSelector={true}
                     initialType={createInitialType}
                     editSurvey={editSurvey}
                     onSaved={(key: any, surveyData?: any) => {
                       const wasEditing = !!editSurvey
-                      setCreateModalOpen(false)
+                      closeCreateModal()
                       setEditSurvey(null)
                       setCreateInitialType(undefined)
                       setToastMessage(wasEditing ? 'Encuesta actualizada' : 'Encuesta creada')

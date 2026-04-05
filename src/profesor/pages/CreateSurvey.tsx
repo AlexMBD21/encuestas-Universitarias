@@ -190,8 +190,10 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
     }
   }
 
+  const isModal = !!onClose;
+
   return (
-    <div className="create-survey bg-white dark:bg-slate-900 sm:rounded-3xl border-y sm:border border-slate-100 dark:border-slate-800 p-4 sm:p-6 md:p-8 shadow-xl shadow-slate-200/40 dark:shadow-none mb-0 sm:mb-8">
+    <div className={`create-survey ${isModal ? 'px-4 pb-8 pt-5 sm:pt-4 sm:px-2' : 'bg-white dark:bg-slate-900 sm:rounded-3xl border-y sm:border border-slate-200 dark:border-slate-800 p-4 sm:p-6 md:p-8 shadow-xl shadow-slate-200/40 dark:shadow-none mb-0 sm:mb-8'} animate-in fade-in duration-300 w-full`}>
       {/* Breadcrumb — solo visible cuando no hay onClose (es página completa) */}
       {!onClose && (
         <nav className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 mb-8 pb-4 border-b border-slate-100 dark:border-slate-800" aria-label="Ruta de navegación">
