@@ -587,7 +587,7 @@ export default function Surveys(): JSX.Element {
           <button type="button" onClick={() => {
             if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
             handleCreate()
-          }} className={`px-4 py-2 text-sm font-medium rounded-lg ${!backendEnabled ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'}`} disabled={!backendEnabled}>
+          }} className={`px-4 py-2 text-sm font-medium rounded-lg ${!backendEnabled ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20'}`} disabled={!backendEnabled}>
             + Nueva Encuesta
           </button>
           <button type="button" onClick={() => {
