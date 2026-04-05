@@ -436,167 +436,147 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
     <div
       id="notifications-panel"
       ref={rootRef}
-      className={`fixed right-0 z-[1000] w-full max-w-md dark:bg-gray-900 shadow-2xl border-l border-blue-100 dark:border-gray-700 rounded-b-2xl flex flex-col ${cls}`}
-      style={{ top: topPx != null ? `${topPx}px` : '76px', maxHeight: topPx != null ? `calc(100vh - ${topPx}px)` : 'calc(100vh - 76px)', minHeight: 0, backgroundColor: '#f0f7ff' }}
+      className={`fixed right-0 z-[1000] w-full max-w-md shadow-[0_20px_50px_rgba(0,0,0,0.18)] border-l border-white/30 rounded-b-3xl flex flex-col ${cls}`}
+      style={{ 
+        top: topPx != null ? `${topPx}px` : '76px', 
+        maxHeight: topPx != null ? `calc(100vh - ${topPx}px)` : 'calc(100vh - 76px)', 
+        minHeight: 0, 
+        backgroundColor: 'rgba(241, 245, 249, 0.97)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)'
+      }}
     >
-      <div className="flex flex-col h-full">
-        <div ref={innerRef} className="p-6 space-y-4 custom-scrollbar" style={{ overflowY: 'auto', maxHeight: itemHeight ? `${itemHeight * 5 + 16}px` : (topPx != null ? `calc(100vh - ${topPx}px - 48px)` : 'calc(100vh - 124px)') }}>
-          { /* Notices for surveys only (system notices moved to dedicated page) */ }
+      <div className="flex flex-col h-full overflow-hidden">
+        {/* Header con estilo premium */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/50 bg-slate-50/50 shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+              <span className="material-symbols-outlined text-primary text-xl font-bold">notifications_active</span>
+            </div>
+            <h3 className="font-black text-slate-800 dark:text-white tracking-tight uppercase text-xs">Centro de Avisos</h3>
+          </div>
+          {notifications.length > 0 && (
+            <button
+              type="button"
+              onClick={handleLimpiar}
+              className="group flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-black text-primary hover:bg-primary/10 transition-all duration-300 active:scale-95 uppercase tracking-widest"
+            >
+              <span className="material-symbols-outlined text-sm font-bold">done_all</span>
+              Limpiar
+            </button>
+          )}
+        </div>
 
+        <div ref={innerRef} className="p-4 space-y-3 custom-scrollbar flex-1 overflow-y-auto" style={{ maxHeight: itemHeight ? `${itemHeight * 5 + 32}px` : (topPx != null ? `calc(100vh - ${topPx}px - 100px)` : 'calc(100vh - 176px)') }}>
           {!panelLoaded ? (
-            <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'32px 0',gap:10}}>
-              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{animation:'spin 0.9s linear infinite'}}>
-                <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4"/>
-                <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round"/>
-              </svg>
-              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-              <div style={{fontSize:'0.8rem', color:'#94a3b8', fontWeight:500}}>Cargando...</div>
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <div className="w-10 h-10 border-4 border-slate-200 border-t-primary rounded-full animate-spin"></div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Sincronizando...</p>
             </div>
           ) : (<>
-          {notifications.length === 0 && <div className="text-slate-500 text-center py-4">No hay notificaciones</div>}
+            {notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center mb-4 shadow-inner">
+                  <span className="material-symbols-outlined text-slate-300 text-4xl">notifications_off</span>
+                </div>
+                <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm mb-1 uppercase tracking-tight">Todo despejado</h4>
+                <p className="text-[11px] text-slate-500 max-w-[200px] font-medium">No tienes avisos pendientes por el momento.</p>
+              </div>
+            ) : (
+              (() => {
+                const visible = (notifications || []).filter((n: any) => {
+                  try {
+                    if (!n) return false
+                    if (n.id && hiddenMap && hiddenMap[String(n.id)]) return false
+                    if (!n.surveyId) return true
+                    if (surveysFromDB === null) return true
+                    return !!(surveysFromDB || []).find((s: any) => String(s.id) === String(n.surveyId))
+                  } catch (e) { return false }
+                })
 
-          {/* Filter out notifications that reference surveys that no longer exist or that the user hid */}
-          {(() => {
-            const visible = (notifications || []).filter((n: any) => {
-              try {
-                if (!n) return false
-                // skip if user hid this notification
-                if (n.id && hiddenMap && hiddenMap[String(n.id)]) return false
-                if (!n.surveyId) return true
-                // surveysFromDB === null means not yet loaded: show optimistically
-                // surveysFromDB is a loaded array: only show if the survey still exists
-                if (surveysFromDB === null) return true
-                const found = (surveysFromDB || []).find((s: any) => String(s.id) === String(n.surveyId))
-                return !!found
-              } catch (e) {
-                return false
-              }
-            })
-            if (notifications.length > 0 && (!visible || visible.length === 0)) return (<div className="text-slate-500 text-center py-4">No hay notificaciones</div>)
-            return visible.map((n: any, i: number) => {
-              let status: 'pending' | 'responded' | 'warning' = 'pending'
-              let found: any = null
-              try {
-                if (n.surveyId) {
-                  found = surveysFromDB != null
-                    ? ((surveysFromDB || []).find((s: any) => String(s.id) === String(n.surveyId)) || null)
-                    : null
-                  const sourceFound = found
-                  // Prefer user response map (populated from RTDB) to determine if this user already responded
-                  const responded = !!userRespondedMap[String(n.surveyId)]
-                  if (sourceFound) {
-                    if (responded) {
-                      status = 'responded'
-                    } else {
-                      status = 'pending'
+                if (notifications.length > 0 && visible.length === 0) {
+                  return (
+                    <div className="text-center py-12">
+                      <span className="material-symbols-outlined text-slate-200 text-5xl mb-3">done_all</span>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic font-inter">No hay más avisos</p>
+                    </div>
+                  )
+                }
+
+                return visible.map((n: any, i: number) => {
+                  let status: 'pending' | 'responded' | 'warning' = 'pending'
+                  let survey: any = null
+                  try {
+                    if (n.surveyId) {
+                      survey = surveysFromDB != null ? (surveysFromDB.find((s: any) => String(s.id) === String(n.surveyId)) || null) : null
+                      const responded = !!userRespondedMap[String(n.surveyId)]
+                      if (responded) status = 'responded'
+                      else if (n.expiresAt && Date.parse(n.expiresAt) - Date.now() <= 48 * 3600 * 1000) status = 'warning'
                     }
-                  } else {
-                    status = responded ? 'responded' : 'pending'
-                  }
-                  if (status === 'pending' && n.expiresAt) {
-                    try {
-                      const when = Date.parse(n.expiresAt)
-                      const now = Date.now()
-                      const ms48 = 48 * 3600 * 1000
-                      if (when > now && when - now <= ms48) status = 'warning'
-                    } catch (e) {}
-                  }
-                }
-              } catch (e) {}
+                  } catch (e) {}
 
-              // Border color is based on survey type: purple for project, green for simple
-              const isProjectType = !!(found && (found.type === 'project' || (found.projects && found.projects.length > 0)))
-              let borderClass = isProjectType ? 'border-indigo-600' : 'border-green-600'
+                  const isProject = !!(survey && (survey.type === 'project' || survey.projects?.length > 0))
+                  const colorClass = isProject ? 'bg-indigo-600' : 'bg-green-600'
+                  const typeLabel = isProject ? 'PROYECTO' : 'NUEVA ENCUESTA'
+                  const isResponded = status === 'responded'
+                  const statusLabel = isResponded ? (isProject ? 'CALIFICADO' : 'RESPONDIDO') : (status === 'warning' ? 'CERRANDO' : null)
 
-              // Compute an optional final label (Respondido / Calificado / Próximo)
-              let finalLabelText: string | null = null
-              let finalLabelCls = 'bg-slate-100 text-slate-700'
-              try {
-                if (status === 'responded') {
-                  if (isProjectType) {
-                    // project survey: indigo to match "Crear calificación proyecto" button
-                    finalLabelText = 'Calificado'
-                    finalLabelCls = 'bg-indigo-100 text-indigo-700'
-                  } else {
-                    // simple survey: green to match "Nueva Encuesta" button
-                    finalLabelText = 'Respondido'
-                    finalLabelCls = 'bg-green-100 text-green-700'
-                  }
-                } else if (status === 'warning') {
-                  finalLabelText = 'Próximo'
-                  finalLabelCls = 'bg-yellow-100 text-yellow-700'
-                }
-              } catch (e) {}
-
-              return (
-                <div
-                  data-notif-item
-                  key={`${n.id || 'notif'}-${i}`}
-                  onClick={() => {
-                    try {
-                      if (n.type === 'survey_published' && n.surveyId) {
-                        if (status === 'responded') return
+                  return (
+                    <div
+                      data-notif-item
+                      key={`${n.id || 'notif'}-${i}`}
+                      onClick={() => {
+                        if (status === 'responded' || !n.surveyId) return
                         markNotificationRead(n.id)
-                        try {
-                          const found = surveysFromDB != null
-                    ? ((surveysFromDB || []).find((s: any) => String(s.id) === String(n.surveyId)) || null)
-                    : null
-                          const kind = found && (found.type === 'project' || (found.projects && found.projects.length > 0)) ? 'projects' : 'view'
-                          navigate('/profesor/encuestas', { state: { openSurveyId: String(n.surveyId), openSurveyKind: kind } })
-                          // also dispatch a global event so if we are already on Surveys page it triggers immediately
-                          try {
-                            window.dispatchEvent(new CustomEvent('surveys:open', { detail: { surveyId: String(n.surveyId), kind } }))
-                          } catch (e) {}
-                        } catch (e) {
-                          navigate('/profesor/encuestas', { state: { openSurveyId: String(n.surveyId), openSurveyKind: 'view' } })
-                        }
+                        const kind = isProject ? 'projects' : 'view'
+                        navigate('/profesor/encuestas', { state: { openSurveyId: String(n.surveyId), openSurveyKind: kind } })
+                        window.dispatchEvent(new CustomEvent('surveys:open', { detail: { surveyId: String(n.surveyId), kind } }))
                         onClose && onClose()
-                        return
-                      }
-                    } catch (e) {}
-                  }}
-                  onMouseEnter={() => handleMouseEnterToast(n, status)}
-                  onMouseLeave={() => handleMouseLeaveToast(n)}
-                  className={`flex gap-3 p-2 rounded-lg border-l-4 ${borderClass} ${n.read ? 'bg-white/70' : 'bg-white dark:bg-gray-800'} shadow-md ring-1 ring-slate-200 dark:ring-slate-700 hover:shadow-lg transition-shadow duration-300 text-sm min-h-[64px]`}
-                >
-                  <div className="relative flex-1">
-                    <div className="flex items-center gap-3">
-                      <div className="font-semibold">
-                        {n.type === 'survey_published' && n.title?.startsWith('Nueva encuesta:') ? (
-                          <>
-                            <span>Nueva encuesta: </span>
-                            <span className="font-normal text-slate-600 dark:text-slate-300">{n.title.slice('Nueva encuesta:'.length).trim()}</span>
-                          </>
-                        ) : n.title}
+                      }}
+                      className={`
+                        group relative flex items-center gap-3 p-3 rounded-2xl transition-all duration-300
+                        ${n.read ? 'bg-slate-200/40' : 'bg-white'} 
+                        border border-slate-200/50 dark:border-white/10 shadow-sm hover:shadow-lg hover:scale-[1.005] hover:bg-slate-100/80
+                        cursor-pointer active:scale-95 overflow-hidden
+                      `}
+                    >
+                      {/* Indicador lateral sutil con glow */}
+                      <div className={`absolute top-0 left-0 w-1.5 h-full ${colorClass} opacity-100 shadow-[0_0_10px_rgba(0,0,0,0.05)]`} />
+                      
+                      <div className="flex-1 min-w-0 pl-0.5">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <div className="flex items-center gap-1.5">
+                             <span className={`text-[8.5px] font-black uppercase tracking-[0.06em] ${isProject ? 'text-indigo-600' : 'text-green-600'}`}>
+                                {typeLabel}
+                             </span>
+                             {statusLabel && (
+                               <span className={`text-[7.5px] font-black px-1.5 py-0.5 rounded ${isResponded ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'} border border-current opacity-90`}>
+                                 {statusLabel}
+                               </span>
+                             )}
+                          </div>
+                          <span className="text-[8px] font-bold text-slate-400">
+                             {n.createdAt ? new Date(n.createdAt).toLocaleDateString() : ''}
+                          </span>
+                        </div>
+                        <h4 className="text-[13px] font-black text-slate-800 dark:text-slate-100 truncate pr-2 tracking-tight group-hover:text-primary transition-colors mb-0">
+                           {n.title?.replace('Nueva encuesta:', '').trim() || 'Aviso de sistema'}
+                        </h4>
+                        <div className="text-[10px] text-slate-500 font-bold dark:text-slate-400 line-clamp-1 opacity-60 italic font-inter leading-tight">
+                          {n.message || 'Pulsa para participar.'}
+                        </div>
                       </div>
                     </div>
-                    {n.message && n.type !== 'survey_published' && <div className="text-slate-500 text-sm">{n.message}</div>}
-                    {toastMap[n.id] && (
-                      <div className="absolute top-2 right-3 z-40">
-                        <div className="bg-black text-white px-3 py-1 rounded shadow text-xs">{toastMap[n.id]}</div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    <div className="text-slate-400 text-xs whitespace-nowrap">{n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}</div>
-                    {finalLabelText ? (
-                      <div className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${finalLabelCls}`}>{finalLabelText}</div>
-                    ) : null}
-                  </div>
-                </div>
-              )
-            })
-          })()}
+                  )
+                })
+              })()
+            )}
           </>)}
         </div>
-        <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800 text-right">
-          <button
-            type="button"
-            onClick={handleLimpiar}
-            className="text-sm text-sky-600 dark:text-sky-400 hover:underline"
-          >
-            Limpiar
-          </button>
+        
+        {/* Footer sutil */}
+        <div className="px-6 py-4 bg-slate-100/50 flex justify-center border-t border-slate-200/40">
+            <div className="w-16 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full opacity-30 shadow-inner" />
         </div>
       </div>
     </div>,

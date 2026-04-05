@@ -6,26 +6,23 @@
 */
 #notifications-panel {
   transform-origin: top right;
-  transform: translateY(-18px) scaleY(0.98);
+  transform: translateY(-24px) scale(0.95);
   opacity: 0;
-  /* Slightly longer, smoother open animation */
-  transition: transform 480ms cubic-bezier(.15,.85,.2,1), opacity 360ms ease;
+  /* Premium fluid spring-like easing */
+  transition: transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 400ms ease;
   pointer-events: none;
   will-change: transform, opacity;
 }
 
-/* Visible/open state: fully deployed */
 #notifications-panel.open {
-  transform: translateY(0) scaleY(1);
+  transform: translateY(0) scale(1);
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Closing state (rendered but closing): animate back up */
 #notifications-panel.closing {
-  transform: translateY(-22px) scaleY(0.96);
-  /* Keep closing a bit faster than opening for snappy UX */
-  transition: transform 300ms cubic-bezier(.2,.9,.2,1), opacity 200ms ease;
+  transform: translateY(-28px) scale(0.92);
+  transition: transform 400ms cubic-bezier(.4, 0, .2, 1), opacity 300ms ease;
   opacity: 0;
   pointer-events: none;
 }
