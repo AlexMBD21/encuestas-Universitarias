@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import ReactDOM from 'react-dom'
 import ProgressBar from './ProgressBar'
 
@@ -24,6 +24,70 @@ type ProjectSummary = {
 }
 
 export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary | null, onClose: () => void }) {
+  const [isVisible, setIsVisible] = useState(false)
+  const [pullDownY, setPullDownY] = useState(0)
+  const modalRef = useRef<HTMLDivElement>(null)
+  const touchStartRef = useRef<{ y: number; scrollTop: number } | null>(null)
+
+  useEffect(() => {
+    if (ps) {
+      const timer = setTimeout(() => setIsVisible(true), 10)
+      return () => clearTimeout(timer)
+    } else {
+      setIsVisible(false)
+    }
+  }, [ps])
+
+  const handleClose = () => {
+    setIsVisible(false)
+    setTimeout(onClose, 210)
+  }
+
+  // Handle pull-to-dismiss gesture
+  useEffect(() => {
+    const el = modalRef.current
+    if (!el) return
+
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartRef.current = {
+        y: e.touches[0].clientY,
+        scrollTop: el.scrollTop
+      }
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!touchStartRef.current) return
+      const deltaY = e.touches[0].clientY - touchStartRef.current.y
+      
+      // If at the top and pulling down
+      if (el.scrollTop <= 0 && deltaY > 0) {
+        if (e.cancelable) e.preventDefault()
+        setPullDownY(deltaY)
+      } else {
+        setPullDownY(0)
+      }
+    }
+
+    const onTouchEnd = () => {
+      if (pullDownY > 80) {
+        handleClose()
+      } else {
+        setPullDownY(0)
+      }
+      touchStartRef.current = null
+    }
+
+    el.addEventListener('touchstart', onTouchStart)
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd)
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [pullDownY, isVisible])
+
   if (!ps) return null
 
   const toPercent = (v: number | null) => {
@@ -49,7 +113,6 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
     return '#06b6d4'               // Excelente
   }
 
-  // normalize members: allow array or comma/semicolon separated string
   const membersArr: string[] = Array.isArray(ps.project.members)
     ? ps.project.members
     : typeof ps.project.members === 'string'
@@ -58,22 +121,43 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
   const advisor = typeof ps.project.advisor === 'string' ? ps.project.advisor.trim() : ''
 
   const modal = (
-    <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
-      <div className="absolute inset-0 bg-black opacity-40 hidden sm:block" onClick={onClose} />
-      <div role="dialog" aria-modal="true" className="relative w-full sm:max-w-3xl sm:mx-4 sm:rounded-2xl bg-white dark:bg-slate-900 shadow-2xl transform transition-all duration-300 flex flex-col max-h-[90dvh] sm:max-h-[85vh] overflow-hidden">
-        {/* Header */}
-        <div className="sticky top-0 z-10 border-b px-5 py-4 flex items-center justify-between text-white shrink-0" style={{ background: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' }}>
-          <div className="text-lg font-bold truncate mr-4 tracking-tight">{ps.project.name}</div>
-          <div className="ml-auto">
-            <button type="button" onClick={onClose} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+    <div className={`fixed inset-0 z-[10000] flex items-end sm:items-center justify-center transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={handleClose} />
+      
+      <div 
+        role="dialog" 
+        aria-modal="true" 
+        className={`relative w-full sm:max-w-3xl sm:mx-4 rounded-t-3xl sm:rounded-2xl bg-white dark:bg-slate-900 shadow-2xl transition-all duration-300 flex flex-col max-h-[94dvh] sm:max-h-[85vh] overflow-hidden ${isVisible ? 'translate-y-0 sm:scale-100' : 'translate-y-full sm:translate-y-4 sm:scale-95'}`}
+        style={{ transform: pullDownY > 0 ? `translateY(${pullDownY}px)` : undefined }}
+      >
+        {/* Drag handle for mobile (absolute inside modal) */}
+        <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={handleClose}>
+          <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
+        </div>
+
+        {/* Header (pt-7 mobile to clear the handle, pt-4 desktop) */}
+        <div 
+          className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" 
+          style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}
+        >
+          <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{ps.project.name}</div>
+          <div className="ml-auto hidden sm:block">
+            <button 
+              type="button" 
+              onClick={handleClose} 
+              aria-label="Cerrar" 
+              className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
+            >
               <span className="material-symbols-outlined text-[22px]">close</span>
             </button>
           </div>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-
+        <div 
+          ref={modalRef}
+          className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6"
+        >
           {/* Overall score card */}
           {ps.overall !== null && (
             <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/50 flex flex-wrap items-center gap-4 sm:gap-6 shadow-sm font-sans">
@@ -155,8 +239,8 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
                 const hasScore = c.avg !== null && c.avg !== undefined
                 const pct = toPercentNum(c.avg)
                 return (
-                  <div key={c.id} className={`p-3 rounded-xl border ${hasScore ? 'bg-white border-slate-200' : 'bg-slate-50 border-slate-200'}`}>
-                    <div className="text-sm font-medium text-slate-700 mb-3 leading-snug">{c.text}</div>
+                  <div key={c.id} className={`p-3 rounded-xl border ${hasScore ? 'bg-white border-slate-200' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
+                    <div className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-3 leading-snug">{c.text}</div>
                     {hasScore ? (
                       <>
                         <div className="flex items-center justify-between mb-1.5">
@@ -169,18 +253,19 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
                         )}
                       </>
                     ) : (
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium">Pregunta abierta</span>
-                          <span className="text-xs text-slate-400">{c.texts && c.texts.length > 0 ? `${c.texts.length} respuesta${c.texts.length !== 1 ? 's' : ''}` : 'Sin respuestas aún'}</span>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 tracking-wider">Abierta</span>
+                          <span className="text-xs text-slate-400">{c.texts && c.texts.length > 0 ? `${c.texts.length} respuesta${c.texts.length !== 1 ? 's' : ''}` : 'Sin datos'}</span>
                         </div>
                         {c.texts && c.texts.length > 0 && (
-                          <div className="space-y-1.5 mt-2">
-                            {c.texts.map((t, ti) => (
-                              <div key={ti} className="text-xs text-slate-700 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2 leading-relaxed">
+                          <div className="space-y-2">
+                            {c.texts.slice(0, 5).map((t, ti) => (
+                              <div key={ti} className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800/50 rounded-lg px-3 py-2 leading-relaxed">
                                 {t}
                               </div>
                             ))}
+                            {c.texts.length > 5 && <div className="text-[10px] text-slate-400 text-center italic mt-1">+ {c.texts.length - 5} más</div>}
                           </div>
                         )}
                       </div>
