@@ -170,18 +170,18 @@ export default function Surveys(): JSX.Element {
       const btn = menuButtonRefs.current[String(menuOpenFor)]
       if (!btn) { setPortalMenuRect(null); setPortalMenuSurveyId(null); return }
       const r = btn.getBoundingClientRect()
-      const maxW = Math.min(240, Math.max(160, Math.floor(window.innerWidth * 0.45)))
-      const left = Math.min(Math.max(r.right - maxW, 8), Math.max(8, window.innerWidth - maxW - 8))
+      const menuWidth = 220
+      const left = Math.min(Math.max(r.right - menuWidth, 8), Math.max(8, window.innerWidth - menuWidth - 8))
       const margin = 8
       const spaceBelow = Math.max(0, window.innerHeight - r.bottom - margin)
       const spaceAbove = Math.max(0, r.top - margin)
       // Prefer showing below; if there's not enough space below and more above, anchor above using `bottom`.
       if (spaceBelow < 220 && spaceAbove > spaceBelow) {
         const bottom = Math.max(margin, Math.floor(window.innerHeight - r.top + margin))
-        setPortalMenuRect({ bottom, left, width: maxW })
+        setPortalMenuRect({ bottom, left, width: menuWidth })
       } else {
         const top = Math.max(margin, Math.floor(r.bottom + margin))
-        setPortalMenuRect({ top, left, width: maxW })
+        setPortalMenuRect({ top, left, width: menuWidth })
       }
       setPortalMenuSurveyId(String(menuOpenFor))
     } catch (e) { setPortalMenuRect(null); setPortalMenuSurveyId(null) }
@@ -190,17 +190,17 @@ export default function Surveys(): JSX.Element {
         const btn = menuButtonRefs.current[String(menuOpenFor)]
         if (!btn) return
         const r = btn.getBoundingClientRect()
-        const maxW = Math.min(240, Math.max(160, Math.floor(window.innerWidth * 0.45)))
-        const left = Math.min(Math.max(r.right - maxW, 8), Math.max(8, window.innerWidth - maxW - 8))
+        const menuWidth = 220
+        const left = Math.min(Math.max(r.right - menuWidth, 8), Math.max(8, window.innerWidth - menuWidth - 8))
         const margin = 8
         const spaceBelow = Math.max(0, window.innerHeight - r.bottom - margin)
         const spaceAbove = Math.max(0, r.top - margin)
         if (spaceBelow < 220 && spaceAbove > spaceBelow) {
           const bottom = Math.max(margin, Math.floor(window.innerHeight - r.top + margin))
-          setPortalMenuRect({ bottom, left, width: maxW })
+          setPortalMenuRect({ bottom, left, width: menuWidth })
         } else {
           const top = Math.max(margin, Math.floor(r.bottom + margin))
-          setPortalMenuRect({ top, left, width: maxW })
+          setPortalMenuRect({ top, left, width: menuWidth })
         }
       } catch (e) {}
     }

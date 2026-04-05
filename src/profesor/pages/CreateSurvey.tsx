@@ -235,7 +235,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 mt-6">
                <label className="block text-xl font-bold text-slate-800 dark:text-slate-100">Batería de Preguntas</label>
                <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
-                 <button type="button" className="flex justify-center items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors w-full sm:w-auto" onClick={() => addQuestion('text')}>
+                 <button type="button" className="flex justify-center items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300 transition-colors w-full sm:w-auto" onClick={() => addQuestion('text')}>
                    <span className="material-symbols-outlined text-[18px]">short_text</span> Texto
                  </button>
                  <button type="button" className="flex justify-center items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-sm font-semibold rounded-lg dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-blue-900/60 transition-colors w-full sm:w-auto" onClick={() => addQuestion('multiple')}>
@@ -293,8 +293,12 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                  <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-3">quiz</span>
                  <h4 className="text-slate-600 dark:text-slate-400 font-medium mb-4">No hay preguntas agregadas</h4>
                  <div className="flex flex-col sm:flex-row gap-3 w-full max-w-[280px] sm:max-w-none px-4 sm:px-0 mx-auto sm:mx-0 justify-center">
-                   <button type="button" className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800" onClick={() => addQuestion('text')}>+ Pregunta Texto</button>
-                   <button type="button" className="w-full sm:w-auto px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-sm font-semibold rounded-lg dark:bg-blue-900/40" onClick={() => addQuestion('multiple')}>+ Pregunta Opciones</button>
+                   <button type="button" className="w-full sm:w-auto px-4 py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300 transition-colors flex items-center justify-center gap-1.5" onClick={() => addQuestion('text')}>
+                     <span className="material-symbols-outlined text-[18px]">short_text</span> Pregunta Texto
+                   </button>
+                   <button type="button" className="w-full sm:w-auto px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-sm font-semibold rounded-lg dark:bg-blue-900/40 transition-colors flex items-center justify-center gap-1.5" onClick={() => addQuestion('multiple')}>
+                     <span className="material-symbols-outlined text-[18px]">checklist</span> Pregunta Opciones
+                   </button>
                  </div>
               </div>
             )}
@@ -302,10 +306,10 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
         ) : (
           <div className="mb-4">
             <div className="mt-6 border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
-               <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                 <span className="material-symbols-outlined text-indigo-500">groups</span> Equipos / Proyectos a Evaluar
+               <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-start sm:items-center gap-2">
+                 <span className="material-symbols-outlined text-indigo-500 mt-0.5 sm:mt-0 text-[24px]">groups</span> Equipos / Proyectos a Evaluar
                </h3>
-               <p className="text-sm text-slate-500 mt-1">Declara aquí los equipos que los profesores deberán calificar con la rúbrica.</p>
+               <p className="text-sm text-slate-500 mt-1 pl-8 sm:pl-0">Declara aquí los equipos que los profesores deberán calificar con la rúbrica.</p>
             </div>
             
             <div className="flex flex-col gap-4">
@@ -352,49 +356,53 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
             </div>
 
             <div className="mt-12 border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
-               <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                 <span className="material-symbols-outlined text-emerald-500">grading</span> Criterios de Evaluación (Rúbrica)
+               <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-start sm:items-center gap-2">
+                 <span className="material-symbols-outlined text-emerald-500 mt-0.5 sm:mt-0 text-[24px]">grading</span> Criterios de Evaluación (Rúbrica)
                </h3>
-               <p className="text-sm text-slate-500 mt-1">Define las reglas con las que se calificará a TODOS los proyectos matriculados arriba.</p>
+               <p className="text-sm text-slate-500 mt-1 pl-8 sm:pl-0">Define las reglas con las que se calificará a TODOS los proyectos matriculados arriba.</p>
             </div>
 
             <div className="space-y-2 bg-slate-50 dark:bg-slate-800/30 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
               {rubric.map((r, i) => (
-                <div key={r.id} className="flex items-center gap-2 p-2 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-colors min-w-0 overflow-hidden">
-                  <span className="w-6 h-6 flex items-center justify-center bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 rounded-full text-xs font-bold shrink-0">{i+1}</span>
-                  <input
-                    className="min-w-0 flex-1 w-0 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-500 text-slate-800 dark:text-slate-100 font-medium px-2 py-1 outline-none transition-all placeholder:text-slate-400 placeholder:font-normal text-sm truncate"
-                    placeholder="Ej. Presentación y Respeto del Tiempo..."
-                    value={r.text}
-                    onChange={e => setRubric(prev => prev.map(x => x.id === r.id ? { ...x, text: e.target.value } : x))}
-                  />
-                  
-                  <div className="relative shrink-0">
-                    <select
-                      value={r.kind}
-                      onChange={e => setRubric(prev => prev.map(x => x.id === r.id ? { ...x, kind: e.target.value as any } : x))}
-                      className="appearance-none bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg pl-3 pr-7 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-sm"
-                    >
-                      <option value="score">Calificación (1 a 5)</option>
-                      <option value="text">Comentario Libre</option>
-                    </select>
-                    <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[15px] select-none">expand_more</span>
+                <div key={r.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2 p-3 sm:p-2 rounded-xl bg-white sm:bg-transparent dark:bg-slate-900/50 sm:dark:bg-transparent shadow-sm sm:shadow-none border border-slate-100 dark:border-slate-800 sm:border-transparent sm:hover:bg-white dark:sm:hover:bg-slate-800 transition-colors min-w-0 overflow-hidden mb-2 sm:mb-0">
+                  <div className="flex items-center gap-2 flex-1 w-full min-w-0">
+                    <span className="w-6 h-6 flex items-center justify-center bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 rounded-full text-xs font-bold shrink-0">{i+1}</span>
+                    <input
+                      className="min-w-0 flex-1 w-full bg-transparent border-b border-slate-200 dark:border-slate-700 sm:border-transparent hover:border-slate-300 focus:border-emerald-500 text-slate-800 dark:text-slate-100 font-medium px-2 py-2 sm:py-1 outline-none transition-all placeholder:text-slate-400 placeholder:font-normal text-base sm:text-sm truncate"
+                      placeholder="Ej. Presentación y Respeto..."
+                      value={r.text}
+                      onChange={e => setRubric(prev => prev.map(x => x.id === r.id ? { ...x, text: e.target.value } : x))}
+                    />
                   </div>
                   
-                  <button
-                    type="button"
-                    onClick={() => setRubric(prev => prev.filter(x => x.id !== r.id))}
-                    className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-                    title="Eliminar criterio"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">close</span>
-                  </button>
+                  <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto mt-1 sm:mt-0 pl-8 sm:pl-0">
+                    <div className="relative shrink-0 flex-1 sm:flex-none">
+                      <select
+                        value={r.kind}
+                        onChange={e => setRubric(prev => prev.map(x => x.id === r.id ? { ...x, kind: e.target.value as any } : x))}
+                        className="w-full appearance-none bg-slate-50 sm:bg-white dark:bg-slate-800/80 sm:dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg pl-3 pr-8 py-2.5 sm:py-1.5 text-sm sm:text-xs font-semibold text-slate-600 dark:text-slate-300 outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-sm"
+                      >
+                        <option value="score">Calificación (1 a 5)</option>
+                        <option value="text">Comentario Libre</option>
+                      </select>
+                      <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[16px] select-none">expand_more</span>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setRubric(prev => prev.filter(x => x.id !== r.id))}
+                      className="shrink-0 w-10 h-10 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg sm:rounded-full bg-red-50 text-red-500 sm:text-red-400 sm:bg-transparent sm:hover:text-red-600 sm:hover:bg-red-50 dark:bg-red-900/30 sm:dark:bg-transparent dark:sm:hover:bg-red-900/30 transition-colors border border-red-100 sm:border-transparent dark:border-red-900/50"
+                      title="Eliminar criterio"
+                    >
+                      <span className="material-symbols-outlined text-[20px] sm:text-[18px]">delete</span>
+                    </button>
+                  </div>
                 </div>
               ))}
               
-              <div className="pt-2">
-                <button type="button" onClick={() => setRubric(prev => [...prev, { id: String(Date.now() + Math.random()), text: '', kind: 'score' }])} className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors">
-                  <span className="material-symbols-outlined text-[18px]">add</span> Añadir nuevo criterio a la rúbrica
+              <div className="pt-3">
+                <button type="button" onClick={() => setRubric(prev => [...prev, { id: String(Date.now() + Math.random()), text: '', kind: 'score' }])} className="w-full sm:w-auto justify-center text-sm font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 px-4 py-3 sm:py-2 bg-emerald-50 sm:bg-transparent rounded-xl sm:rounded-lg border border-emerald-100 sm:border-transparent hover:bg-emerald-100 sm:hover:bg-emerald-50 dark:bg-emerald-900/20 sm:dark:bg-transparent dark:border-emerald-800/30 sm:dark:border-transparent dark:hover:bg-emerald-900/30 transition-colors">
+                  <span className="material-symbols-outlined text-[20px] sm:text-[18px]">add</span> Añadir nuevo criterio a la rúbrica
                 </button>
               </div>
             </div>
