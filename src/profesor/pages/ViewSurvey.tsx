@@ -187,28 +187,34 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
     )
   }
 
+  const isModal = !!onClose;
+
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border p-6 shadow mb-6">
-      <div className="flex justify-between items-start">
-        <div>
+    <div className={isModal ? "animate-in fade-in duration-300 relative" : "bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xl shadow-slate-200/40 dark:shadow-none mb-6 animate-in fade-in zoom-in-95 duration-300 relative overflow-hidden"}>
+      {!isModal && <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: 'var(--color-primary)' }}></div>}
+      
+      <div className={`flex justify-between items-start pb-6 border-b border-slate-100 dark:border-slate-800 ${isModal ? 'mb-6' : 'mb-8'}`}>
+        <div className="w-full">
           {!onClose && (
-            <h2 className="text-2xl font-bold mb-1">{survey.title}</h2>
+            <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100 mb-3 leading-tight">{survey.title}</h2>
           )}
-          <div className="text-sm text-slate-500 mb-3">{survey.description}</div>
-          <div className="text-xs text-slate-400">Creada: {new Date(survey.createdAt).toLocaleString()}</div>
+          {survey.description && (
+             <div className="text-[15px] sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 mb-3">
+               {survey.description}
+             </div>
+          )}
+          <div className="text-xs font-semibold text-slate-400 dark:text-slate-500 tracking-wide uppercase px-1 flex items-center gap-1.5"><span className="material-symbols-outlined text-[14px]">calendar_month</span> Creada: {new Date(survey.createdAt).toLocaleString()}</div>
         </div>
-        <div>
-          {!hideCloseButton && (
-            <button onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                <path d="M18 6L6 18" stroke="#0f172a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M6 6L18 18" stroke="#0f172a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+        {!hideCloseButton && (
+          <div className="ml-4 shrink-0">
+            <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} aria-label="Cerrar" title="Cerrar" className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 hover:text-slate-800 transition-colors">
+              <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-      <div className="mt-6">
+
+      <div>
         {!submitted ? (
           <form onSubmit={async (e) => {
             e.preventDefault()
@@ -258,73 +264,139 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
               alert('Error al guardar la respuesta. Revisa la consola para más detalles.')
             }
           }}>
-            <div className="mb-4">
-              <label className="block text-sm text-slate-600 mb-2">Nombre (opcional)</label>
-              <input className="p-2 border rounded w-full" value={respondent} onChange={e => setRespondent(e.target.value)} placeholder="Tu nombre (opcional)" />
+            <div className="mb-8 p-1">
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2.5">Tu Nombre <span className="text-slate-400 font-normal ml-1">(Opcional)</span></label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">person</span>
+                <input className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 outline-none focus:ring-4 transition-all placeholder:text-slate-400 shadow-sm" style={{ '--tw-ring-color': 'var(--color-primary)' } as React.CSSProperties} value={respondent} onChange={e => setRespondent(e.target.value)} placeholder="Ej: Maria Perez" onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'} onBlur={(e) => e.target.style.borderColor = ''} />
+              </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {survey.questions && survey.questions.length ? (
                 survey.questions.map((q: any, idx: number) => (
-                  <div key={idx} className="p-3 border rounded">
-                    <div className="font-semibold mb-1">Pregunta {idx + 1}</div>
-                    <div className="mb-2">{q.text}</div>
-                    {q.type === 'multiple' ? (
-                      <div className="space-y-2">
-                        {(q.options || []).map((opt: string, oi: number) => (
-                          <label key={oi} className="flex items-center gap-2">
-                            <input type="radio" name={`q_${idx}`} checked={answers[idx] === oi} onChange={() => setSurveyAnswers((a: any) => ({ ...a, [idx]: oi }))} />
-                            <span>{opt}</span>
-                          </label>
-                        ))}
-                      </div>
-                    ) : (
-                      <textarea className="w-full p-2 border rounded" value={answers[idx] || ''} onChange={e => setSurveyAnswers((a: any) => ({ ...a, [idx]: e.target.value }))} />
-                    )}
+                  <div key={idx} className="p-5 sm:p-6 border border-slate-200 dark:border-slate-700/80 rounded-2xl bg-white dark:bg-slate-800/30 shadow-sm transition-colors"
+                       onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-primary)'}
+                       onMouseLeave={(e) => e.currentTarget.style.borderColor = ''}>
+                    <div className="flex items-start gap-3 mb-5">
+                       <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-primary-100, rgba(0,98,141,0.1))', color: 'var(--color-primary)' }}>
+                         {idx + 1}
+                       </div>
+                       <div className="font-semibold text-slate-800 dark:text-slate-100 text-[15px] sm:text-base leading-relaxed pt-1">
+                         {q.text}
+                       </div>
+                    </div>
+                    
+                    <div className="pl-0 sm:pl-11">
+                      {q.type === 'multiple' ? (
+                        <div className="space-y-3">
+                          {(q.options || []).map((opt: string, oi: number) => {
+                            const isSelected = answers[idx] === oi;
+                            return (
+                              <label key={oi} className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${isSelected ? 'shadow-sm' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800'}`} style={isSelected ? { borderColor: 'var(--color-primary)', backgroundColor: 'var(--color-primary-100, rgba(0,98,141,0.05))' } : {}}>
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isSelected ? '' : 'border-slate-300 dark:border-slate-600'}`} style={isSelected ? { borderColor: 'var(--color-primary)', backgroundColor: 'var(--color-primary)' } : {}}>
+                                  {isSelected && <div className="w-2 h-2 rounded-full bg-white"></div>}
+                                </div>
+                                <input type="radio" name={`q_${idx}`} checked={isSelected} onChange={() => setSurveyAnswers((a: any) => ({ ...a, [idx]: oi }))} className="hidden" />
+                                <span className={`text-[15px] font-medium leading-tight ${isSelected ? '' : 'text-slate-700 dark:text-slate-300'}`} style={isSelected ? { color: 'var(--color-primary)' } : {}}>{opt}</span>
+                              </label>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <textarea 
+                          className="w-full p-4 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-xl text-slate-700 dark:text-slate-200 outline-none transition-all placeholder:text-slate-400 min-h-[120px] focus:ring-4 shadow-sm" 
+                          style={{ '--tw-ring-color': 'var(--color-primary)' } as React.CSSProperties}
+                          placeholder="Escribe tu respuesta aquí..."
+                          value={answers[idx] || ''} 
+                          onChange={e => setSurveyAnswers((a: any) => ({ ...a, [idx]: e.target.value }))} 
+                          onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'} 
+                          onBlur={(e) => e.target.style.borderColor = ''}
+                        />
+                      )}
+                    </div>
                   </div>
                 ))
               ) : (
-                <div className="text-slate-600">No hay preguntas en esta encuesta.</div>
+                <div className="text-slate-500 dark:text-slate-400 text-center p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">No hay preguntas en esta encuesta.</div>
               )}
             </div>
 
-            <div className="mt-4 flex gap-2">
-              <button type="submit" className="px-4 py-2 bg-primary text-white rounded">Enviar respuestas</button>
-              <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row justify-end gap-3">
+              <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-colors">Cancelar</button>
+              <button type="submit" className="w-full sm:w-auto px-8 py-3 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 hover:brightness-110" style={{ backgroundColor: 'var(--color-primary)' }}>
+                 <span className="material-symbols-outlined text-[20px]">send</span> Enviar respuestas
+              </button>
             </div>
           </form>
         ) : (
-          <div>
-            <div className="p-4 bg-green-50 border border-green-200 rounded mb-4">Gracias por responder. Respuestas guardadas.</div>
-            <div className="mb-4">
-              <strong>Total de respuestas:</strong> {summary?.total ?? 0}
+          <div className="animate-in slide-in-from-bottom-4 fade-in duration-300">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-6 sm:p-5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl mb-8 shadow-sm">
+              <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                 <span className="material-symbols-outlined text-[32px]">task_alt</span>
+              </div>
+              <div className="text-center sm:text-left mt-1">
+                 <h4 className="text-xl font-bold text-emerald-800 dark:text-emerald-400 mb-1">¡Gracias por responder!</h4>
+                 <p className="text-emerald-700/80 dark:text-emerald-500 font-medium">Tus respuestas han sido guardadas correctamente.</p>
+              </div>
             </div>
-            <div className="space-y-4">
+            
+            <div className="mb-6 flex items-center gap-2 px-2">
+              <span className="material-symbols-outlined text-[20px] text-slate-400">monitoring</span>
+              <strong className="text-slate-700 dark:text-slate-300">Total de respuestas recibidas:</strong> 
+              <span className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold px-2.5 py-0.5 rounded-md">{summary?.total ?? 0}</span>
+            </div>
+            
+            <div className="space-y-6">
               {survey.questions.map((q: any, idx: number) => (
-                <div key={idx} className="p-3 border rounded">
-                  <div className="font-semibold mb-2">Pregunta {idx + 1}</div>
-                  <div className="mb-2">{q.text}</div>
-                  {q.type === 'multiple' ? (
-                    <div>
-                      {(summary?.qsummary?.[idx]?.counts || []).map((c: number, oi: number) => (
-                        <div key={oi} className="flex justify-between">
-                          <div>{q.options[oi]}</div>
-                          <div className="font-semibold">{c}</div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div>
-                      {(summary?.qsummary?.[idx]?.texts || []).slice(-10).reverse().map((t: string, i: number) => (
-                        <div key={i} className="p-2 border-b text-sm">{t}</div>
-                      ))}
-                    </div>
-                  )}
+                <div key={idx} className="p-5 sm:p-6 border border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/30">
+                  <div className="flex items-start gap-3 mb-4">
+                     <div className="flex-shrink-0 w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-sm">
+                       {idx + 1}
+                     </div>
+                     <div className="font-semibold text-slate-800 dark:text-slate-100 text-[15px] sm:text-base pt-0.5">
+                       {q.text}
+                     </div>
+                  </div>
+                  
+                  <div className="pl-0 sm:pl-10">
+                    {q.type === 'multiple' ? (
+                      <div className="space-y-3">
+                        {q.options.map((opt: string, oi: number) => {
+                          const count = summary?.qsummary?.[idx]?.counts?.[oi] ?? 0;
+                          const total = summary?.total || 1;
+                          const percent = Math.round((count / total) * 100);
+                          return (
+                            <div key={oi} className="relative">
+                              <div className="flex justify-between items-end mb-1 px-1 relative z-10">
+                                <div className="text-sm font-medium text-slate-700 dark:text-slate-300">{opt}</div>
+                                <div className="text-sm font-bold text-slate-600 dark:text-slate-400">{count} <span className="font-normal text-slate-400 text-xs">({percent}%)</span></div>
+                              </div>
+                              <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${percent}%`, backgroundColor: 'var(--color-primary)' }}></div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {(summary?.qsummary?.[idx]?.texts || []).slice(-10).reverse().map((t: string, i: number) => (
+                          <div key={i} className="p-3.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 text-sm text-slate-700 dark:text-slate-300 shadow-sm flex gap-3 items-start">
+                             <span className="material-symbols-outlined text-[16px] text-slate-400 mt-0.5 shrink-0">format_quote</span>
+                             <div className="leading-relaxed">{t}</div>
+                          </div>
+                        ))}
+                        {!(summary?.qsummary?.[idx]?.texts?.length) && <div className="text-sm text-slate-400 italic px-2">Aún no hay respuestas de texto.</div>}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4">
-              {/* Single response per user: no 'Responder nuevamente' button */}
+            
+            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+               <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-colors">Volver a encuestas</button>
             </div>
           </div>
         )}

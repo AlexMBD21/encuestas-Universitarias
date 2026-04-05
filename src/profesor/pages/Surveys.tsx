@@ -971,28 +971,29 @@ export default function Surveys(): JSX.Element {
         {/* Modal for viewing a survey */}
         {(modalSurveyId !== null || isModalVisible) && ReactDOM.createPortal(
           <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
-            <div className="absolute inset-0 bg-black opacity-40" onClick={() => closeModal()} />
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => closeModal()} />
             <div className="relative w-full sm:max-w-4xl sm:mx-4 sm:mb-0">
               <div
                 ref={modalRef}
                 role="dialog"
                 aria-modal="true"
                 tabIndex={-1}
-                className={`bg-white dark:bg-slate-900 sm:rounded shadow-lg transform transition-all duration-200 h-[100dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col ${isModalVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'}`}>
+                className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}>
+                {/* Drag handle for mobile */}
+                <div className="w-full flex justify-center pt-2 pb-1 sm:hidden absolute top-0 z-20" style={{ backgroundColor: 'var(--color-primary)' }}>
+                  <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
+                </div>
                 {/* Header (sticky) */}
-                <div className="sticky top-0 z-10 border-b px-5 py-3 flex items-center justify-between text-white flex-shrink-0" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
-                  <div className="text-lg font-semibold truncate mr-4">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
+                <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
+                  <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
                   <div className="ml-auto">
-                    <button type="button" onClick={() => closeModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white bg-opacity-10 text-white flex items-center justify-center border border-white border-opacity-20 hover:bg-white hover:bg-opacity-20">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                        <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                    <button type="button" onClick={() => closeModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+                      <span className="material-symbols-outlined text-[22px]">close</span>
                     </button>
                   </div>
                 </div>
                 {/* Scrollable content area */}
-                <div className="p-5 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 56px)' }}>
+                <div className="p-3 sm:p-6 flex-1 overflow-y-auto w-full">
                   {/* If survey is a project-type, show projects list or the RateProject UI */}
                   {(() => {
                     const s = surveys.find(x => String(x.id) === String(modalSurveyId))
@@ -1068,21 +1069,27 @@ export default function Surveys(): JSX.Element {
                       })
                       return (
                         <div>
-                          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                            <div className="text-sm text-slate-600">Proyectos: {allProjects.length}</div>
-                            <div className="flex items-center gap-3">
-                              <div className="text-sm font-medium">Calificados {progress.rated} / {progress.total}</div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <select value={projectFilter} onChange={e => setProjectFilter(e.target.value as any)} className="p-2 border rounded text-sm w-36">
-                                  <option value="all">Todos</option>
-                                  <option value="pending">Sin calificar</option>
-                                  <option value="rated">Calificados</option>
-                                </select>
-                                <select value={projectCategory} onChange={e => setProjectCategory(e.target.value)} className="p-2 border rounded text-sm w-44">
-                                  <option value="all">Todas categorías</option>
-                                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
-                                <input placeholder="Buscar proyecto" value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="p-2 border rounded text-sm w-48" />
+                          <div className="flex flex-col gap-4 mb-6">
+                            {/* Stats */}
+                            <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                              <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Proyectos: <span className="font-bold text-slate-800 dark:text-slate-200 ml-1">{allProjects.length}</span></div>
+                              <div className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">done_all</span> Calificados: {progress.rated} / {progress.total}</div>
+                            </div>
+                            
+                            {/* Filters */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <select value={projectFilter} onChange={e => setProjectFilter(e.target.value as any)} className="w-full p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm font-medium text-slate-700 dark:text-slate-300">
+                                <option value="all">Todos los estados</option>
+                                <option value="pending">Sin calificar</option>
+                                <option value="rated">Calificados</option>
+                              </select>
+                              <select value={projectCategory} onChange={e => setProjectCategory(e.target.value)} className="w-full p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm font-medium text-slate-700 dark:text-slate-300">
+                                <option value="all">Todas las categorías</option>
+                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                              </select>
+                              <div className="relative w-full">
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
+                                <input placeholder="Buscar proyecto..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400" />
                               </div>
                             </div>
                           </div>
@@ -1092,18 +1099,36 @@ export default function Surveys(): JSX.Element {
                               const ratedLocal = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id))
                               const rated = ratedLocal || surveyHelpers.hasUserRated(String(s.id), String(p.id))
                               return (
-                                <div key={p.id} className="p-4 border border-gray-200 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-slate-800 flex flex-col justify-between min-h-[96px] shadow-sm hover:shadow-md transition-transform duration-150 hover:ring-1 hover:ring-gray-100 focus-within:ring-1 focus-within:ring-gray-200">
+                                <div key={p.id} className="p-4 sm:p-5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 group h-full">
                                   <div>
-                                    <div className="font-semibold text-sm truncate">{p.name}</div>
-                                    <div className="text-xs text-slate-500 mt-1 truncate">{p.category}</div>
-                                    {p.members && <div className="text-xs text-slate-500 mt-1">Integrantes: <span className="font-medium">{p.members}</span></div>}
-                                    {p.advisor && <div className="text-xs text-slate-500 mt-1">Profesor asesor: <span className="font-medium">{p.advisor}</span></div>}
+                                    <div className="mb-3">
+                                      <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] leading-snug line-clamp-2" title={p.name}>{p.name || 'Proyecto sin nombre'}</h4>
+                                    </div>
+                                    {p.category && (
+                                      <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-3">
+                                        <span className="material-symbols-outlined text-[13px]">category</span> {p.category}
+                                      </div>
+                                    )}
+                                    <div className="space-y-2 mt-1">
+                                      {p.members && (
+                                        <div className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                                          <span className="material-symbols-outlined text-[15px] mt-[1px] text-slate-400">groups</span>
+                                          <div className="flex-1 leading-relaxed whitespace-pre-wrap"><span className="font-semibold text-slate-700 dark:text-slate-300 block mb-0.5">Integrantes:</span>{String(p.members).replace(/([a-zñáéíóú])([A-Z])/g, '$1, $2')}</div>
+                                        </div>
+                                      )}
+                                      {p.advisor && (
+                                        <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                                          <span className="material-symbols-outlined text-[15px] text-slate-400">school</span>
+                                          <div className="flex-1 leading-relaxed truncate"><span className="font-semibold text-slate-700 dark:text-slate-300 mr-1">Asesor:</span>{p.advisor}</div>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                  <div className="mt-3 flex justify-end">
+                                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
                                     {rated ? (
-                                      <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(true); setViewingProjectId(String(p.id)) }} className="px-3 py-1 text-sm btn btn-outline rounded">Calificado</button>
+                                      <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(true); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-4 py-2 text-sm font-bold rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">check_circle</span> Calificado</button>
                                     ) : (
-                                      <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(false); setViewingProjectId(String(p.id)) }} className="px-3 py-1 text-sm btn btn-primary rounded">Calificar</button>
+                                      <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(false); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">edit_document</span> Calificar</button>
                                     )}
                                   </div>
                                 </div>
@@ -1305,17 +1330,23 @@ export default function Surveys(): JSX.Element {
         {/* Reports viewer modal (owner) */}
         {viewReportsFor && ReactDOM.createPortal(
           <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
-            <div className="absolute inset-0 bg-black opacity-40" onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} />
-            <div className="relative w-full sm:max-w-2xl sm:mx-4 sm:mb-0 bg-white dark:bg-slate-900 sm:rounded shadow-lg flex flex-col h-[100dvh] sm:h-auto sm:max-h-[80vh]" role="dialog" aria-modal="true">
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} />
+            <div className="relative w-full sm:max-w-2xl sm:mx-4 sm:mb-0 bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col h-[90dvh] sm:h-auto sm:max-h-[80vh] overflow-hidden animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-200" role="dialog" aria-modal="true">
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-3 border-b flex-shrink-0" style={{ background: 'var(--color-primary)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit' }}>
-                <h3 className="text-lg font-semibold text-white">Reportes de la encuesta</h3>
+              <div className="px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[22px]">flag</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Buzón de Reportes</h3>
+                </div>
                 <button
+                  type="button"
                   onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }}
                   aria-label="Cerrar"
-                  className="w-9 h-9 rounded-full bg-white bg-opacity-10 text-white flex items-center justify-center border border-white border-opacity-20 hover:bg-white hover:bg-opacity-20"
+                  className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center justify-center hover:bg-slate-200 hover:text-slate-800 dark:hover:bg-slate-700 transition-colors"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                  <span className="material-symbols-outlined text-[20px]">close</span>
                 </button>
               </div>
               {/* Scrollable list */}
@@ -1340,14 +1371,20 @@ export default function Surveys(): JSX.Element {
                         key={r.id}
                         id={`report-item-${r.id}`}
                         ref={isHighlighted ? (el) => { if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80) } : undefined}
-                        className={`p-3 border rounded-lg ${isHighlighted ? 'bg-yellow-50 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500 ring-2 ring-yellow-400' : 'bg-gray-50 dark:bg-slate-800'}`}
+                        className={`p-4 border rounded-2xl shadow-sm ${isHighlighted ? 'bg-amber-50 border-amber-300 dark:bg-amber-900/20 dark:border-amber-500/50 ring-4 ring-amber-400/20' : 'bg-white border-slate-200 dark:bg-slate-800/80 dark:border-slate-700'} relative overflow-hidden group`}
                       >
-                        <div className="flex flex-wrap items-center justify-between gap-1 mb-1">
-                          <div className="text-sm font-medium truncate max-w-[70%]">{r.reporterEmail || r.reporterId || 'Anónimo'}</div>
-                          <div className="text-xs text-slate-500 whitespace-nowrap">{new Date(r.createdAt).toLocaleString()}</div>
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-red-400 dark:bg-red-500"></div>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pl-2">
+                          <div className="flex items-center gap-2">
+                             <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0 text-slate-500">
+                               <span className="material-symbols-outlined text-[16px]">person_alert</span>
+                             </div>
+                             <div className="text-sm font-bold text-slate-700 dark:text-slate-300 truncate">{r.reporterEmail || r.reporterId || 'Usuario Anónimo'}</div>
+                          </div>
+                          <div className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700/50 px-2 py-1 rounded-md self-start sm:self-auto flex items-center gap-1.5 font-medium whitespace-nowrap ml-10 sm:ml-0"><span className="material-symbols-outlined text-[14px]">schedule</span>{new Date(r.createdAt).toLocaleString()}</div>
                         </div>
-                        <div className="text-sm text-slate-700 dark:text-slate-200">{r.comment}</div>
-                        {isHighlighted && <div className="mt-1 text-xs text-yellow-700 dark:text-yellow-400 font-medium">← Este es el reporte al que se hizo referencia</div>}
+                        <div className="text-[15px] leading-relaxed text-slate-700 dark:text-slate-300 pl-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 ml-10 sm:ml-0">{r.comment}</div>
+                        {isHighlighted && <div className="mt-3 text-xs text-amber-700 dark:text-amber-400 font-bold bg-amber-100 dark:bg-amber-900/40 inline-flex px-2 py-1.5 rounded-md flex items-center gap-1.5 w-fit ml-10 sm:ml-0"><span className="material-symbols-outlined text-[14px]">notifications_active</span> Este es el reporte referenciado de la notificación</div>}
                       </div>
                     )
                   })
@@ -1358,16 +1395,22 @@ export default function Surveys(): JSX.Element {
         )}
           {/* Report modal */}
           {confirmReportId && ReactDOM.createPortal(
-            <div className="fixed inset-0 z-[10000] flex items-center justify-center">
-              <div className="absolute inset-0 bg-black opacity-40" onClick={() => { if (!confirmReporting) setConfirmReportId(null) }} />
-              <div className={`relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded p-6 shadow-lg` } role="dialog" aria-modal="true">
-                <h3 className="text-lg font-semibold mb-2">Reportar problema</h3>
-                <div className="text-sm text-slate-600 mb-4">
-                  Por favor describe el problema o la razón del reporte. El comentario es obligatorio.
+            <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-0 sm:p-4 perspective-1000">
+              <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => { if (!confirmReporting) setConfirmReportId(null) }} />
+              <div className={`relative w-full max-w-md bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl p-6 sm:p-8 shadow-2xl animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-200`} role="dialog" aria-modal="true">
+                <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-6 sm:hidden"></div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[22px]">warning</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Reportar encuesta</h3>
                 </div>
-                <textarea value={reportComment} onChange={e => setReportComment(e.target.value)} rows={6} className="w-full p-2 border rounded text-sm mb-4" placeholder="Describe el problema..." />
-                <div className="flex justify-end gap-3">
-                  <button type="button" onClick={() => { setConfirmReportId(null); setReportComment('') }} disabled={confirmReporting} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+                <div className="text-sm text-slate-500 dark:text-slate-400 mb-5 pl-[52px]">
+                  Describe detalladamente el problema con esta encuesta para que la moderación evalúe el caso.
+                </div>
+                <textarea value={reportComment} onChange={e => setReportComment(e.target.value)} rows={5} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-red-400 focus:ring-4 focus:ring-red-400/20 rounded-xl text-sm p-4 text-slate-700 dark:text-slate-200 outline-none resize-none transition-all placeholder:text-slate-400 mb-6" placeholder="¿Qué problema encontraste?" />
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
+                  <button type="button" onClick={() => { setConfirmReportId(null); setReportComment('') }} disabled={confirmReporting} className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-colors">Cancelar</button>
                   <button type="button" onClick={async () => {
                     try {
                       if (!reportComment || reportComment.trim().length < 3) {
@@ -1412,7 +1455,7 @@ export default function Surveys(): JSX.Element {
                       }
                     } catch (e) { console.error(e) }
                     finally { setConfirmReporting(false) }
-                  }} disabled={confirmReporting} className={`px-4 py-2 rounded ${confirmReporting ? 'btn-disabled' : 'btn btn-primary'}`}>Enviar reporte</button>
+                  }} disabled={confirmReporting} className={`w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 ${confirmReporting ? 'bg-red-200 text-red-500 cursor-not-allowed dark:bg-red-900/40 dark:text-red-400/50' : 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/20'}`}>{confirmReporting ? <><span className="material-symbols-outlined text-[18px] animate-spin">refresh</span> Procesando...</> : 'Enviar reporte'}</button>
                 </div>
               </div>
             </div>, document.body

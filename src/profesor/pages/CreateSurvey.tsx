@@ -344,8 +344,13 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                     {/* Integrantes */}
                     <div className="md:col-span-2">
                       <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Integrantes del equipo</label>
-                      <input className="w-full mt-1 bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder:text-slate-400 transition-shadow" placeholder="Juan Pérez, Ana Martínez, Luis Gómez..." value={p.members || ''} onChange={e => setProjects(prev => prev.map(x => x.id === p.id ? { ...x, members: e.target.value } : x))} />
-                    </div>
+                      <textarea
+                      placeholder="Nombres de los integrantes..."
+                      rows={2}
+                      className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/20 rounded-xl text-sm p-3 text-slate-700 dark:text-slate-200 outline-none transition-all placeholder:text-slate-400 resize-y"
+                      value={p.members}
+                      onChange={e => setProjects(prev => prev.map(x => x.id === p.id ? { ...x, members: e.target.value } : x))}
+                    /></div>
                   </div>
                 </div>
               ))}
