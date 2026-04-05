@@ -13,7 +13,8 @@
 
 .layout-with-sidebar {
     display: flex;
-    min-height: 100vh;
+    flex-direction: column;
+    min-height: 100dvh;
     background: var(--color-bg, #f8fafc);
 }
 
@@ -169,7 +170,7 @@
         top: var(--topbar-height);
         left: 0;
         width: 100vw !important;
-        height: calc(100vh - var(--topbar-height));
+        height: calc(100dvh - var(--topbar-height));
         max-width: 100vw;
         border-radius: 0;
         box-shadow: none;
@@ -537,7 +538,7 @@
     margin-left: var(--sidebar-width);
     margin-top: var(--topbar-height);
     transition: margin-left var(--sidebar-transition);
-    min-height: calc(100vh - var(--topbar-height));
+    min-height: calc(100dvh - var(--topbar-height));
     background: var(--color-bg, #f8fafc);
 }
 .sidebar-is-collapsed .sidebar-main-content {

@@ -735,7 +735,7 @@ export default function Surveys(): JSX.Element {
                     <div>
                       <div>
                         <div className="font-semibold text-sm truncate pr-9">{s.title}</div>
-                        {isAdmin && getOwnerDisplay(s) && (
+                        {getOwnerDisplay(s) && (
                           <div className="text-xs text-slate-400 mt-0.5 truncate" title={getOwnerDisplay(s)}>
                             <span className="font-medium text-slate-500">Propietario:</span> {getOwnerDisplay(s)}
                           </div>
