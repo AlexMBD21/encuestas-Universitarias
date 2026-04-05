@@ -1426,7 +1426,7 @@ export default function Surveys(): JSX.Element {
                 <div className="sticky top-0 z-10 border-b px-5 py-4 flex items-center text-white flex-shrink-0" style={{ background: 'var(--color-primary)', boxShadow: 'inset 0 8px 18px rgba(0,0,0,0.28), inset 0 -6px 12px rgba(255,255,255,0.04), 0 6px 24px rgba(15,23,42,0.08)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px' }}>
                   <div className="text-lg font-bold truncate">{editSurvey ? 'Editar encuesta' : 'Crear encuesta'}</div>
                 </div>
-                <div className="p-4 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 56px)' }}>
+                <div className="flex-1 overflow-y-auto px-0 sm:px-4 pb-4">
                   <CreateSurvey
                     hideTypeSelector={true}
                     initialType={createInitialType}

@@ -191,7 +191,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
   }
 
   return (
-    <div className="create-survey bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 p-8 shadow-xl shadow-slate-200/40 dark:shadow-none mb-8">
+    <div className="create-survey bg-white dark:bg-slate-900 sm:rounded-3xl border-y sm:border border-slate-100 dark:border-slate-800 p-4 sm:p-6 md:p-8 shadow-xl shadow-slate-200/40 dark:shadow-none mb-0 sm:mb-8">
       {/* Breadcrumb — solo visible cuando no hay onClose (es página completa) */}
       {!onClose && (
         <nav className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 mb-8 pb-4 border-b border-slate-100 dark:border-slate-800" aria-label="Ruta de navegación">
@@ -232,13 +232,13 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
 
         {surveyType === 'simple' ? (
           <div className="mb-4">
-            <div className="flex items-center justify-between mb-4 mt-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 mt-6">
                <label className="block text-xl font-bold text-slate-800 dark:text-slate-100">Batería de Preguntas</label>
-               <div className="flex gap-2">
-                 <button type="button" className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors" onClick={() => addQuestion('text')}>
+               <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
+                 <button type="button" className="flex justify-center items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors w-full sm:w-auto" onClick={() => addQuestion('text')}>
                    <span className="material-symbols-outlined text-[18px]">short_text</span> Texto
                  </button>
-                 <button type="button" className="flex items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-sm font-semibold rounded-lg dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-blue-900/60 transition-colors" onClick={() => addQuestion('multiple')}>
+                 <button type="button" className="flex justify-center items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-sm font-semibold rounded-lg dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-blue-900/60 transition-colors w-full sm:w-auto" onClick={() => addQuestion('multiple')}>
                    <span className="material-symbols-outlined text-[18px]">checklist</span> Opción Única/Múltiple
                  </button>
                </div>
@@ -248,21 +248,21 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
               {questions.map((q, i) => (
                 <div key={q.id} className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-                  <div className="p-4 pl-6">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <input className="w-full bg-transparent border-b border-transparent hover:border-slate-200 focus:border-blue-500 text-slate-800 text-sm font-medium px-2 py-1.5 outline-none dark:text-slate-100 transition-all placeholder:text-slate-400" value={q.text} onChange={e => setQuestionText(q.id, e.target.value)} placeholder={`Pregunta ${i + 1}`} />
+                  <div className="p-4 pl-4 sm:pl-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0 w-full">
+                        <input className="w-full bg-transparent border-b border-slate-200 dark:border-slate-700 sm:border-transparent hover:border-slate-300 focus:border-blue-500 text-slate-800 text-base sm:text-sm font-medium px-2 py-2 sm:py-1.5 outline-none dark:text-slate-100 transition-all placeholder:text-slate-400" value={q.text} onChange={e => setQuestionText(q.id, e.target.value)} placeholder={`Pregunta ${i + 1}`} />
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="relative bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                          <select value={q.type} onChange={e => setQuestionType(q.id, e.target.value as any)} className="appearance-none bg-transparent pl-3 pr-10 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 outline-none cursor-pointer">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
+                        <div className="relative bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 flex-1 sm:flex-none">
+                          <select value={q.type} onChange={e => setQuestionType(q.id, e.target.value as any)} className="w-full appearance-none bg-transparent pl-3 pr-10 py-2 sm:py-1.5 text-sm sm:text-xs font-semibold text-slate-600 dark:text-slate-300 outline-none cursor-pointer">
                             <option value="text">Texto Libre</option>
                             <option value="multiple">Opción Múltiple</option>
                           </select>
                           <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[16px] select-none">expand_more</span>
                         </div>
-                        <button type="button" onClick={() => removeQuestion(q.id)} className="text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded-lg transition-colors" title="Eliminar pregunta">
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
+                        <button type="button" onClick={() => removeQuestion(q.id)} className="text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-2 sm:p-1.5 rounded-lg transition-colors flex shrink-0" title="Eliminar pregunta">
+                          <span className="material-symbols-outlined text-[20px] sm:text-[18px]">delete</span>
                         </button>
                       </div>
                     </div>
@@ -292,9 +292,9 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
               <div className="py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center text-center">
                  <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-3">quiz</span>
                  <h4 className="text-slate-600 dark:text-slate-400 font-medium mb-4">No hay preguntas agregadas</h4>
-                 <div className="flex gap-2">
-                   <button type="button" className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800" onClick={() => addQuestion('text')}>+ Pregunta Texto</button>
-                   <button type="button" className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-sm font-semibold rounded-lg dark:bg-blue-900/40" onClick={() => addQuestion('multiple')}>+ Pregunta Opciones</button>
+                 <div className="flex flex-col sm:flex-row gap-3 w-full max-w-[280px] sm:max-w-none px-4 sm:px-0 mx-auto sm:mx-0 justify-center">
+                   <button type="button" className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800" onClick={() => addQuestion('text')}>+ Pregunta Texto</button>
+                   <button type="button" className="w-full sm:w-auto px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-sm font-semibold rounded-lg dark:bg-blue-900/40" onClick={() => addQuestion('multiple')}>+ Pregunta Opciones</button>
                  </div>
               </div>
             )}
@@ -408,9 +408,9 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
           </div>
         )}
 
-        <div className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
-          <button type="button" onClick={onCancel} className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors">Cancelar y Volver</button>
-          <button type="submit" disabled={saving} className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2">
+        <div className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
+          <button type="button" onClick={onCancel} className="w-full sm:w-auto px-5 py-3 sm:py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors text-center">Cancelar y Volver</button>
+          <button type="submit" disabled={saving} className="w-full sm:w-auto justify-center px-8 py-3 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2">
              {saving ? (
                <>
                  <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path></svg>
