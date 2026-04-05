@@ -557,7 +557,7 @@ export default function Configuracion() {
                     <input type="text" name="username" autoComplete="username" value={modalData.email || ''} readOnly aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }} />
                     <div>
                       <label className="block text-sm">Correo</label>
-                      <input name="newUserEmail" autoComplete="email" autoFocus={modalType === 'create'} className="w-full border px-3 py-2 rounded" value={modalData.email} onChange={e => setModalData({...modalData, email: e.target.value})} />
+                      <input name="newUserEmail" autoComplete="email" className="w-full border px-3 py-2 rounded" value={modalData.email} onChange={e => setModalData({...modalData, email: e.target.value})} />
                     </div>
                     {modalType === 'create' && (
                       <div>
