@@ -135,11 +135,16 @@ export const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events, onClose 
                 onClick={() => setSelectedDate(isSelected ? null : dateString)}
                 className={`
                   h-8 w-8 rounded-full flex items-center justify-center text-sm transition-all
-                  ${isSelected ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold shadow-md' : ''}
-                  ${!isSelected && isToday ? 'border-2 border-slate-900 dark:border-slate-100 text-slate-900 dark:text-slate-100 font-bold' : ''}
+                  ${isSelected ? 'text-white font-bold shadow-md' : ''}
+                  ${!isSelected && isToday ? 'border-2 font-bold' : ''}
                   ${!isSelected && !isToday ? 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' : ''}
                 `}
-                style={{ "--tw-bg-opacity": 1 } as React.CSSProperties} // Support vars if needed
+                style={{ 
+                  backgroundColor: isSelected ? 'var(--color-primary)' : undefined, 
+                  borderColor: (!isSelected && isToday) ? 'var(--color-primary)' : undefined,
+                  color: (isSelected) ? 'white' : ((!isSelected && isToday) ? 'var(--color-primary)' : undefined),
+                  "--tw-bg-opacity": 1
+                } as React.CSSProperties}
               >
                 {day}
               </button>

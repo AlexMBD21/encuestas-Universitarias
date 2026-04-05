@@ -1074,11 +1074,15 @@ export default function Dashboard() {
         <div className="fixed right-0 z-[200] flex items-center" style={{ top: 'calc(var(--topbar-height) + 24px)' }}>
           <button
             onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-            className="group flex items-center justify-center pl-3 pr-3 py-3 bg-slate-900 dark:bg-slate-800 border-y border-l border-slate-700 hover:bg-slate-800 text-white shadow-2xl rounded-l-xl transition-all duration-300 ease-in-out"
+            className="group flex items-center justify-center pl-3 pr-4 py-3 text-white shadow-[-8px_0_24px_rgba(0,98,141,0.25)] rounded-l-2xl transition-all duration-500 ease-in-out border-y border-l border-white/20 active:scale-95"
+            style={{ 
+              background: 'var(--color-primary)',
+              backdropFilter: 'blur(8px)'
+            }}
             title="Abrir Calendario"
           >
-            <span className="material-symbols-outlined text-xl">calendar_month</span>
-            <span className="overflow-hidden whitespace-nowrap max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 group-hover:ml-2 transition-all duration-300 ease-in-out font-medium text-sm">
+            <span className="material-symbols-outlined text-xl drop-shadow-sm">calendar_month</span>
+            <span className="overflow-hidden whitespace-nowrap max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-semibold text-sm tracking-wide">
               Calendario
             </span>
           </button>
