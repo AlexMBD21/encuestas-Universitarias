@@ -19,8 +19,6 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
   const { user: currentUser } = useAuth()
   const userId = currentUser?.id || currentUser?.email || null
   const [profileOpen, setProfileOpen] = useState(false)
-  const [chipMenuOpen, setChipMenuOpen] = useState(false)
-  const chipMenuRef = useRef<HTMLDivElement>(null)
   const [profile, setProfile] = useState<ProfileData>(() => loadProfile(userId))
 
   // Reload profile when user changes (async from Supabase, sync cache first)
@@ -28,18 +26,6 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
     setProfile(loadProfile(userId))
     loadProfileAsync(userId).then(p => setProfile(p))
   }, [userId])
-
-  // Close chip menu on outside click
-  useEffect(() => {
-    if (!chipMenuOpen) return
-    const handler = (e: MouseEvent) => {
-      if (chipMenuRef.current && !chipMenuRef.current.contains(e.target as Node)) {
-        setChipMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [chipMenuOpen])
 
   const roleLabel = ({ admin: 'Administrador', profesor: 'Profesor', estudiante: 'Estudiante' } as Record<string, string>)[String(currentUser?.role || '')] ?? (currentUser ? 'Usuario' : 'Invitado')
   const avatarInitials = profile.displayName
@@ -264,13 +250,12 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
 
       
 
-      <div className="user-chip-wrapper" ref={chipMenuRef}>
+      <div className="user-chip-wrapper">
         <button
           className="user-chip"
-          onClick={() => setChipMenuOpen(v => !v)}
-          aria-haspopup="true"
-          aria-expanded={chipMenuOpen}
-          aria-label="Menú de usuario"
+          onClick={() => setProfileOpen(true)}
+          aria-label="Abrir perfil"
+          title="Mi perfil"
         >
           {profile.avatarUrl ? (
             <img src={profile.avatarUrl} alt="Avatar" className="user-avatar user-avatar-photo" />
@@ -278,21 +263,7 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
             <div className="user-avatar placeholder">{avatarInitials}</div>
           )}
           <span className="user-chip-name">{roleLabel}</span>
-          <span className={`material-symbols-outlined user-chip-chevron${chipMenuOpen ? ' open' : ''}`}>expand_more</span>
         </button>
-
-        {chipMenuOpen && (
-          <div className="chip-dropdown" role="menu">
-            <button
-              className="chip-dropdown-item"
-              role="menuitem"
-              onClick={() => { setChipMenuOpen(false); setProfileOpen(true) }}
-            >
-              <span className="material-symbols-outlined">manage_accounts</span>
-              Perfil
-            </button>
-          </div>
-        )}
       </div>
 
       <ProfileModal
