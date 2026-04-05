@@ -832,7 +832,7 @@ export default function Surveys(): JSX.Element {
                 return (
                   <div key={s.id} id={`survey-${s.id}`} className={`group relative p-5 border rounded-2xl flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-xl transform hover:-translate-y-1 transition duration-200 ease-out focus-within:ring-2 bg-white dark:bg-slate-900 ${isProjectType ? 'border-indigo-100 dark:border-indigo-900/50 hover:border-indigo-300 dark:hover:border-indigo-700/50 focus-within:ring-indigo-200' : 'border-emerald-100 dark:border-emerald-900/50 hover:border-emerald-300 dark:hover:border-emerald-700/50 focus-within:ring-emerald-200'}`}>
                     {/* Acento superior de color */}
-                    <div className={`absolute top-0 left-0 w-full h-1.5 ${isProjectType ? 'bg-gradient-to-r from-indigo-500 to-purple-500' : 'bg-gradient-to-r from-emerald-500 to-teal-500'}`}></div>
+                    <div className={`absolute top-0 left-0 w-full h-1.5 ${isProjectType ? 'bg-indigo-600' : 'bg-emerald-600'}`}></div>
                     
                     <div className="flex-1">
                       {/* Badges y status */}
