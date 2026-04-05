@@ -849,7 +849,12 @@ export default function Dashboard() {
       <div className="flex flex-wrap justify-between items-start gap-3 px-4 py-0.5 relative z-10">
         <div>
           <h1 className="text-slate-900 dark:text-slate-50 text-3xl font-black leading-tight tracking-[-0.033em] min-w-72 mb-1">
-            {profileName ? `¡Bienvenido de nuevo, ${profileName}!` : '¡Bienvenido de nuevo!'}
+            {profileName ? (
+              <>
+                ¡Bienvenido de nuevo,{' '}
+                <span className="block sm:inline text-blue-600 dark:text-blue-400 sm:text-inherit">{profileName}!</span>
+              </>
+            ) : '¡Bienvenido de nuevo!'}
           </h1>
           <p className="text-slate-600 dark:text-slate-300 text-sm mt-1 max-w-xl">Revisa el estado de tus campañas activas y las últimas métricas de satisfacción recolectadas hoy.</p>
         </div>
