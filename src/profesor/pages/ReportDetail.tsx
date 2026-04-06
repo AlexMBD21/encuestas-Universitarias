@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useLayoutEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import reportHelpers from '../services/reportHelpers'
 import supabaseClient from '../../services/supabaseClient'
@@ -7,6 +7,13 @@ import SurveyDetailPanel from '../components/SurveyDetailPanel'
 import ProjectDetailModal from '../components/ProjectDetailModal'
 
 export default function ReportDetail(): JSX.Element {
+  // Reiniciar scroll al entrar
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+    const main = document.getElementById('main-content')
+    if (main) main.scrollTop = 0
+  }, [])
+
   const navigate = useNavigate()
   const { surveyId } = useParams<{ surveyId: string }>()
   const dataClientNow: any = supabaseClient

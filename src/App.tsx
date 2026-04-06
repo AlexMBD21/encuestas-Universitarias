@@ -14,7 +14,22 @@ import RequireAuth from './components/RequireAuth'
 function ScrollToTop(): null {
   const { pathname } = useLocation()
   React.useEffect(() => {
-    try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }) } catch (e) {}
+    try {
+      // 1. Reset standard window scroll
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' as any })
+      
+      // 2. Reset potential scroll in the layout container (common pattern in this project)
+      const mainContent = document.getElementById('main-content')
+      if (mainContent) mainContent.scrollTop = 0
+      
+      // 3. Fallback for late-rendering content or browser scroll restoration
+      const timer = setTimeout(() => {
+        window.scrollTo(0, 0)
+        if (mainContent) mainContent.scrollTop = 0
+      }, 50)
+      
+      return () => clearTimeout(timer)
+    } catch (e) {}
   }, [pathname])
   return null
 }
