@@ -435,12 +435,25 @@ export default function Configuracion() {
   }
 
   return (
-    <div id="configuration-root" className="p-6" aria-hidden={modalOpen}>
+    <div id="configuration-root" className="min-h-screen bg-slate-50/50 pb-20" aria-hidden={modalOpen}>
+      {/* Header Splash Premium */}
+      <div className="bg-white border-b border-slate-200 shadow-md">
+        <div id="config-header-inner" className="px-5 sm:px-8 py-8 md:py-12 max-w-7xl mx-auto">
+          <div id="config-header-title-row" className="flex items-center gap-3 mb-2 animate-fade-in-up">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20 text-white shrink-0">
+              <span className="material-symbols-outlined text-xl">settings</span>
+            </div>
+            <h1 className="text-slate-900 dark:text-slate-50 text-2xl md:text-3xl font-black leading-tight tracking-[-0.033em]" style={{ margin: 0 }}>Configuración</h1>
+          </div>
+          <p className="text-slate-500 text-sm md:text-base max-w-2xl animate-fade-in-up" style={{ animationDelay: '50ms' }}>
+            Gestiona las preferencias de tu cuenta, actualiza tu seguridad y administra los usuarios del sistema.
+          </p>
+        </div>
+      </div>
 
-      <h1 className="text-3xl font-black mb-6">Configuración</h1>
-
-      {/* Account configuration (visible to professors) and Admin users management */}
-      <div className={isAdmin ? 'max-w-5xl mx-auto mt-8' : 'max-w-3xl mx-auto mt-8'}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        {/* Account configuration (visible to professors) and Admin users management */}
+        <div className={isAdmin ? 'max-w-full mx-auto' : 'max-w-3xl mx-auto'}>
         <div className="flex flex-col md:flex-row gap-6">
           {/* Left: account config */}
           <div className={isAdmin ? 'w-full md:w-2/5' : 'w-full'}>
@@ -552,6 +565,7 @@ export default function Configuracion() {
           )}
         </div>
       </div>
+    </div>
       {/* Modal overlay — bottom-sheet en mobile, centrado en desktop */}
       {isAdmin && modalOpen && (
         <div className="fixed inset-0 flex items-end sm:items-center justify-center z-50 bg-slate-900/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) closeModal() }}>
@@ -684,6 +698,26 @@ export default function Configuracion() {
         </div>
       )}
       <Toast visible={toastVisible} message={toastMsg} kind={toastKind} onClose={() => { setToastVisible(false); if (toastTimerRef.current) { try { window.clearTimeout(toastTimerRef.current) } catch (e) {} toastTimerRef.current = null } }} />
+      
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.4s ease-out forwards;
+          opacity: 0;
+        }
+        @media (max-width: 767px) {
+          #config-header-title-row {
+            justify-content: flex-start !important;
+            align-items: center !important;
+          }
+          #config-header-inner {
+            text-align: left !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

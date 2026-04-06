@@ -116,220 +116,257 @@ export default function ReportDetail(): JSX.Element {
   }
 
   return (
-    <div id="report-detail-root" className="px-4 py-4 sm:p-6">
+    <div id="report-detail-root" className="min-h-screen bg-slate-50/50 pb-24">
 
-      {/* Breadcrumb */}
-      <nav className="page-breadcrumb" aria-label="Ruta de navegación">
-        <button className="page-breadcrumb-link" onClick={() => navigate('/profesor/encuestas/reports')}>
-          <span className="material-symbols-outlined">bar_chart</span>
-          Reportes
-        </button>
-        <span className="material-symbols-outlined page-breadcrumb-sep">chevron_right</span>
-        <span className="page-breadcrumb-current">{surveyTitle}</span>
-      </nav>
+      {/* Header Premium */}
+      <div className="bg-white border-b border-slate-200/60 shadow-sm relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/[0.03] to-blue-500/[0.04]" />
+        
+        <div className="px-5 sm:px-8 py-6 md:py-8 relative z-10 max-w-7xl mx-auto">
+          {/* Breadcrumb glassmorphic */}
+          <nav className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/80 backdrop-blur-sm border border-slate-200/50 text-xs font-medium text-slate-600 mb-6">
+            <button 
+              className="flex items-center gap-1.5 hover:text-blue-600 transition-colors" 
+              onClick={() => navigate('/profesor/encuestas/reports')}
+            >
+              <span className="material-symbols-outlined text-[16px]">bar_chart</span>
+              Reportes
+            </button>
+            <span className="material-symbols-outlined text-[14px] text-slate-400">chevron_right</span>
+            <span className="text-slate-800 truncate max-w-[150px] sm:max-w-xs">{surveyTitle}</span>
+          </nav>
 
-      <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">{surveyTitle}</h1>
-
-      {loading && (
-        <div className="mt-10 flex flex-col items-center justify-center gap-3">
-          <svg className="animate-spin" width="40" height="40" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="#d1d5db" strokeWidth="3" />
-            <path d="M12 2a10 10 0 0 1 10 10" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" />
-          </svg>
-          <span className="text-slate-500 text-sm">Cargando informe...</span>
-        </div>
-      )}
-
-      {!loading && !report && (
-        <div className="mt-6 p-4 border rounded bg-yellow-50">
-          <div className="font-semibold mb-2">No se pudo cargar el reporte de esta encuesta</div>
-          <div className="text-sm text-slate-700 mb-2">Posibles causas: la encuesta no tiene preguntas, no hay respuestas registradas, o no tienes permisos de lectura.</div>
-          <div className="flex items-center gap-3">
-            <button onClick={reload} className="px-3 py-2 bg-blue-600 text-white rounded">Reintentar</button>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 animate-fade-in-up">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                {surveyTitle}
+              </h1>
+            </div>
+            
+            {/* Quick Actions (Export) si el reporte está cargado */}
+            {report && !loading && (
+              <div className="flex shrink-0 gap-2">
+                <button
+                  onClick={() => report.projectSummaries ? reportHelpers.exportProjectSurveyPdf(report, usersCache, 'preview') : reportHelpers.exportSimpleSurveyPdf(report, usersCache, 'preview')}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl transition-all shadow-md shadow-slate-900/10 active:scale-[0.98]"
+                >
+                  <span className="material-symbols-outlined text-[18px]">print</span>
+                  Visualizar / Imprimir
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
-      {!loading && report && (
-        <div>
-          {report.totalResponses === 0 && (
-            <div className="mb-4 p-3 border rounded bg-yellow-50">
-              <div className="font-semibold">No hay respuestas registradas</div>
-              <div className="text-sm text-slate-600">Esta encuesta no tiene respuestas aún.</div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+
+        {loading && (
+          <div className="py-20 flex flex-col items-center justify-center animate-pulse">
+            <div className="relative w-16 h-16 mb-4">
+              <div className="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
             </div>
-          )}
+            <span className="text-slate-500 font-medium">Buscando datos del informe...</span>
+          </div>
+        )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-4">
-            <div className="lg:col-span-2">
-              {report.questionStats && (
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2">Resumen por pregunta</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {report.questionStats.map((q: any, i: number) => (
-                      <QuestionStatCard key={i} question={q.question} counts={q.counts} answered={q.answered} options={q.options || []} texts={q.texts} questionType={q.questionType} />
-                    ))}
-                  </div>
-                  <div className="mt-4">
-                    <button
-                      onClick={() => reportHelpers.exportSimpleSurveyPdf(report, usersCache, 'preview')}
-                      className="px-3 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded text-sm transition-colors"
-                    >
-                        Visualizar / Imprimir
-                    </button>
-                  </div>
+        {!loading && !report && (
+          <div className="mt-2 bg-yellow-50/80 border border-yellow-200 p-6 rounded-2xl flex flex-col sm:flex-row items-center gap-4">
+            <div className="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center shrink-0">
+               <span className="material-symbols-outlined text-2xl">warning</span>
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <h3 className="font-bold text-yellow-800 text-lg">No se pudo cargar el reporte</h3>
+              <p className="text-sm text-yellow-700 mt-1">Es posible que la encuesta no tenga preguntas, aún no haya recibido respuestas o no cuentes con permisos.</p>
+            </div>
+            <button onClick={reload} className="px-5 py-2.5 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-xl transition-colors shrink-0">
+              Reintentar
+            </button>
+          </div>
+        )}
+
+        {!loading && report && (
+          <div className="animate-fade-in-up" style={{ animationDelay: '50ms' }}>
+            
+            {report.totalResponses === 0 && (
+              <div className="mb-6 bg-blue-50/50 border border-blue-100 p-5 rounded-2xl flex items-center gap-4">
+                <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined">inbox</span>
                 </div>
-              )}
-
-              {report.projectSummaries && (
                 <div>
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-base text-slate-800 tracking-tight">Ranking de proyectos</h3>
-                    <span className="text-xs bg-slate-100 text-slate-500 rounded-full px-3 py-1 font-medium">
-                      {report.projectSummaries.length} proyecto{report.projectSummaries.length !== 1 ? 's' : ''}
-                    </span>
+                  <h4 className="font-bold text-blue-900">Aún no hay respuestas</h4>
+                  <p className="text-sm text-blue-700">Esta encuesta está vacía. ¡Comparte el enlace para empezar a recibir datos!</p>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-12">
+              
+              {/* Left Column (Main Stats / Ranking) */}
+              <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
+
+                {/* Preguntas Simples */}
+                {report.questionStats && (
+                  <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-5 sm:p-6 lg:p-8">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[18px]">analytics</span>
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-800 tracking-tight">Desglose por pregunta</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {report.questionStats.map((q: any, i: number) => (
+                        <QuestionStatCard key={i} question={q.question} counts={q.counts} answered={q.answered} options={q.options || []} texts={q.texts} questionType={q.questionType} />
+                      ))}
+                    </div>
                   </div>
+                )}
 
-                  <div className="space-y-2">
-                    {report.projectSummaries.map((ps: any, i: number) => {
-                      const overall: number | null = ps.overall ?? null
-                      const overallPct = overall !== null
-                        ? Math.max(0, Math.min(100, Math.round(((overall - 1) / 4) * 100)))
-                        : null
+                {/* Ranking de Proyectos */}
+                {report.projectSummaries && (
+                  <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-5 sm:p-6 lg:p-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[18px]">trophy</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 tracking-tight">Ranking de proyectos</h3>
+                      </div>
+                      <span className="text-xs font-bold bg-slate-100 text-slate-600 rounded-full px-3 py-1 border border-slate-200">
+                        {report.projectSummaries.length} eval.
+                      </span>
+                    </div>
 
-                      // Detect tie
-                      const prevOverall = i > 0 ? (report.projectSummaries[i - 1].overall ?? null) : null
-                      const isTied = overall !== null && prevOverall !== null && Number(overall) === Number(prevOverall)
-                      const nextOverall = i < report.projectSummaries.length - 1 ? (report.projectSummaries[i + 1].overall ?? null) : null
-                      const tiedWithNext = overall !== null && nextOverall !== null && Number(overall) === Number(nextOverall)
-                      const showTieBadge = isTied || tiedWithNext
+                    <div className="space-y-3">
+                      {report.projectSummaries.map((ps: any, i: number) => {
+                        const overall: number | null = ps.overall ?? null
+                        const overallPct = overall !== null
+                          ? Math.max(0, Math.min(100, Math.round(((overall - 1) / 4) * 100)))
+                          : null
 
-                      let colorIdx = i
-                      if (isTied) {
-                        let j = i
-                        while (j > 0 && Number(report.projectSummaries[j].overall) === Number(report.projectSummaries[j - 1].overall)) j--
-                        colorIdx = j
-                      }
+                        const prevOverall = i > 0 ? (report.projectSummaries[i - 1].overall ?? null) : null
+                        const isTied = overall !== null && prevOverall !== null && Number(overall) === Number(prevOverall)
+                        const nextOverall = i < report.projectSummaries.length - 1 ? (report.projectSummaries[i + 1].overall ?? null) : null
+                        const tiedWithNext = overall !== null && nextOverall !== null && Number(overall) === Number(nextOverall)
+                        const showTieBadge = isTied || tiedWithNext
 
-                      const rankAccents = ['#f59e0b', '#94a3b8', '#f97316']
-                      const rankBgs = ['#fffbeb', '#f8fafc', '#fff7ed']
-                      const accentColor = rankAccents[colorIdx] ?? '#6366f1'
-                      const cardBg = rankBgs[colorIdx] ?? '#ffffff'
-                      const medals = ['🥇', '🥈', '🥉']
+                        let colorIdx = i
+                        if (isTied) {
+                          let j = i
+                          while (j > 0 && Number(report.projectSummaries[j].overall) === Number(report.projectSummaries[j - 1].overall)) j--
+                          colorIdx = j
+                        }
 
-                      const members: string[] = Array.isArray(ps.project.members)
-                        ? ps.project.members
-                        : typeof ps.project.members === 'string'
-                          ? ps.project.members.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean)
-                          : []
+                        // Premium colors for podioum
+                        const rankAccents = ['#f59e0b', '#64748b', '#d97706']
+                        const rankBgs = ['bg-amber-50/50', 'bg-slate-50', 'bg-orange-50/30']
+                        const accentColor = rankAccents[colorIdx] ?? '#6366f1'
+                        const cardBgClass = rankBgs[colorIdx] ?? 'bg-white'
+                        const medals = ['🥇', '🥈', '🥉']
 
-                      return (
-                        <div
-                          key={ps.project.id}
-                          className="flex items-stretch rounded-xl overflow-hidden border border-slate-200 transition-all duration-200 hover:shadow-md hover:-translate-y-px"
-                          style={{ background: cardBg }}
-                        >
-                          {/* Left accent stripe */}
-                          <div className="w-1 self-stretch shrink-0" style={{ background: accentColor }} />
+                        const members: string[] = Array.isArray(ps.project.members)
+                          ? ps.project.members
+                          : typeof ps.project.members === 'string'
+                            ? ps.project.members.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean)
+                            : []
 
-                          {/* Main content */}
-                          <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center">
-                            {/* Row 1: rank + project info */}
-                            <div className="flex items-center flex-1 min-w-0">
-                              {/* Rank badge */}
-                              <div className="shrink-0 w-10 sm:w-12 flex flex-col items-center justify-center py-3 sm:py-4 px-1 gap-0.5 self-stretch">
-                                <span className="text-base sm:text-lg leading-none">{medals[colorIdx] ?? '🏅'}</span>
-                                <span className="text-[10px] font-black tabular-nums" style={{ color: accentColor }}>#{colorIdx + 1}</span>
-                              </div>
-
-                              {/* Divider */}
-                              <div className="w-px self-stretch bg-slate-100 shrink-0" />
-
-                              {/* Project info */}
-                              <div className="flex-1 min-w-0 py-2.5 px-3">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-semibold text-slate-800 text-sm leading-snug">{ps.project.name}</span>
-                                  {showTieBadge && (
-                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-600 whitespace-nowrap">= Empate</span>
-                                  )}
-                                </div>
-                                {members.length > 0 && (
-                                  <div className="text-xs text-slate-400 mt-0.5 truncate">
-                                    {members.slice(0, 3).join(' · ')}{members.length > 3 ? ` +${members.length - 3}` : ''}
-                                  </div>
-                                )}
-                              </div>
+                        return (
+                          <div
+                            key={ps.project.id}
+                            className={`flex flex-col sm:flex-row sm:items-center rounded-2xl overflow-hidden border border-slate-200 hover:border-slate-300 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${cardBgClass} relative group`}
+                          >
+                            <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ background: accentColor }} />
+                            
+                            {/* Ranking Num & Medal */}
+                            <div className="flex sm:flex-col items-center justify-center p-3 sm:py-5 sm:px-6 sm:border-r border-slate-200/60 bg-white/40">
+                              <span className="text-2xl mr-2 sm:mr-0 sm:mb-1 drop-shadow-sm">{medals[colorIdx] ?? '🏅'}</span>
+                              <span className="text-sm font-black tabular-nums" style={{ color: accentColor }}>#{colorIdx + 1}</span>
                             </div>
 
-                            {/* Row 2 (mobile) / right section (sm+): score + button */}
-                            <div className="flex items-center border-t border-slate-100 sm:border-t-0 sm:border-l">
-                              {/* Score block */}
-                              <div className="flex-1 sm:flex-none sm:w-32 py-2.5 sm:py-3 px-3">
+                            {/* Project Details */}
+                            <div className="flex-1 p-4 flex flex-col justify-center">
+                              <div className="flex items-center gap-2 flex-wrap mb-1">
+                                <span className="font-bold text-slate-800 text-base">{ps.project.name}</span>
+                                {showTieBadge && (
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-500 shadow-sm">EMPATE</span>
+                                )}
+                              </div>
+                              {members.length > 0 && (
+                                <div className="text-xs text-slate-500 font-medium">
+                                  {members.slice(0, 3).join(' • ')}{members.length > 3 ? ` +${members.length - 3}` : ''}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Score & Action */}
+                            <div className="flex items-center justify-between sm:justify-end p-4 border-t sm:border-t-0 border-slate-100 bg-white/30 sm:w-48">
+                              <div className="w-full">
                                 {overall !== null ? (
                                   <>
-                                    <div className="flex items-baseline gap-1 sm:justify-end mb-1.5">
-                                      <span className="text-sm sm:text-base font-black tabular-nums leading-none" style={{ color: accentColor }}>{overall.toFixed(2)}</span>
-                                      <span className="text-[10px] text-slate-400 font-medium">/5</span>
-                                      {overallPct !== null && (
-                                        <span className="text-xs font-bold text-slate-500 ml-0.5">{overallPct}%</span>
-                                      )}
-                                    </div>
-                                    {overallPct !== null && (
-                                      <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: accentColor + '22' }}>
-                                        <div
-                                          className="h-full rounded-full transition-all duration-700"
-                                          style={{ width: `${overallPct}%`, background: accentColor }}
-                                        />
+                                    <div className="flex items-end justify-between mb-2">
+                                      <div className="flex items-baseline gap-1">
+                                        <span className="text-2xl font-black tabular-nums leading-none tracking-tight" style={{ color: accentColor }}>{overall.toFixed(2)}</span>
+                                        <span className="text-xs font-bold text-slate-400">/5</span>
                                       </div>
-                                    )}
-                                    <div className="text-[10px] text-slate-400 mt-1 sm:text-right">{ps.responses} calificación{ps.responses !== 1 ? 'es' : ''}</div>
+                                      <button
+                                        onClick={() => setModalProject(ps)}
+                                        className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm group-hover:scale-105"
+                                        title="Ver detalle"
+                                      >
+                                        <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                      </button>
+                                    </div>
+                                    <div className="h-1.5 w-full rounded-full bg-slate-200/60 overflow-hidden">
+                                      <div
+                                        className="h-full rounded-full transition-all duration-1000 ease-out"
+                                        style={{ width: `${overallPct}%`, background: accentColor }}
+                                      />
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 mt-1.5 font-medium">{ps.responses} evaluación{ps.responses !== 1 ? 'es' : ''}</div>
                                   </>
                                 ) : (
-                                  <span className="text-xs text-slate-400 italic">Sin datos</span>
+                                  <span className="text-sm font-medium text-slate-400 italic">Sin evaluar</span>
                                 )}
                               </div>
-
-                              {/* Action */}
-                              <div className="shrink-0 pr-3 pl-2">
-                                <button
-                                  onClick={() => setModalProject(ps)}
-                                  className="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-150 whitespace-nowrap hover:opacity-80"
-                                  style={{ color: accentColor, borderColor: accentColor + '66', background: accentColor + '10' }}
-                                >
-                                  Ver detalle
-                                </button>
-                              </div>
                             </div>
+
                           </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
                   </div>
-
-                  <div className="mt-4">
-                    <button
-                      onClick={() => reportHelpers.exportProjectSurveyPdf(report, usersCache, 'preview')}
-                      className="px-3 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded text-sm transition-colors"
-                    >
-                      Visualizar / Imprimir
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="lg:col-span-2">
-              <div className="rounded border bg-white">
-                <SurveyDetailPanel report={report} usersCache={usersCache} />
+                )}
               </div>
+
+              {/* Right Column (Panel Lateral) */}
+              <div className="lg:col-span-5 xl:col-span-4">
+                <div className="sticky top-6">
+                  <SurveyDetailPanel report={report} usersCache={usersCache} />
+                </div>
+              </div>
+
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+      </div>
 
       {modalProject && (
         <ProjectDetailModal ps={modalProject} onClose={() => setModalProject(null)} />
       )}
+      
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+        }
+      `}</style>
     </div>
   )
 }

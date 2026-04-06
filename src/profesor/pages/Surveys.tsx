@@ -578,106 +578,138 @@ export default function Surveys(): JSX.Element {
 
   const navigate = useNavigate();
   return (
-    <div id="surveys-root" className="px-8 py-6">
-
-      {/* ── Fila 1: Título + Acciones ─────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h1 className="text-3xl font-black">Encuestas</h1>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => {
-            if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
-            handleCreate()
-          }} className={`px-4 py-2 text-sm font-medium rounded-lg ${!backendEnabled ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20'}`} disabled={!backendEnabled}>
-            + Nueva Encuesta
-          </button>
-          <button type="button" onClick={() => {
-            if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
-            setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true)
-          }} className={`px-4 py-2 text-sm font-medium rounded-lg ${!backendEnabled ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`} disabled={!backendEnabled}>
-            + Calificación de proyecto
-          </button>
+    <div id="surveys-root" className="min-h-screen bg-slate-50 pb-20">
+      
+      {/* Header Surveys */}
+      <div className="bg-white border-b border-slate-200 shadow-md relative z-10">
+        <div id="surveys-header-inner" className="px-5 sm:px-8 pt-8 pb-12 md:pt-12 md:pb-16 max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-8">
+          <div className="animate-fade-in-up" id="surveys-header-text">
+            <div id="surveys-header-title-row" className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20 text-white shrink-0">
+                <span className="material-symbols-outlined text-xl">assignment</span>
+              </div>
+              <h1 className="text-slate-900 dark:text-slate-50 text-2xl md:text-3xl font-black leading-tight tracking-[-0.033em]" style={{ margin: 0 }}>Encuestas</h1>
+            </div>
+            <p className="text-slate-500 text-sm md:text-base max-w-2xl" style={{ animationDelay: '50ms' }}>
+              Crea o gestiona encuestas y proyectos. Captura y recolecta las respuestas y calificaciones que necesites de forma rápida.
+            </p>
+          </div>
+          <div id="surveys-header-buttons" className="flex gap-3 shrink-0 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <button type="button" onClick={() => {
+              if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
+              handleCreate()
+            }} className={`flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition duration-200 ${!backendEnabled ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 active:scale-[0.98]'}`} disabled={!backendEnabled}>
+              <span className="material-symbols-outlined text-[18px]">add_circle</span> <span className="hidden sm:inline">Nueva</span> Encuesta
+            </button>
+            <button type="button" onClick={() => {
+              if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
+              setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true)
+            }} className={`flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition duration-200 ${!backendEnabled ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 active:scale-[0.98]'}`} disabled={!backendEnabled}>
+              <span className="material-symbols-outlined text-[18px]">fact_check</span> <span className="hidden sm:inline">Calificar</span> Proyecto
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ── Fila 2: Barra de filtros ───────────────────────────────── */}
-      <div className="bg-white dark:bg-slate-900 border rounded-xl px-4 py-3 mb-4 shadow-sm flex flex-col gap-3">
-        {/* Fila superior: buscador (full width) */}
-        <div className="relative w-full">
-          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input
-            type="text"
-            value={titleSearch}
-            onChange={e => setTitleSearch(e.target.value)}
-            placeholder="Buscar por título..."
-            className="pl-8 pr-7 py-1.5 border rounded-lg text-sm w-full bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          {titleSearch && (
-            <button type="button" onClick={() => setTitleSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" title="Limpiar">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>
-          )}
-        </div>
-
-        {/* Fila inferior: controles de filtro */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          {/* Sin calificar */}
-          <label className="text-sm flex items-center gap-1.5 cursor-pointer select-none text-slate-700 dark:text-slate-300">
-            <input type="checkbox" checked={showOnlyPending} onChange={e => setShowOnlyPending(e.target.checked)} className="rounded" />
-            Sin calificar
-          </label>
-
-          {/* Estado */}
-          <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
-            <span className="whitespace-nowrap">Estado:</span>
-            <select value={publishedFilter} onChange={e => setPublishedFilter(e.target.value as any)} className="py-1 px-2 border rounded-lg text-sm bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
-              <option value="all">Todas</option>
-              <option value="published">Publicadas</option>
-              <option value="unpublished">No publicadas</option>
-              <option value="reported">Reportadas</option>
-            </select>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 md:-mt-8 relative z-20">
+        
+        {/* Barra de Filtros Premium */}
+        <div id="surveys-filter-bar" className="bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-lg shadow-slate-300/50 rounded-2xl p-2 md:p-3 flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 mb-8 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+          
+          {/* Buscador */}
+          <div className="relative flex-1 min-w-0">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </div>
+            <input
+              type="text"
+              value={titleSearch}
+              onChange={e => setTitleSearch(e.target.value)}
+              placeholder="Buscar por título..."
+              className="block w-full pl-11 pr-10 py-3 bg-slate-50/50 border-0 text-slate-900 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors sm:text-sm shadow-inner"
+            />
+            {titleSearch && (
+              <button type="button" onClick={() => setTitleSearch('')} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            )}
           </div>
 
-          {/* Propietario */}
-          {(() => {
-            const uniqueOwners = Array.from(
-              new Set(surveys.map(s => getOwnerDisplay(s)).filter(Boolean))
-            ).sort()
-            if (uniqueOwners.length === 0) return null
-            return (
-              <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
-                <span className="whitespace-nowrap">Propietario:</span>
-                <select value={ownerFilter} onChange={e => setOwnerFilter(e.target.value)} className="py-1 px-2 border rounded-lg text-sm bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 max-w-[160px]">
-                  <option value="all">Todos</option>
-                  {uniqueOwners.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
+          <div className="h-px md:h-10 w-full md:w-px bg-slate-200/60 hidden md:block" />
+
+          {/* Filtros Auxiliares */}
+          <div id="surveys-filter-chips" className="flex flex-row items-center gap-2 overflow-x-auto md:overflow-x-visible pb-0 hide-scrollbar shrink-0">
+            
+            {/* Checkbox Sin calificar */}
+            <label id="surveys-filter-pending" className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl px-4 py-2.5 cursor-pointer transition-colors whitespace-nowrap">
+              <input type="checkbox" checked={showOnlyPending} onChange={e => setShowOnlyPending(e.target.checked)} className="rounded text-blue-500 focus:ring-blue-500 w-4 h-4" />
+              Sin calificar
+            </label>
+
+            {/* Select: Estado */}
+            <div id="surveys-filter-status" className="relative shrink-0">
+              <select 
+                value={publishedFilter} 
+                onChange={e => setPublishedFilter(e.target.value as any)} 
+                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-4 pr-10 py-2.5 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer w-full"
+              >
+                <option value="all">Estado: Todas</option>
+                <option value="published">Publicadas</option>
+                <option value="unpublished">No publicadas</option>
+                <option value="reported">Reportadas</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
               </div>
-            )
-          })()}
+            </div>
 
-          {/* Limpiar filtros */}
-          {(showOnlyPending || publishedFilter !== 'all' || ownerFilter !== 'all' || titleSearch.trim()) && (
-            <button
-              type="button"
-              onClick={() => { setShowOnlyPending(false); setPublishedFilter('all'); setOwnerFilter('all'); setTitleSearch('') }}
-              className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-500 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 hover:border-red-200 transition-colors whitespace-nowrap"
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
-              Limpiar filtros
-            </button>
-          )}
+            {/* Select: Propietario */}
+            {(() => {
+              const uniqueOwners = Array.from(
+                new Set(surveys.map(s => getOwnerDisplay(s)).filter(Boolean))
+              ).sort()
+              if (uniqueOwners.length === 0) return null
+              return (
+                <div id="surveys-filter-owner" className="relative shrink-0">
+                  <select 
+                    value={ownerFilter} 
+                    onChange={e => setOwnerFilter(e.target.value)} 
+                    className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-4 pr-10 py-2.5 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors md:max-w-[170px] truncate cursor-pointer w-full"
+                  >
+                    <option value="all">Cualquier propietario</option>
+                    {uniqueOwners.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                  </div>
+                </div>
+              )
+            })()}
+
+            {/* Limpiar Filtros */}
+            {(showOnlyPending || publishedFilter !== 'all' || ownerFilter !== 'all' || titleSearch.trim()) && (
+              <button
+                type="button"
+                onClick={() => { setShowOnlyPending(false); setPublishedFilter('all'); setOwnerFilter('all'); setTitleSearch('') }}
+                className="shrink-0 p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-colors border border-transparent hover:border-red-100"
+                title="Limpiar filtros"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z" /><path d="M18 9l-6 6" /><path d="M12 9l6 6" /></svg>
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* If the query param view=create, show inline CreateSurvey panel; if view=details show ViewSurvey */}
-      {(() => {
-        const view = new URLSearchParams(location.search).get('view')
-        if (view === 'create') return <CreateSurvey />
-        if (view === 'details') return <ViewSurvey />
-        return null
-      })()}
+        {/* If the query param view=create, show inline CreateSurvey panel; if view=details show ViewSurvey */}
+        {(() => {
+          const view = new URLSearchParams(location.search).get('view')
+          if (view === 'create') return <CreateSurvey />
+          if (view === 'details') return <ViewSurvey />
+          return null
+        })()}
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl border p-4 shadow">
-        <h3 className="text-lg font-semibold mb-4">Encuestas guardadas</h3>
+        <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+          {/* Ocultamos el título "Encuestas guardadas" porque ya está explícito en la página y limpiamos el contenedor principal de la cuadrícula */}
         {!surveysLoaded ? (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 animate-pulse">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
@@ -954,15 +986,19 @@ export default function Surveys(): JSX.Element {
             })()}
           </div>
         )}
-      {/* toast */}
+        </div> {/* Cierra animacion grid */}
+      </div> {/* Cierra max-w-7xl */}
+
+      {/* toast premium */}
       {toastMessage && (
-        <div className="fixed right-4 bottom-4 z-[10000] bg-black text-white px-4 py-2 rounded shadow">
-          {toastMessage}
+        <div className="fixed right-4 bottom-4 z-[10000] bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in-up">
+          <span className="material-symbols-outlined text-emerald-400">info</span>
+          <span className="text-sm font-medium">{toastMessage}</span>
         </div>
       )}
+
       {/* floating scroll button (solo scroll) */}
       <ScrollFloatingButton />
-      </div>
       {/* Portal-rendered survey menu (anchored to the three-dots button) */}
       {portalMenuRect && portalMenuSurveyId && (() => {
         const s = surveys.find(x => String(x.id) === String(portalMenuSurveyId))
@@ -1625,6 +1661,69 @@ export default function Surveys(): JSX.Element {
             </div>
           </div>, document.body
         )}
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.4s ease-out forwards;
+          opacity: 0;
+        }
+        /* Mobile-only: forzar alineación izquierda en el header de encuestas */
+        @media (max-width: 767px) {
+          #surveys-header-inner {
+            align-items: flex-start !important;
+          }
+          #surveys-header-title-row {
+            justify-content: flex-start !important;
+            align-items: center !important;
+          }
+          #surveys-header-text {
+            width: 100% !important;
+            text-align: left !important;
+          }
+          #surveys-header-buttons {
+            width: 100% !important;
+            flex-direction: row !important;
+          }
+          #surveys-header-buttons button {
+            flex: 1 1 0 !important;
+          }
+          /* Filtros en grid 2 columnas en mobile */
+          #surveys-filter-chips {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            overflow-x: visible !important;
+            width: 100% !important;
+            padding-bottom: 0 !important;
+          }
+          #surveys-filter-pending {
+            grid-column: 1 !important;
+            min-width: 0 !important;
+          }
+          #surveys-filter-status {
+            grid-column: 2 !important;
+            min-width: 0 !important;
+          }
+          #surveys-filter-owner {
+            grid-column: 1 / -1 !important;
+            width: 100% !important;
+            min-width: 0 !important;
+          }
+          #surveys-filter-status select,
+          #surveys-filter-owner select {
+            width: 100% !important;
+            min-width: 0 !important;
+          }
+          #surveys-filter-pending {
+            display: flex !important;
+            align-items: center !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

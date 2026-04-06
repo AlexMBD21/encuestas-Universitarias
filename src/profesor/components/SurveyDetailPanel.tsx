@@ -235,43 +235,46 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* ── Cumulative responses chart ── */}
-      <div className="rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm">
+      <div className="rounded-3xl overflow-hidden bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
+        <div className="flex items-center justify-between px-6 pt-5 pb-3">
           <div>
-            <span className="text-sm font-semibold text-slate-700 tracking-tight">Respuestas acumuladas</span>
-            <span className="ml-2 text-xs text-slate-400 font-normal">{granLabel[gran]}</span>
+            <h3 className="text-base font-bold text-slate-800 tracking-tight flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px] text-blue-500">monitoring</span>
+              Respuestas acumuladas
+            </h3>
+            <span className="text-xs font-semibold text-slate-400 mt-0.5 block ml-6">{granLabel[gran]}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-2xl font-black text-slate-800 tabular-nums leading-none">{totalResponses}</span>
-            <span className="text-xs text-slate-400 mt-1">total</span>
+          <div className="flex flex-col items-end">
+            <span className="text-3xl font-black text-slate-900 tabular-nums leading-none tracking-tight">{totalResponses}</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total</span>
           </div>
         </div>
 
         {!hasData && (
-          <div className="text-slate-400 text-sm italic py-8 text-center px-5">Sin respuestas registradas aún.</div>
+          <div className="text-slate-400 text-sm italic py-10 text-center px-5 bg-slate-50/50">Sin respuestas registradas aún.</div>
         )}
 
         {hasData && (
-          <div style={{ width: '100%', overflow: 'hidden' }}>
+          <div style={{ width: '100%', overflow: 'hidden' }} className="bg-slate-50/30">
             <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', display: 'block' }} preserveAspectRatio="xMidYMid meet">
               <defs>
                 <linearGradient id="gArea2" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.40" />
-                  <stop offset="80%" stopColor="#06b6d4" stopOpacity="0.04" />
-                  <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+                  <stop offset="0%" stopColor={isProjectSurvey ? '#4f46e5' : '#06b6d4'} stopOpacity="0.30" />
+                  <stop offset="80%" stopColor={isProjectSurvey ? '#4f46e5' : '#06b6d4'} stopOpacity="0.02" />
+                  <stop offset="100%" stopColor={isProjectSurvey ? '#4f46e5' : '#06b6d4'} stopOpacity="0" />
                 </linearGradient>
                 <linearGradient id="gLine2" x1="0" x2="1" y1="0" y2="0">
-                  <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="#0891b2" />
+                  <stop offset="0%" stopColor={isProjectSurvey ? '#6366f1' : '#10b981'} />
+                  <stop offset="100%" stopColor={isProjectSurvey ? '#4338ca' : '#0891b2'} />
                 </linearGradient>
                 <filter id="lineShadow" x="-10%" y="-40%" width="120%" height="200%">
-                  <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#06b6d4" floodOpacity="0.30" />
+                  <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor={isProjectSurvey ? '#4f46e5' : '#06b6d4'} floodOpacity="0.25" />
                 </filter>
                 <filter id="dotGlow" x="-80%" y="-80%" width="260%" height="260%">
-                  <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#06b6d4" floodOpacity="0.55" />
+                  <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor={isProjectSurvey ? '#4f46e5' : '#06b6d4'} floodOpacity="0.5" />
                 </filter>
               </defs>
 
@@ -282,11 +285,11 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
                   <g key={i}>
                     <line
                       x1={leftPad} x2={width - rightPad} y1={yy} y2={yy}
-                      stroke={isBaseline ? '#cbd5e1' : '#e6eef4'}
-                      strokeWidth={isBaseline ? 1.5 : 1}
-                      strokeDasharray={isBaseline ? undefined : '4 6'}
+                      stroke={isBaseline ? '#cbd5e1' : '#f1f5f9'}
+                      strokeWidth={isBaseline ? 2 : 1}
+                      strokeDasharray={isBaseline ? undefined : '4 4'}
                     />
-                    <text x={leftPad - 6} y={yy + 4} fontSize={11} fill="#9ca3af" textAnchor="end">{t}</text>
+                    <text x={leftPad - 8} y={yy + 4} fontSize={10} fontWeight={600} fill="#94a3b8" textAnchor="end">{t}</text>
                   </g>
                 )
               })}
@@ -298,7 +301,7 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
                   d={lineD}
                   fill="none"
                   stroke="url(#gLine2)"
-                  strokeWidth={3}
+                  strokeWidth={3.5}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   filter="url(#lineShadow)"
@@ -307,14 +310,14 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
 
               {rawPoints.map((p, i) => (
                 <g key={i} filter="url(#dotGlow)">
-                  <circle cx={p.x} cy={p.y} r={7} fill="#0891b2" opacity="0.12" />
-                  <circle cx={p.x} cy={p.y} r={4.5} fill="#fff" stroke="#0891b2" strokeWidth={2.5} />
+                  <circle cx={p.x} cy={p.y} r={7} fill={isProjectSurvey ? '#4f46e5' : '#0891b2'} opacity="0.12" />
+                  <circle cx={p.x} cy={p.y} r={4.5} fill="#fff" stroke={isProjectSurvey ? '#4f46e5' : '#0891b2'} strokeWidth={2.5} />
                   <title>{p.label}: {p.cumulative} respuesta{p.cumulative !== 1 ? 's' : ''}</title>
                 </g>
               ))}
 
               {rawPoints.filter((_, i) => i % labelStep === 0 || i === rawPoints.length - 1).map((p, i) => (
-                <text key={i} x={p.x} y={height - 6} fontSize={11} fill="#6b7280" textAnchor="middle">{p.label}</text>
+                <text key={i} x={p.x} y={height - 6} fontSize={10} fontWeight={600} fill="#94a3b8" textAnchor="middle">{p.label}</text>
               ))}
             </svg>
           </div>
@@ -322,41 +325,56 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
       </div>
 
       {/* ── Per-user activity ── */}
-      <div className="rounded-2xl bg-white border border-slate-100 shadow-sm">
+      <div className="rounded-3xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
         {/* Header */}
-          <div className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-5 py-3 border-b border-slate-100 rounded-t-2xl overflow-hidden">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-slate-700 tracking-tight">Actividad por usuario</span>
+        <div className="flex flex-col gap-4 px-6 pt-5 pb-5 border-b border-slate-100 rounded-t-3xl bg-white">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="material-symbols-outlined text-[22px] text-indigo-500 shrink-0">group</span>
+              <span className="text-base font-bold text-slate-800 tracking-tight whitespace-nowrap">Actividad por usuario</span>
+            </div>
             {(userSearch || userSelected) && (
-              <button onClick={clearFilters} className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors">× Limpiar</button>
+              <button 
+                onClick={clearFilters} 
+                className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl hover:bg-indigo-100 transition-all shrink-0"
+              >
+                × Limpiar
+              </button>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-            <select
-              value={userSelected}
-              onChange={e => { setUserSelected(e.target.value); setUserSearch('') }}
-              className="text-xs rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-300 flex-1 sm:flex-none sm:max-w-[150px] min-w-0 transition-all"
-            >
-              <option value="">Todos los usuarios</option>
-              {userList.map(u => (
-                <option key={u.id} value={u.id}>{u.label}</option>
-              ))}
-            </select>
-            <div className="relative flex-1 sm:flex-none">
-              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none">
-                <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-                <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            <div className="relative flex-1">
+              <select
+                value={userSelected}
+                onChange={e => { setUserSelected(e.target.value); setUserSearch('') }}
+                className="w-full text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50/30 px-3 py-2.5 pr-8 appearance-none focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all cursor-pointer truncate"
+              >
+                <option value="">Todos los usuarios</option>
+                {userList.map(u => (
+                  <option key={u.id} value={u.id}>{u.label}</option>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+            </div>
+            
+            <div className="relative flex-[1.5]">
+              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.5" />
+                <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
               </svg>
               <input
                 type="text"
-                placeholder="Buscar..."
+                placeholder="Buscar usuario..."
                 value={userSearch}
                 onChange={e => { setUserSearch(e.target.value); setUserSelected('') }}
-                className="pl-7 pr-6 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:border-cyan-300 w-full sm:w-32 transition-all"
+                className="w-full pl-10 pr-10 py-2.5 text-xs font-semibold rounded-xl shadow-sm border border-slate-200 bg-white focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
               />
               {userSearch && (
-                <button onClick={() => setUserSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+                <button onClick={() => setUserSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
                 </button>
               )}
             </div>
@@ -364,15 +382,18 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
         </div>
 
         {/* Column headers */}
-        <div className="grid grid-cols-[1fr_auto] px-5 py-2 bg-slate-50 border-b border-slate-100">
+        <div className="grid grid-cols-[1fr_auto] px-6 py-3 bg-white border-b border-slate-100">
           <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Usuario</span>
-          <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase text-right">{isProjectSurvey ? 'Proyectos calificados' : 'Respuestas'}</span>
+          <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase text-right">{isProjectSurvey ? 'Calificaciones' : 'Respuestas'}</span>
         </div>
 
         {/* Rows */}
-        <div className="divide-y divide-slate-50">
+        <div className="divide-y divide-slate-50 pb-2">
           {filteredUserList.length === 0 ? (
-            <div className="px-5 py-6 text-xs text-slate-400 text-center italic">Sin resultados para "{userSearch}"</div>
+            <div className="px-6 py-10 text-xs font-medium text-slate-400 text-center flex flex-col items-center justify-center gap-2">
+              <span className="material-symbols-outlined text-3xl opacity-50">search_off</span>
+              Sin resultados para "{userSearch}"
+            </div>
           ) : filteredUserList.map(u => (
             <UserActivityRow
               key={u.id}
@@ -403,6 +424,15 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
   const ratedSet = new Set(u.ratedProjects)
   const missingProjects = Object.keys(projectMap).filter(id => !ratedSet.has(id))
 
+  // Avatar / Badge color themes
+  const avatarClass = isProjectSurvey 
+    ? 'bg-indigo-50 text-indigo-700 border-indigo-200/60' 
+    : 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
+
+  const scoreBadgeClass = allRated
+    ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+    : 'bg-amber-50 text-amber-600 border border-amber-200'
+
   // Close on outside click
   useEffect(() => {
     if (!open) return
@@ -417,22 +447,22 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
   }, [open])
 
   return (
-    <div className="flex items-center gap-3 px-5 py-2.5 hover:bg-slate-50 transition-colors">
+    <div className="flex items-center gap-3 px-6 py-3.5 hover:bg-slate-50/80 transition-colors group">
       {/* Avatar */}
-      <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center font-bold text-slate-700 text-sm border border-indigo-100">
+      <div className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border shadow-sm ${avatarClass}`}>
         {String((u.label || u.id)[0] || '?').toUpperCase()}
       </div>
 
       {/* Label */}
-      <div className="flex-1 min-w-0 text-xs text-slate-600 truncate">{u.label}</div>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <span className="text-sm font-semibold text-slate-800 truncate group-hover:text-blue-600 transition-colors">{u.label}</span>
+      </div>
 
       {/* Right: score or count */}
       {isProjectSurvey ? (
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           {totalProjects > 0 && (
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full tabular-nums ${
-              allRated ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-600 border border-amber-200'
-            }`}>
+            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full tabular-nums shadow-sm ${scoreBadgeClass}`}>
               {ratedCount}&nbsp;/&nbsp;{totalProjects}
             </span>
           )}
@@ -440,46 +470,56 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
             <button
               ref={btnRef}
               onClick={() => setOpen(v => !v)}
-              className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-colors"
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all ${
+                open ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 shadow-sm'
+              }`}
             >
               Ver
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
-                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
+                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
 
             {open && (
               <div
                 ref={popRef}
-                className="absolute bottom-full right-0 mb-2 z-50 w-56 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-xl shadow-lg p-3 space-y-1.5"
+                className="absolute bottom-full right-0 mb-3 z-50 w-64 max-w-[calc(100vw-2rem)] bg-white border border-slate-200/80 rounded-2xl shadow-xl p-4 space-y-2 origin-bottom-right animate-fade-in-up"
               >
-                {u.ratedProjects.map(pid => (
-                  <div key={pid} className="flex items-center gap-2 text-xs text-slate-700">
-                    <span className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
-                        <path d="M5 13l4 4L19 7" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                    <span className="truncate">{projectMap[pid] || pid}</span>
-                  </div>
-                ))}
-                {missingProjects.map(pid => (
-                  <div key={pid} className="flex items-center gap-2 text-xs text-rose-500">
-                    <span className="w-4 h-4 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
-                        <path d="M18 6L6 18M6 6l12 12" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                    <span className="truncate">{projectMap[pid] || pid}</span>
-                    <span className="text-rose-400 shrink-0">pendiente</span>
-                  </div>
-                ))}
+                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 border-b border-slate-100 pb-2">Proyectos calificados</div>
+                <div className="max-h-48 overflow-y-auto pr-1 space-y-1.5 custom-scrollbar">
+                  {u.ratedProjects.length === 0 && <span className="text-xs text-slate-400 italic">Ninguno</span>}
+                  {u.ratedProjects.map(pid => (
+                    <div key={pid} className="flex items-center gap-2.5 text-xs text-slate-700">
+                      <span className="w-5 h-5 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                          <path d="M5 13l4 4L19 7" stroke="#4f46e5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                      <span className="truncate font-medium">{projectMap[pid] || pid}</span>
+                    </div>
+                  ))}
+                  {missingProjects.length > 0 && (
+                    <div className="pt-2 mt-2 border-t border-slate-100">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Pendientes</div>
+                      {missingProjects.map(pid => (
+                        <div key={pid} className="flex items-center gap-2.5 text-xs text-slate-700 mt-1.5">
+                          <span className="w-5 h-5 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                              <circle cx="12" cy="12" r="3" fill="#cbd5e1"/>
+                            </svg>
+                          </span>
+                          <span className="truncate text-slate-500 line-through decoration-slate-300">{projectMap[pid] || pid}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </div>
       ) : (
-        <span className="text-xs font-bold tabular-nums px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">{u.count}</span>
+        <span className="text-xs font-black tabular-nums px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 shadow-sm">{u.count} res.</span>
       )}
     </div>
   )
