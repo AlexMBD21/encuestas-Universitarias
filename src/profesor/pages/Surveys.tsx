@@ -204,6 +204,7 @@ export default function Surveys(): JSX.Element {
   const [manageAccessSurveyId, setManageAccessSurveyId] = useState<string | null>(null)
   const [isManageAccessVisible, setIsManageAccessVisible] = useState(false)
   const [generateLinkSurveyId, setGenerateLinkSurveyId] = useState<string | null>(null)
+  const [confirmDeactivateLinkSurveyId, setConfirmDeactivateLinkSurveyId] = useState<string | null>(null)
   const [manageAccessTab, setManageAccessTab] = useState<'supervisors' | 'evaluators'>('supervisors')
 
   const [modalKind, setModalKind] = useState<'view' | 'projects' | null>(null)
@@ -995,60 +996,75 @@ export default function Surveys(): JSX.Element {
                           </div>
 
                           {isProjectType && isOwnerOf(s) && (
-                            <div className={`mt-4 pt-4 border-t transition-colors ${s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() ? 'border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-900/10 -mx-5 px-5 pb-5 -mb-5' : 'border-slate-100 dark:border-slate-800'}`}>
-                              <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div className="flex flex-col min-w-[120px] flex-1">
-                                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Enlace de Inscripción</span>
+                            <div className={`mt-4 pt-3 border-t transition-colors rounded-xl max-w-full ${s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() ? 'border-emerald-200/50 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-900/10 p-3.5' : 'border-slate-100 dark:border-slate-800'}`}>
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex flex-col gap-2">
+                                  <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Inscripción</span>
+                                    {s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() && (
+                                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[15px]">event</span>
+                                        Vence {new Date(s.linkExpiresAt).toLocaleDateString()}
+                                      </span>
+                                    )}
+                                  </div>
                                   {s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() && (
-                                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                                      Vence el {new Date(s.linkExpiresAt).toLocaleDateString()}
-                                    </span>
-                                  )}
-                                </div>
-
-                                {s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() ? (
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/50 px-2 flex items-center gap-1.5 py-1.5 rounded-md whitespace-nowrap">
-                                      <span className="w-1.5 h-1.5 shrink-0 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_4px_rgba(16,185,129,0.6)]"></span>
-                                      Activo ({(() => {
+                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-[9px] font-black border border-emerald-200/50 dark:border-emerald-800/50 shadow-sm self-start">
+                                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.8)] shrink-0"></span>
+                                      ACTIVO ({(() => {
                                         const diffDays = Math.floor((new Date(s.linkExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                                         const diffHrs = Math.floor(((new Date(s.linkExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60)) % 24);
                                         return diffDays >= 1 ? `${diffDays}d ${diffHrs}h` : `${diffHrs}h`;
                                       })()})
-                                    </span>
-                                    <button type="button" onClick={() => {
-                                      const link = window.location.origin + '/inscripcion/' + s.linkToken;
-                                      if (navigator.clipboard && window.isSecureContext) {
-                                        navigator.clipboard.writeText(link).then(() => {
-                                          setToastMessage('Enlace copiado al portapapeles');
-                                          setTimeout(() => setToastMessage(null), 3000);
-                                        }).catch(() => fallback());
-                                      } else {
-                                        fallback();
-                                      }
-                                      function fallback() {
-                                        const textArea = document.createElement("textarea");
-                                        textArea.value = link;
-                                        textArea.style.position = "fixed";
-                                        document.body.appendChild(textArea);
-                                        textArea.focus();
-                                        textArea.select();
-                                        try {
-                                          document.execCommand('copy');
-                                          setToastMessage('Enlace copiado al portapapeles');
-                                        } catch (err) {
-                                          setToastMessage('No se pudo copiar el enlace automáticamente');
+                                    </div>
+                                  )}
+                                </div>
+
+                                {s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() ? (
+                                  <div className="flex flex-col gap-2 md:justify-end flex-1 w-full md:w-auto mt-1 md:mt-0">
+                                    <div className="flex flex-col xs:flex-row items-center gap-2 w-full md:w-auto">
+                                      <button type="button" onClick={() => {
+                                        const link = window.location.origin + '/inscripcion/' + s.linkToken;
+                                        if (navigator.clipboard && window.isSecureContext) {
+                                          navigator.clipboard.writeText(link).then(() => {
+                                            setToastMessage('Enlace copiado');
+                                            setTimeout(() => setToastMessage(null), 3000);
+                                          }).catch(() => fallback());
+                                        } else {
+                                          fallback();
                                         }
-                                        document.body.removeChild(textArea);
-                                        setTimeout(() => setToastMessage(null), 3000);
-                                      }
-                                    }} className="flex items-center gap-1.5 text-[11px] font-bold bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700/50 shadow-sm text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:border-emerald-600 px-3 py-1.5 rounded-md transition-colors whitespace-nowrap shrink-0" title="Copiar link">
-                                      <span className="material-symbols-outlined text-[14px]">content_copy</span> Copiar Link
-                                    </button>
+                                        function fallback() {
+                                          const textArea = document.createElement("textarea");
+                                          textArea.value = link;
+                                          textArea.style.position = "fixed";
+                                          document.body.appendChild(textArea);
+                                          textArea.focus();
+                                          textArea.select();
+                                          try {
+                                            document.execCommand('copy');
+                                            setToastMessage('Enlace copiado');
+                                          } catch (err) {
+                                            setToastMessage('Error');
+                                          }
+                                          document.body.removeChild(textArea);
+                                          setTimeout(() => setToastMessage(null), 3000);
+                                        }
+                                      }} className="w-full xs:flex-1 flex items-center justify-center gap-2 text-[10px] font-black bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700/50 shadow-sm text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:border-emerald-600 px-3 py-2 rounded-xl transition-all active:scale-95 whitespace-nowrap" title="Copiar link">
+                                        <span className="material-symbols-outlined text-[15px]">content_copy</span> Link
+                                      </button>
+                                      <button 
+                                        type="button" 
+                                        onClick={() => setConfirmDeactivateLinkSurveyId(String(s.id))}
+                                        className="w-full xs:flex-1 flex items-center justify-center gap-2 text-[10px] font-black bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700/50 shadow-sm text-amber-700 hover:text-amber-800 hover:bg-amber-50 dark:text-amber-400 dark:hover:border-amber-600 px-3 py-2 rounded-xl transition-all active:scale-95 whitespace-nowrap" 
+                                        title="Desactivar link"
+                                      >
+                                        <span className="material-symbols-outlined text-[15px]">link_off</span> Cerrar
+                                      </button>
+                                    </div>
                                   </div>
                                 ) : (
-                                  <button type="button" onClick={() => setGenerateLinkSurveyId(String(s.id))} className="text-[11px] bg-indigo-50 border border-indigo-200 text-indigo-700 dark:bg-indigo-900/40 dark:border-indigo-800 dark:text-indigo-400 px-3 py-1.5 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/60 font-bold shadow-sm transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0">
-                                    <span className="material-symbols-outlined text-[15px]">calendar_month</span> Elegir Fecha Límite
+                                  <button type="button" onClick={() => setGenerateLinkSurveyId(String(s.id))} className="text-[11px] bg-slate-100 border border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 font-black shadow-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap w-full md:w-auto mt-2 md:mt-0">
+                                    <span className="material-symbols-outlined text-[16px]">calendar_month</span> Definir Fecha
                                   </button>
                                 )}
                               </div>
@@ -2222,6 +2238,53 @@ export default function Surveys(): JSX.Element {
           }
         }
       `}</style>
+      {/* Confirm Deactivate Link modal */}
+      {confirmDeactivateLinkSurveyId && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setConfirmDeactivateLinkSurveyId(null)} />
+          <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden transform transition-all border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in duration-200">
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-4">
+                <span className="material-symbols-outlined text-[32px]">warning</span>
+              </div>
+              <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Desactivar enlace?</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Esta acción invalidará el link de inscripción inmediatamente. No podrás deshacer este cambio.</p>
+              
+              <div className="flex flex-col gap-2">
+                <button 
+                  type="button" 
+                  onClick={async () => {
+                    try {
+                      const s = surveys.find(x => String(x.id) === String(confirmDeactivateLinkSurveyId));
+                      if (s) {
+                        const updated = { ...s, linkExpiresAt: null, linkToken: null };
+                        await dataClientNow.setSurvey(String(s.id), updated);
+                        setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updated : x));
+                        setToastMessage('Enlace desactivado');
+                        setTimeout(() => setToastMessage(null), 3000);
+                      }
+                      setConfirmDeactivateLinkSurveyId(null);
+                    } catch (err) {
+                      setToastMessage('Error');
+                      setTimeout(() => setToastMessage(null), 3000);
+                    }
+                  }} 
+                  className="w-full py-3.5 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-2xl shadow-lg shadow-amber-600/20 transition-all active:scale-95"
+                >
+                  Sí, desactivar
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setConfirmDeactivateLinkSurveyId(null)} 
+                  className="w-full py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-2xl transition-all"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>, document.body
+      )}
     </div>
   )
 }
