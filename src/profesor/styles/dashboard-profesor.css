@@ -42,6 +42,11 @@
     z-index: 100001 !important;
     overflow: hidden !important;
 }
+@media (max-width: 768px) {
+    #top-bar {
+        padding: 0 8px !important;
+    }
+}
 #top-bar .text-slate-600,
 #top-bar .text-slate-700,
 #top-bar .text-slate-500,
@@ -73,6 +78,12 @@
     border: none;
     font-family: inherit;
     outline: none;
+}
+@media (max-width: 768px) {
+    .topbar-brand {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
 }
 .topbar-brand:hover { background: rgba(255,255,255,0.10); }
 .topbar-brand-icon { font-size: 22px; color: #ffffff; }
