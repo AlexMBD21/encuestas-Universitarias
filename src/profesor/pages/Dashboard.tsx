@@ -1074,7 +1074,7 @@ export default function Dashboard() {
         <div className="fixed right-0 z-[200] flex items-center" style={{ top: 'calc(var(--topbar-height) + 24px)' }}>
           <button
             onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-            className="group flex items-center justify-center pl-3 pr-4 py-3 text-white shadow-[-8px_0_24px_rgba(0,98,141,0.25)] rounded-l-2xl transition-all duration-500 ease-in-out border-y border-l border-white/20 active:scale-95"
+            className="group flex items-center justify-center pl-3 pr-4 py-3 text-white shadow-[-8px_0_20px_rgba(0,0,0,0.12)] rounded-l-2xl transition-all duration-500 ease-in-out border-y border-l border-white/20 active:scale-95"
             style={{ 
               background: 'var(--color-primary)',
               backdropFilter: 'blur(8px)'
