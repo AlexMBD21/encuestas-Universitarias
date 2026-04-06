@@ -331,7 +331,7 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <span className="material-symbols-outlined text-[22px] text-indigo-500 shrink-0">group</span>
-              <span className="text-base font-bold text-slate-800 tracking-tight whitespace-nowrap">Actividad por usuario</span>
+              <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-white truncate">Actividad por usuario</h2>
             </div>
             {(userSearch || userSelected) && (
               <button 

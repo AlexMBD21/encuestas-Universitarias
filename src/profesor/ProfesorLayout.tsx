@@ -89,9 +89,9 @@ export default function ProfesorLayout({ onBack }: Props) {
       />
       <NotificationsPanel open={notificationsOpen} onClose={closeNotifications} notifications={sharedNotifications} onVisibleCountChange={setVisibleNotifCount} />
 
-      <main id="main-content" className="sidebar-main-content overflow-x-hidden">
-        <div className="layout-container flex h-full grow flex-col overflow-x-hidden">
-          <div style={{padding: 'var(--space-md)', width: '100%', boxSizing: 'border-box'}} className="overflow-x-hidden">
+      <main id="main-content" className="sidebar-main-content min-w-0 flex-1 overflow-x-hidden">
+        <div className="layout-container flex h-full grow flex-col max-w-full overflow-x-hidden">
+          <div style={{padding: 'var(--space-md)', width: '100%', boxSizing: 'border-box', maxWidth: '100%'}} className="overflow-x-hidden">
             <Outlet />
           </div>
         </div>

@@ -28,6 +28,8 @@
     top: 0;
     left: 0;
     right: 0;
+    width: 100% !important;
+    max-width: 100% !important;
     height: var(--topbar-height);
     background: var(--color-primary) !important;
     color: #ffffff !important;
@@ -38,6 +40,7 @@
     gap: 0 !important;
     box-shadow: 0 2px 12px rgba(15,23,42,0.15);
     z-index: 100001 !important;
+    overflow: hidden !important;
 }
 #top-bar .text-slate-600,
 #top-bar .text-slate-700,
@@ -271,10 +274,11 @@
         left: 0;
         width: 100% !important;
         height: calc(100dvh - var(--topbar-height));
-        max-width: 100%;
+        max-width: 100% !important;
         border-radius: 0;
         box-shadow: none;
         transition: transform var(--sidebar-transition), width var(--sidebar-transition);
+        overflow-x: hidden !important;
     }
 }
 
@@ -667,6 +671,10 @@
     }
     .sidebar-main-content {
         margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-x: hidden !important;
     }
     .sidebar-collapse-row {
         display: none;
