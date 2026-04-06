@@ -836,7 +836,7 @@ export default function Surveys(): JSX.Element {
                     
                     <div className="flex-1">
                       {/* Badges y status */}
-                      <div className="flex flex-wrap items-center gap-1.5 mb-3 mt-1">
+                      <div className="flex flex-wrap items-center gap-1.5 mb-3 mt-1 pr-9">
                         <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1 ${isProjectType ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300 dark:border-indigo-800 border' : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800 border'}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${isProjectType ? 'bg-indigo-600 dark:bg-indigo-400' : 'bg-emerald-600 dark:bg-emerald-400'}`}></span>
                           {isProjectType ? 'Proyecto' : 'Simple'}
