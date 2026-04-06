@@ -307,6 +307,25 @@ export default function Reports(): JSX.Element {
         </div>
 
         {/* Contenido Principal */}
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="bg-white rounded-2xl border border-slate-200 h-[220px] p-5 md:p-6 flex flex-col relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-slate-100" />
+                <div className="flex items-start justify-between gap-3 mb-4 mt-1">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 shrink-0" />
+                  <div className="h-5 bg-slate-100 rounded-full w-16" />
+                </div>
+                <div className="h-6 bg-slate-100 rounded-lg w-11/12 mb-2" />
+                <div className="h-6 bg-slate-100 rounded-lg w-2/3 mb-4" />
+                <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
+                  <div className="h-4 bg-slate-50 rounded w-24" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {!loading && (
           <div className="animate-fade-in-up" style={{ animationDelay: '150ms' }}>
             
@@ -322,14 +341,23 @@ export default function Reports(): JSX.Element {
               )}
             </div>
 
-            {/* Loading state interno */}
+            {/* Skeleton Loading State */}
             {allSurveysSummary === null && (
-              <div className="flex flex-col items-center justify-center py-20">
-                <div className="relative w-16 h-16">
-                  <div className="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
-                  <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
-                </div>
-                <p className="mt-4 text-slate-500 font-medium">Cargando resúmenes...</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="bg-white rounded-2xl border border-slate-200 h-[220px] p-5 md:p-6 flex flex-col relative overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-slate-100" />
+                    <div className="flex items-start justify-between gap-3 mb-4 mt-1">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 shrink-0" />
+                      <div className="h-5 bg-slate-100 rounded-full w-16" />
+                    </div>
+                    <div className="h-6 bg-slate-100 rounded-lg w-11/12 mb-2" />
+                    <div className="h-6 bg-slate-100 rounded-lg w-2/3 mb-4" />
+                    <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
+                      <div className="h-4 bg-slate-50 rounded w-24" />
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 

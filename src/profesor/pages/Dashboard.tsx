@@ -848,7 +848,7 @@ export default function Dashboard() {
       {/* Welcome Section */}
       <div className="flex flex-wrap justify-between items-start gap-3 px-4 py-0.5 relative z-10">
         <div>
-          <h1 className="text-slate-900 dark:text-slate-50 text-2xl md:text-3xl font-black leading-tight tracking-[-0.033em] min-w-72 mb-1">
+          <h1 className="text-slate-900 dark:text-slate-50 text-2xl md:text-3xl font-black leading-tight tracking-[-0.033em] mb-1">
             {profileName ? (
               <>
                 ¡Bienvenido de nuevo,{' '}
