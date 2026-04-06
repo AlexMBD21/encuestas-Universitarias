@@ -216,9 +216,14 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
         </button>
 
         {/* Brand / Logo */}
-        <div className="topbar-brand" onClick={() => { try { navigate('/profesor') } catch (e) {} }}>
+        <button 
+          className="topbar-brand" 
+          type="button"
+          onClick={() => { try { navigate('/profesor') } catch (e) {} }}
+          aria-label="Ir al inicio"
+        >
           <span className="topbar-brand-name">Encuestas</span>
-        </div>
+        </button>
 
         {/* Spacer */}
         <div style={{ flex: 1 }} />

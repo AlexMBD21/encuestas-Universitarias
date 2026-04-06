@@ -57,11 +57,22 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 7px;
-    transition: background 180ms ease;
+    padding: 5px 12px;
+    border-radius: 9px;
+    transition: all 180ms ease;
     flex-shrink: 0;
     color: #ffffff;
+    /* Prevent text selection and optimize touch interaction */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    /* Button reset styles */
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    outline: none;
 }
 .topbar-brand:hover { background: rgba(255,255,255,0.10); }
 .topbar-brand-icon { font-size: 22px; color: #ffffff; }
