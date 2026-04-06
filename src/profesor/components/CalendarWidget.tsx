@@ -123,7 +123,9 @@ export const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events, onClose 
           const day = i + 1;
           const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const dayEvents = eventsByDate[dateString] || [];
-          const isToday = new Date().toISOString().split('T')[0] === dateString;
+          const today = new Date();
+          const localToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+          const isToday = localToday === dateString;
           const isSelected = selectedDate === dateString;
 
           // Extraer colores únicos para los puntos del día

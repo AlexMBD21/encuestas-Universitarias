@@ -909,7 +909,11 @@ export default function Surveys(): JSX.Element {
                     
                     {/* Botonera inferior */}
                     <div className="mt-5 flex justify-end items-center gap-2">
-                      {isProjectType ? (
+                      {!s.published ? (
+                        <button type="button" onClick={() => setConfirmPublish({ id: String(s.id), action: 'publish' })} className={`px-4 py-1.5 text-sm font-bold rounded-lg text-white shadow-md transition-all flex items-center gap-2 ${isProjectType ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'}`}>
+                          <span className="material-symbols-outlined text-[18px]">publish</span> Publicar
+                        </button>
+                      ) : isProjectType ? (
                         fullyRated ? (
                           <button type="button" onClick={() => {
                             setModalSurveyId(String(s.id))
@@ -923,10 +927,10 @@ export default function Surveys(): JSX.Element {
                             setViewingProjectId(null)
                           }} className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all">Calificar</button>
                         )
-                        ) : (
-                          userResponded ? (
+                      ) : (
+                        userResponded ? (
                           <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50">Respondido</button>
-                          ) : (
+                        ) : (
                           <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all">Responder</button>
                         )
                       )}
