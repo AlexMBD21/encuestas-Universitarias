@@ -931,8 +931,8 @@ export default function Dashboard() {
         {/* Avisos Importantes */}
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-lg flex flex-col lg:col-span-2">
           <div className="flex items-center gap-2 mb-4">
-            <span className="material-symbols-outlined text-yellow-500 text-2xl">notifications_active</span>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50">Avisos recientes</h2>
+            <span className="material-symbols-outlined text-rose-500 text-2xl">assignment_late</span>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50">Reportes de seguimiento</h2>
           </div>
 
           <div ref={noticesRef} className="flex flex-col gap-2 mb-4 notices-scroll custom-scrollbar">
@@ -1011,7 +1011,7 @@ export default function Dashboard() {
                 )
               })
             ) : surveysLoaded ? (
-              <p style={{color:'#94a3b8', fontSize:'0.95rem', textAlign:'center', padding:'24px 0'}}>Sin avisos recientes.</p>
+              <p style={{color:'#94a3b8', fontSize:'0.95rem', textAlign:'center', padding:'24px 0'}}>Sin reportes de seguimiento.</p>
             ) : null}
           </div>
 
