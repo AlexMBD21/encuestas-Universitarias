@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import supabaseClient from '../../services/supabaseClient';
 
 export default function Inscripcion() {
   const { token } = useParams();
@@ -9,9 +8,8 @@ export default function Inscripcion() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Global asignaturas
+  // Categorías permitidas
   const [globalAsignaturas, setGlobalAsignaturas] = useState<string[]>([]);
-
   const [projectName, setProjectName] = useState('');
   const [projectCategory, setProjectCategory] = useState('');
   const [projectMembers, setProjectMembers] = useState('');
@@ -26,8 +24,6 @@ export default function Inscripcion() {
         return;
       }
       try {
-        // Llamada a la API backend para evadir la restricción RLS
-        // (ya que la encuesta JAMÁS está "published=true" si el link está activo)
         const response = await fetch('/api/get_inscription_survey', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -41,20 +37,18 @@ export default function Inscripcion() {
         } else {
            setSurvey(result.survey);
            
-           // Extraer categorías permitidas que el profesor configuró en esta feria
            let cats: string[] = [];
-           if (result.survey.allowed_categories && Array.isArray(result.survey.allowed_categories) && result.survey.allowed_categories.length > 0) {
+           if (result.survey.allowed_categories && Array.isArray(result.survey.allowed_categories)) {
              cats = result.survey.allowed_categories;
-           } else if (result.survey.allowedCategories && Array.isArray(result.survey.allowedCategories) && result.survey.allowedCategories.length > 0) {
+           } else if (result.survey.allowedCategories && Array.isArray(result.survey.allowedCategories)) {
              cats = result.survey.allowedCategories;
            } else {
-             cats = ["Ingeniería de Software", "Sistemas", "Electrónica", "Otros"]; // Salvavidas mínimo si no configuró nada
+             cats = ["Ingeniería de Software", "Sistemas", "Electrónica", "Otros"];
            }
            setGlobalAsignaturas(cats);
         }
-        
       } catch (err) {
-        setError('Error al validar el enlace con el servidor.');
+        setError('Error al conectar con el servidor.');
       } finally {
         setLoading(false);
       }
@@ -92,163 +86,199 @@ export default function Inscripcion() {
       setSuccess(true);
     } catch (err: any) {
       console.error(err);
-      alert(err.message || 'Hubo un error al registrar el proyecto. Puede que requieras permisos.');
+      alert(err.message || 'Hubo un error al registrar el proyecto.');
     } finally {
       setSubmitting(false);
     }
   };
 
+  // --- LOADING STATE ---
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-3">
-          <svg className="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <span className="text-slate-500 font-medium">Verificando enlace...</span>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-6">
+        <div className="flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-500">
+          <div className="relative">
+            <div className="h-16 w-16 border-4 border-indigo-100 rounded-full"></div>
+            <div className="h-16 w-16 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin absolute top-0"></div>
+          </div>
+          <span className="text-slate-500 font-bold tracking-tight text-lg">Validando invitación...</span>
         </div>
       </div>
     );
   }
 
+  // --- ERROR STATE ---
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl text-center border-t-4 border-red-500">
-          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-             <span className="material-symbols-outlined text-red-500 text-3xl">error</span>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
+        <div className="max-w-md w-full bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-100/50 text-center border border-slate-100 animate-in slide-in-from-bottom-5 duration-500">
+          <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-3">
+             <span className="material-symbols-outlined text-red-500 text-4xl">warning</span>
           </div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">Enlace no válido</h2>
-          <p className="text-slate-600 mb-6">{error}</p>
+          <h2 className="text-3xl font-black text-slate-800 mb-3 tracking-tight">Acceso denegado</h2>
+          <p className="text-slate-500 font-medium text-lg leading-relaxed mb-8">{error}</p>
         </div>
       </div>
     );
   }
 
+  // --- SUCCESS STATE ---
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl text-center border-t-4 border-emerald-500">
-          <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
-             <span className="material-symbols-outlined text-emerald-500 text-3xl">check_circle</span>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
+        <div className="max-w-md w-full bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-100/50 text-center border border-slate-100 animate-in slide-in-from-bottom-5 duration-500">
+          <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto mb-6 -rotate-3">
+             <span className="material-symbols-outlined text-emerald-500 text-4xl">check_circle</span>
           </div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">¡Inscripción Exitosa!</h2>
-          <p className="text-slate-600 mb-6">Tu proyecto "{projectName}" ha sido registrado correctamente para competir en la feria.</p>
+          <h2 className="text-3xl font-black text-slate-800 mb-3 tracking-tight">¡Genial!</h2>
+          <p className="text-slate-500 font-medium text-lg leading-relaxed mb-8">
+            El proyecto <span className="text-indigo-600 font-bold">"{projectName}"</span> se ha registrado con éxito para la feria.
+          </p>
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-slate-400 text-sm font-medium">
+            Ya puedes cerrar este enlace.
+          </div>
         </div>
       </div>
     );
   }
 
-  const allowedCategories = survey.allowedCategories || survey.allowed_categories || [];
-
+  // --- MAIN CONTENT ---
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
-        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-8 py-10 text-white relative">
-          <div className="absolute top-0 right-0 -mt-2 -mr-2 opacity-10">
-            <span className="material-symbols-outlined text-[150px]">rocket_launch</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-black mb-2 relative z-10 tracking-tight">Registro de Proyecto</h1>
-          <p className="text-indigo-100 text-lg font-medium relative z-10">{survey.title}</p>
-        </div>
+    <div className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden">
+      {/* Dynamic Splash Header */}
+      <div className="bg-indigo-600 pt-12 pb-24 px-6 md:px-12 relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-400/20 rounded-full -ml-10 -mb-10 blur-3xl pointer-events-none"></div>
         
-        <div className="p-8 pb-10">
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 mb-8 flex gap-3 text-sm font-medium">
-             <span className="material-symbols-outlined shrink-0 text-amber-500">timer</span>
-             <p>Este formulario de inscripción estará disponible hasta el <b>{new Date(survey.linkExpiresAt || survey.link_expires_at).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</b>.</p>
+        <div className="max-w-3xl mx-auto relative z-10 transition-all duration-700 animate-in fade-in slide-in-from-top-3">
+          <div className="flex items-center gap-2 text-indigo-200 mb-4">
+            <span className="material-symbols-outlined text-[20px]">how_to_reg</span>
+            <span className="text-xs font-black uppercase tracking-widest">Inscripción Abierta</span>
           </div>
+          <h1 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight leading-none">
+            Registro de Proyecto
+          </h1>
+          <p className="text-indigo-100 text-lg md:text-xl font-medium max-w-xl opacity-90">
+            {survey.title}
+          </p>
+        </div>
+      </div>
 
-          <form onSubmit={handleSubmit} className="relative bg-white border border-slate-200 rounded-2xl p-5 shadow-sm overflow-hidden mb-6">
-            <div className="absolute top-0 left-0 w-full h-1 bg-indigo-400"></div>
-            
-            <div className="flex justify-between items-center mb-6">
-              <span className="bg-indigo-50 text-indigo-700 px-2.5 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px]">folder</span> Formulario de Inscripción
-              </span>
-            </div>
+      <div className="max-w-3xl mx-auto px-4 -mt-12 relative z-20">
+        {/* Timer/Deadline Card */}
+        <div className="bg-white/70 backdrop-blur-xl border border-white rounded-[2rem] p-5 mb-8 shadow-xl shadow-indigo-100/30 flex items-center gap-4 animate-in fade-in zoom-in duration-700 delay-200">
+           <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center shrink-0">
+             <span className="material-symbols-outlined text-amber-500">timer</span>
+           </div>
+           <div>
+             <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-0.5">Fecha límite de inscripción</p>
+             <p className="text-slate-800 font-bold text-sm">
+               {new Date(survey.linkExpiresAt || survey.link_expires_at).toLocaleDateString('es-ES', { 
+                 day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' 
+               })}
+             </p>
+           </div>
+        </div>
 
-            <div className="space-y-5">
-              {/* Nombre del Proyecto */}
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nombre del Proyecto <span className="text-red-500">*</span></label>
-                <input 
-                  type="text" 
-                  required
-                  value={projectName}
-                  onChange={e => setProjectName(e.target.value)}
-                  placeholder="Ej. App de Gestión..."
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all placeholder:text-slate-400"
-                />
-              </div>
+        {/* Main Form */}
+        <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden animate-in slide-in-from-bottom-8 duration-1000">
+          <div className="p-8 md:p-12">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              
+              {/* Informacion Principal */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-8 w-1 bg-indigo-600 rounded-full"></div>
+                  <h3 className="text-lg font-black text-slate-800 tracking-tight">Detalles del Proyecto</h3>
+                </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {/* Categoría */}
+                {/* Nombre */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Categoría <span className="text-red-500">*</span></label>
-                  <div className="relative">
-                    <select
-                      required
-                      value={projectCategory}
-                      onChange={e => setProjectCategory(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all appearance-none cursor-pointer"
-                    >
-                      <option value="" disabled>(Selecciona una categoría)</option>
-                      {globalAsignaturas.map((c: string) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[20px] select-none">expand_more</span>
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Nombre del Proyecto <span className="text-red-500">*</span></label>
+                  <input 
+                    type="text" 
+                    required
+                    value={projectName}
+                    onChange={e => setProjectName(e.target.value)}
+                    placeholder="Ej. Sistema de Monitoreo IoT..."
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all placeholder:text-slate-300 font-medium"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Categoría */}
+                  <div>
+                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Categoría <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select
+                        required
+                        value={projectCategory}
+                        onChange={e => setProjectCategory(e.target.value)}
+                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all appearance-none cursor-pointer font-medium"
+                      >
+                        <option value="" disabled>Seleccionar...</option>
+                        {globalAsignaturas.map((c: string) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none select-none">unfold_more</span>
+                    </div>
+                  </div>
+
+                  {/* Asesor */}
+                  <div>
+                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Profesor Asesor</label>
+                    <input 
+                      type="text" 
+                      value={projectAdvisor}
+                      onChange={e => setProjectAdvisor(e.target.value)}
+                      placeholder="Nombre del asesor"
+                      className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all placeholder:text-slate-300 font-medium"
+                    />
                   </div>
                 </div>
 
-                {/* Asesor */}
+                {/* Integrantes */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Profesor Asesor</label>
-                  <input 
-                    type="text" 
-                    value={projectAdvisor}
-                    onChange={e => setProjectAdvisor(e.target.value)}
-                    placeholder="Nombre del asesor"
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all placeholder:text-slate-400"
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Integrantes del Equipo <span className="text-red-500">*</span></label>
+                  <textarea 
+                    required
+                    value={projectMembers}
+                    onChange={e => setProjectMembers(e.target.value)}
+                    placeholder="Escribe los nombres de los integrantes..."
+                    rows={3}
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all placeholder:text-slate-300 font-medium resize-none shadow-inner"
                   />
+                  <p className="mt-2 text-[10px] text-slate-400 font-medium ml-1">Separa los nombres con comas si son varios.</p>
                 </div>
               </div>
 
-              {/* Integrantes */}
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Integrantes del Equipo <span className="text-red-500">*</span></label>
-                <textarea 
-                  required
-                  value={projectMembers}
-                  onChange={e => setProjectMembers(e.target.value)}
-                  placeholder="Nombres de los integrantes..."
-                  rows={2}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all placeholder:text-slate-400 resize-none"
-                />
-              </div>
-
-              <div className="pt-2">
+              <div className="pt-4">
                 <button 
                   type="submit" 
                   disabled={submitting}
-                  className={`w-full py-4 rounded-xl text-lg font-bold text-white shadow-xl shadow-indigo-600/30 transition-all flex justify-center items-center gap-2 ${submitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:-translate-y-1 active:translate-y-0 active:scale-[0.99]'}`}
+                  className={`w-full py-5 rounded-2xl text-lg font-black text-white shadow-2xl shadow-indigo-200/50 transition-all flex justify-center items-center gap-3 ${submitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-indigo-300/50 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98]'}`}
                 >
                   {submitting ? (
                     <>
-                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                      Enviando Inscripción...
+                      <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                      <span>Procesando...</span>
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-[20px]">how_to_reg</span> Enviar Inscripción de Proyecto
+                      <span className="material-symbols-outlined text-[24px]">send</span> 
+                      <span>Inscribir Proyecto</span>
                     </>
                   )}
                 </button>
               </div>
-            </div>
-          </form>
-
+            </form>
+          </div>
+          
+          <div className="bg-slate-50/50 p-6 text-center border-t border-slate-100">
+            <p className="text-slate-400 text-xs font-bold">Encuestas Universitarias &copy; {new Date().getFullYear()}</p>
+          </div>
         </div>
       </div>
     </div>
