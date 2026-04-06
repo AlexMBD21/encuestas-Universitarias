@@ -1143,12 +1143,14 @@ export default function Surveys(): JSX.Element {
 
                 <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
 
-                <button type="button" onClick={() => {
-                  if (!isOwnerOf(s)) { setToastMessage('No tienes permiso para editar esta encuesta'); setTimeout(() => setToastMessage(null), 3000); setMenuOpenFor(null); return }
-                  setEditSurvey(s); setCreateInitialType(undefined); setCreateModalOpen(true); setMenuOpenFor(null)
-                }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
-                  <span className="material-symbols-outlined text-[18px]">edit</span> Editar contenidos
-                </button>
+                {!s.published && (
+                  <button type="button" onClick={() => {
+                    if (!isOwnerOf(s)) { setToastMessage('No tienes permiso para editar esta encuesta'); setTimeout(() => setToastMessage(null), 3000); setMenuOpenFor(null); return }
+                    setEditSurvey(s); setCreateInitialType(undefined); setCreateModalOpen(true); setMenuOpenFor(null)
+                  }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+                    <span className="material-symbols-outlined text-[18px]">edit</span> Editar contenidos
+                  </button>
+                )}
 
                 {s.type === 'project' && (
                   <button type="button" onClick={() => {
