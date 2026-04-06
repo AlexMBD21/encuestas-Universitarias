@@ -416,7 +416,10 @@ export default function Reports(): JSX.Element {
                       
                       <div className="p-2 bg-slate-50/80 border-t border-slate-100">
                         <button
-                          onClick={() => navigate('/profesor/encuestas/reports/' + String(su.id))}
+                          onClick={() => {
+                            window.scrollTo(0, 0)
+                            navigate('/profesor/encuestas/reports/' + String(su.id))
+                          }}
                           className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl group-hover:bg-black group-hover:text-white group-hover:border-black transition-all shadow-sm active:scale-[0.98]"
                         >
                           Ver informe detallado

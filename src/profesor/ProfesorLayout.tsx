@@ -77,6 +77,7 @@ export default function ProfesorLayout({ onBack }: Props) {
 
   return (
     <div className={`profesor-root layout-with-sidebar${sidebarCollapsed ? ' sidebar-is-collapsed' : ''}`}>
+      <div id="layout-top-anchor" style={{ position: 'absolute', top: 0, left: 0, width: 1, height: 1, pointerEvents: 'none', opacity: 0 }} />
       <Topbar notificationsOpen={notificationsOpen} onToggleNotifications={toggleNotifications} notifications={sharedNotifications} badgeCount={visibleNotifCount} onToggleMobileSidebar={() => setMobileSidebarOpen(v => !v)} mobileSidebarOpen={mobileSidebarOpen} />
       {mobileSidebarOpen && (
         <div className="sidebar-mobile-backdrop" onClick={() => setMobileSidebarOpen(false)} aria-hidden="true" />

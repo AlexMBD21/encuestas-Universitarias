@@ -5,6 +5,12 @@ import App from './App'
 import './index.css'
 import { AuthProvider } from './services/AuthContext'
 
+if (typeof window !== 'undefined') {
+  try {
+    window.history.scrollRestoration = 'manual'
+  } catch (e) {}
+}
+
 const container = document.getElementById('root')!
 const root = createRoot(container)
 root.render(

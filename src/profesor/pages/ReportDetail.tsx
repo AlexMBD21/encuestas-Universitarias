@@ -7,13 +7,6 @@ import SurveyDetailPanel from '../components/SurveyDetailPanel'
 import ProjectDetailModal from '../components/ProjectDetailModal'
 
 export default function ReportDetail(): JSX.Element {
-  // Reiniciar scroll al entrar
-  useLayoutEffect(() => {
-    window.scrollTo(0, 0)
-    const main = document.getElementById('main-content')
-    if (main) main.scrollTop = 0
-  }, [])
-
   const navigate = useNavigate()
   const { surveyId } = useParams<{ surveyId: string }>()
   const dataClientNow: any = supabaseClient
@@ -23,6 +16,43 @@ export default function ReportDetail(): JSX.Element {
   const [loading, setLoading] = useState(true)
   const [modalProject, setModalProject] = useState<any>(null)
   const [usersCache, setUsersCache] = useState<Record<string, any>>({})
+
+  // Reiniciar scroll al entrar y cuando termina de cargar
+  const resetScroll = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as any })
+    if (document.documentElement) document.documentElement.scrollTop = 0
+    if (document.body) document.body.scrollTop = 0
+    
+    // Reset all potential containers
+    const ids = ['main-content', 'report-detail-root', 'reports-root', 'surveys-root']
+    ids.forEach(id => {
+      const el = document.getElementById(id)
+      if (el) el.scrollTop = 0
+    })
+
+    // Reset layout containers
+    document.querySelectorAll('.layout-container').forEach((el: any) => { el.scrollTop = 0 })
+  }
+
+  useLayoutEffect(() => {
+    resetScroll()
+    requestAnimationFrame(resetScroll)
+    // Minimal resets to catch initial render shifts
+    const t1 = setTimeout(resetScroll, 150)
+    return () => { clearTimeout(t1); }
+  }, [])
+
+  useEffect(() => {
+    if (!loading) {
+      // ONE reset after large data renders is sufficient
+      const t1 = setTimeout(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' as any })
+        const anchor = document.getElementById('layout-top-anchor')
+        if (anchor) try { anchor.scrollIntoView({ block: 'start' }) } catch (e) {}
+      }, 100)
+      return () => clearTimeout(t1)
+    }
+  }, [loading])
 
   useEffect(() => {
     if (!surveyId) return

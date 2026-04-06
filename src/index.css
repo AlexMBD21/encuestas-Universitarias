@@ -1,7 +1,7 @@
 @import './styles/theme.css';
 
 /* Minimal styles for POC - puedes integrar Tailwind en el pipeline más adelante */
-html,body,#root{height:100%;margin:0;padding:0;background:var(--surface);overflow-x:hidden !important;position:relative}
-body{font-family:Inter, Arial, sans-serif;width:100% !important;max-width:100% !important;overflow-x:hidden !important}
+html,body,#root{min-height:100% !important; height: auto !important; margin:0;padding:0;background:var(--surface);overflow-x:hidden !important;position:relative; scroll-behavior: auto !important;}
+body{font-family:Inter, Arial, sans-serif;width:100% !important;max-width:100% !important;overflow-x:hidden !important; display: block;}
 
 /* NOTE: Button tokens and variants are defined in src/styles/theme.css */

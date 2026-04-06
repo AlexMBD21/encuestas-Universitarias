@@ -14,25 +14,36 @@ import RequireAuth from './components/RequireAuth'
 function ScrollToTop(): null {
   const { pathname } = useLocation()
   React.useEffect(() => {
-    try {
-      // 1. Reset standard window scroll
+    const reset = () => {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' as any })
+      if (document.documentElement) document.documentElement.scrollTop = 0
+      if (document.body) document.body.scrollTop = 0
       
-      // 2. Reset potential scroll in the layout container (common pattern in this project)
-      const mainContent = document.getElementById('main-content')
-      if (mainContent) mainContent.scrollTop = 0
-      
-      // 3. Fallback for late-rendering content or browser scroll restoration
-      const timer = setTimeout(() => {
-        window.scrollTo(0, 0)
-        if (mainContent) mainContent.scrollTop = 0
-      }, 50)
-      
-      return () => clearTimeout(timer)
-    } catch (e) {}
+      const anchor = document.getElementById('layout-top-anchor')
+      if (anchor) try { anchor.scrollIntoView({ block: 'start', inline: 'nearest' }) } catch (e) {}
+
+      const targets = ['main-content', 'report-detail-root', 'reports-root', 'surveys-root']
+      targets.forEach(id => {
+        const el = document.getElementById(id)
+        if (el) el.scrollTop = 0
+      })
+
+      const layoutContainers = document.querySelectorAll('.layout-container')
+      layoutContainers.forEach((el: any) => { el.scrollTop = 0 })
+    }
+
+    reset()
+    requestAnimationFrame(reset)
+    
+    const intervals = [50, 200]
+    const timers = intervals.map(ms => setTimeout(reset, ms))
+    
+    return () => timers.forEach(clearTimeout)
   }, [pathname])
   return null
 }
+
+
 
 export default function App() {
   return (
