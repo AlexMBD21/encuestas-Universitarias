@@ -1426,7 +1426,7 @@ body:not(.sidebar-closed) #close-sidebar-btn {
 }
 
 .progress-bar-dynamic {
-    background-color: #16a34a; /* bg-green-600 */
+    background-color: #059669; /* bg-emerald-600 (unified with surveys) */
     height: 0.5rem; /* h-2 */
     border-radius: 9999px;
 }
@@ -1842,8 +1842,8 @@ body:not(.sidebar-closed) #close-sidebar-btn {
 .qa-right { margin-left: auto; display:flex; align-items:center; flex-shrink: 0; padding-left: 8px; }
 .qa-chevron { font-size: 18px; color: rgba(255,255,255,0.95); }
 
-.qa-green { background: #16a34a; }
-.qa-green .qa-icon-circle .material-symbols-outlined { color: #16a34a; }
+.qa-green { background: #059669; }
+.qa-green .qa-icon-circle .material-symbols-outlined { color: #059669; }
 .qa-blue { background: #4f46e5; }
 .qa-blue .qa-icon-circle .material-symbols-outlined { color: #4f46e5; }
 
