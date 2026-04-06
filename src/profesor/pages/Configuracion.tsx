@@ -619,52 +619,56 @@ export default function Configuracion() {
               </div>
 
               {/* Asignaturas Management Card */}
-              <div className="mt-8 bg-white border border-slate-200 shadow-sm rounded-3xl p-6 sm:p-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              <div className="mt-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-3xl p-5 sm:p-8 animate-fade-in-up transition-all" style={{ animationDelay: '100ms' }}>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[20px]">category</span>
+                  <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[22px]">category</span>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-slate-800">Gestión de Asignaturas Globales</h2>
-                    <p className="text-sm text-slate-500">Modifica las disciplinas o asignaturas disponibles para los profesores.</p>
+                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 leading-tight">Gestión de Asignaturas Globales</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Define las disciplinas disponibles para el sistema.</p>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-4">
-                   <div className="flex gap-2">
-                     <input 
-                       className="border px-4 py-2 rounded-xl flex-1 bg-slate-50 text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                       placeholder="Ej. Medicina, Psicología..."
-                       value={newAsig}
-                       onChange={e => setNewAsig(e.target.value)}
-                       onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAsig() } }}
-                     />
+                <div className="flex flex-col gap-5">
+                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                     <div className="flex-1 relative group">
+                       <input 
+                         className="w-full border px-4 py-3 sm:py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                         placeholder="Ej. Medicina, Psicología..."
+                         value={newAsig}
+                         onChange={e => setNewAsig(e.target.value)}
+                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAsig() } }}
+                       />
+                     </div>
                      <button 
-                       className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                       className="w-full sm:w-auto bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-6 py-3 sm:py-2.5 rounded-xl font-black transition-all shadow-lg shadow-slate-900/10 dark:shadow-blue-600/20 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shrink-0 h-full"
                        onClick={handleAddAsig}
                        disabled={loadingAsig || !newAsig.trim()}
                      >
-                       <span className="material-symbols-outlined text-[18px]">add</span>
+                       <span className="material-symbols-outlined text-[20px]">add</span>
                        Agregar
                      </button>
                    </div>
                    
-                   <div className="flex flex-wrap gap-2 mt-2">
+                   <div className="flex flex-wrap gap-2.5 mt-1">
                      {globalAsignaturas.map(asig => (
-                       <div key={asig} className="bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm text-slate-700 font-medium">
-                         {asig}
+                       <div key={asig} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 pl-3.5 pr-2 py-2 rounded-xl flex items-center gap-2.5 text-sm text-slate-700 dark:text-slate-300 font-bold shadow-sm hover:border-slate-300 dark:hover:border-slate-600 transition-all group">
+                         <span className="truncate max-w-[150px]">{asig}</span>
                          <button 
                            onClick={() => handleRemoveAsig(asig)}
                            disabled={loadingAsig}
-                           className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-0.5 rounded-md transition-colors"
+                           className="text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded-lg transition-all"
                            title="Eliminar"
                          >
-                           <span className="material-symbols-outlined text-[16px]">close</span>
+                           <span className="material-symbols-outlined text-[16px] leading-none">close</span>
                          </button>
                        </div>
                      ))}
                      {globalAsignaturas.length === 0 && (
-                       <span className="text-sm text-slate-500 italic">No hay asignaturas registradas.</span>
+                       <div className="w-full flex flex-col items-center justify-center py-6 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl">
+                         <span className="text-sm text-slate-400 dark:text-slate-500 font-medium italic">No hay asignaturas registradas.</span>
+                       </div>
                      )}
                    </div>
                 </div>
