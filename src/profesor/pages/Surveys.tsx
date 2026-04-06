@@ -19,13 +19,14 @@ export default function Surveys(): JSX.Element {
   const { user: authUser, loading: authLoading } = useAuth()
   // Computed once per render so all role checks are consistent
   const isAdmin = !!(authUser && String((authUser as any).role || '').toLowerCase() === 'admin')
+  const userAsignatura = ((authUser as any)?.app_metadata?.asignatura || (currentUser as any)?.asignatura || '').trim().toLowerCase()
 
   useEffect(() => {
     const onAuth = () => {
-      try { setCurrentUser(AuthAdapter.getUser()) } catch (e) {}
+      try { setCurrentUser(AuthAdapter.getUser()) } catch (e) { }
     }
-    try { window.addEventListener('auth:changed', onAuth as EventListener) } catch (e) {}
-    return () => { try { window.removeEventListener('auth:changed', onAuth as EventListener) } catch (e) {} }
+    try { window.addEventListener('auth:changed', onAuth as EventListener) } catch (e) { }
+    return () => { try { window.removeEventListener('auth:changed', onAuth as EventListener) } catch (e) { } }
   }, [])
   // Determines if the current user owns a survey (or is admin).
   // ownerId stored in DB can be the user's email or their Supabase UUID.
@@ -49,6 +50,12 @@ export default function Surveys(): JSX.Element {
       // Identifiers from AuthContext (may differ during loading transitions)
       if (authUser) { add(authUser.email); add(authUser.id) }
       if (ownerId && Array.from(curCandidates).some(x => x === ownerId)) return true
+
+      // Check supervisors exactly matching current user's email
+      const isSurveyObj = sOrOwnerId && typeof sOrOwnerId === 'object';
+      const supervisors = isSurveyObj && Array.isArray(sOrOwnerId.supervisors) ? sOrOwnerId.supervisors.map((x: string) => String(x || '').trim().toLowerCase()) : []
+      if (curCandidates.size > 0 && supervisors.some((sup: string) => Array.from(curCandidates).includes(sup))) return true
+
       // Legacy: surveys created before login had ownerId = 'local'
       if (!currentUser && !authUser && ownerId === 'local') return true
       return false
@@ -58,12 +65,16 @@ export default function Surveys(): JSX.Element {
   }
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [editSurvey, setEditSurvey] = useState<any | null>(null)
-  const [createInitialType, setCreateInitialType] = useState<'simple'|'project'|undefined>(undefined)
+  const [createInitialType, setCreateInitialType] = useState<'simple' | 'project' | undefined>(undefined)
   const [menuOpenFor, setMenuOpenFor] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [confirmDeleting, setConfirmDeleting] = useState(false)
-  const [confirmPublish, setConfirmPublish] = useState<null | { id: string, action: 'publish'|'unpublish' }>(null)
+  const [confirmPublish, setConfirmPublish] = useState<null | { id: string, action: 'publish' | 'unpublish' }>(null)
   const [confirmPublishing, setConfirmPublishing] = useState(false)
+  const [manageCategoriesId, setManageCategoriesId] = useState<string | null>(null)
+  const [manageCategoriesList, setManageCategoriesList] = useState<string[]>([])
+  const [manageCategoriesSaving, setManageCategoriesSaving] = useState(false)
+  const [newCategoryInput, setNewCategoryInput] = useState('')
   const [confirmReportId, setConfirmReportId] = useState<string | null>(null)
   const [reportComment, setReportComment] = useState<string>('')
   const [confirmReporting, setConfirmReporting] = useState(false)
@@ -72,12 +83,12 @@ export default function Surveys(): JSX.Element {
   const [viewReportsFor, setViewReportsFor] = useState<string | null>(null)
   const [isReportsVisible, setIsReportsVisible] = useState(false)
   const [highlightedReportId, setHighlightedReportId] = useState<string | null>(null)
-  
+
   useEffect(() => {
     if (viewReportsFor) setTimeout(() => setIsReportsVisible(true), 50)
     else setIsReportsVisible(false)
   }, [viewReportsFor])
-  
+
   const closeReportsModal = () => {
     setIsReportsVisible(false)
     setTimeout(() => {
@@ -98,8 +109,21 @@ export default function Surveys(): JSX.Element {
     setTimeout(() => setCreateModalOpen(false), 300)
   }
 
+  const [isManageCategoriesVisible, setIsManageCategoriesVisible] = useState(false)
+  useEffect(() => {
+    if (manageCategoriesId) setTimeout(() => setIsManageCategoriesVisible(true), 50)
+    else setIsManageCategoriesVisible(false)
+  }, [manageCategoriesId])
+
+  const closeManageCategoriesModal = () => {
+    setIsManageCategoriesVisible(false)
+    setTimeout(() => {
+      setManageCategoriesId(null)
+    }, 300)
+  }
+
   const [toastMessage, setToastMessage] = useState<string | null>(null)
-  const [publishedFilter, setPublishedFilter] = useState<'all'|'published'|'unpublished'|'reported'>('all')
+  const [publishedFilter, setPublishedFilter] = useState<'all' | 'published' | 'unpublished' | 'reported'>('all')
   const [ownerFilter, setOwnerFilter] = useState<string>('all')
   const [titleSearch, setTitleSearch] = useState<string>('')
   const [ownerEmailMap, setOwnerEmailMap] = useState<Record<string, string>>({})
@@ -122,9 +146,9 @@ export default function Surveys(): JSX.Element {
     setCreateModalOpen(true)
   }
 
-  
 
-  
+
+
 
   const handleBack = () => {
     if ((window as any).showDashboard) {
@@ -155,7 +179,7 @@ export default function Surveys(): JSX.Element {
             if (mounted && map) setOwnerEmailMap(map)
           }
         }
-      } catch (e) {}
+      } catch (e) { }
     }
     load()
     return () => { mounted = false }
@@ -175,16 +199,24 @@ export default function Surveys(): JSX.Element {
   const [showOnlyPending, setShowOnlyPending] = useState(false)
   const [modalSurveyId, setModalSurveyId] = useState<string | null>(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
+
+  // Control center states
+  const [manageAccessSurveyId, setManageAccessSurveyId] = useState<string | null>(null)
+  const [isManageAccessVisible, setIsManageAccessVisible] = useState(false)
+  const [generateLinkSurveyId, setGenerateLinkSurveyId] = useState<string | null>(null)
+  const [manageAccessTab, setManageAccessTab] = useState<'supervisors' | 'evaluators'>('supervisors')
+
   const [modalKind, setModalKind] = useState<'view' | 'projects' | null>(null)
   const [viewingProjectId, setViewingProjectId] = useState<string | null>(null)
   const [viewingReadOnly, setViewingReadOnly] = useState<boolean>(false)
   const [ratedMap, setRatedMap] = useState<Record<string, string[]>>({})
-  const [projectFilter, setProjectFilter] = useState<'all'|'pending'|'rated'>('all')
+  const [projectFilter, setProjectFilter] = useState<'all' | 'pending' | 'rated'>('all')
   const [projectSearch, setProjectSearch] = useState<string>('')
   const [projectCategory, setProjectCategory] = useState<string>('all')
   const modalRef = useRef<HTMLDivElement | null>(null)
   const reportsModalRef = useRef<HTMLDivElement | null>(null)
   const createModalRef = useRef<HTMLDivElement | null>(null)
+  const manageCategoriesRef = useRef<HTMLDivElement | null>(null)
   const lastActiveElement = useRef<HTMLElement | null>(null)
   const [pullDownY, setPullDownY] = useState(0)
   const touchStartRef = useRef({ y: 0, scrollY: 0 })
@@ -233,11 +265,11 @@ export default function Surveys(): JSX.Element {
           const top = Math.max(margin, Math.floor(r.bottom + margin))
           setPortalMenuRect({ top, left, width: menuWidth })
         }
-      } catch (e) {}
+      } catch (e) { }
     }
     window.addEventListener('scroll', onScrollResize, { passive: true })
     window.addEventListener('resize', onScrollResize)
-    return () => { try { window.removeEventListener('scroll', onScrollResize); window.removeEventListener('resize', onScrollResize) } catch (e) {} }
+    return () => { try { window.removeEventListener('scroll', onScrollResize); window.removeEventListener('resize', onScrollResize) } catch (e) { } }
   }, [menuOpenFor, surveys])
   // modal project-level filter removed: top-level 'Sin calificar' controls list filtering
 
@@ -282,14 +314,14 @@ export default function Surveys(): JSX.Element {
                   const raw = item.ownerId.trim()
                   const lowerRaw = raw.toLowerCase()
                   if (lowerRaw && !lowerRaw.includes('@') && lowerRaw !== 'local') {
-                    const curEmail = (current && (current.email || '') ) as string
+                    const curEmail = (current && (current.email || '')) as string
                     const curPrefix = curEmail ? curEmail.split('@')[0].trim().toLowerCase() : null
                     if (curPrefix && curPrefix === lowerRaw) {
                       return { ...item, ownerId: curEmail || item.ownerId }
                     }
                   }
                 }
-              } catch (e) {}
+              } catch (e) { }
               return item
             })
             setSurveys(normalized)
@@ -364,15 +396,15 @@ export default function Surveys(): JSX.Element {
     const onConnected = () => {
       try {
         // cleanup previous unsubscribes if any
-        try { if (unsubSurveys) unsubSurveys() } catch (e) {}
-        try { if (unsubReports) unsubReports() } catch (e) {}
+        try { if (unsubSurveys) unsubSurveys() } catch (e) { }
+        try { if (unsubReports) unsubReports() } catch (e) { }
         const supabaseNow = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
         if (supabaseNow) {
           setupRealtime()
         } else {
           attachFallback()
         }
-      } catch (e) {}
+      } catch (e) { }
     }
     window.addEventListener('realtime:connected', onConnected as EventListener)
 
@@ -389,12 +421,12 @@ export default function Surveys(): JSX.Element {
             return idx >= 0 ? copy.map((s: any) => String(s.id) === String(sv.id) ? sv : s) : [...copy, sv]
           })
         }
-      } catch (e) {}
+      } catch (e) { }
       if (dbEnabled) {
         // Realtime may be slow or disabled in dev — force a fresh fetch immediately
         dataClient.getSurveysOnce().then((arr: any[]) => {
-          try { setSurveys(arr) } catch (e) {}
-        }).catch(() => {})
+          try { setSurveys(arr) } catch (e) { }
+        }).catch(() => { })
         return
       }
       attachFallback()
@@ -431,12 +463,12 @@ export default function Surveys(): JSX.Element {
                 return copy
               })
             }
-          } catch (e) {}
+          } catch (e) { }
           return
         }
         // fallback for non-DB mode
         attachFallback()
-      } catch (e) {}
+      } catch (e) { }
     }
     const onReported = (ev: any) => {
       if (dbEnabled) return
@@ -456,18 +488,18 @@ export default function Surveys(): JSX.Element {
         if (!id) return
         setModalSurveyId(String(id))
         setModalKind(kind === 'projects' ? 'projects' : 'view')
-      } catch (e) {}
+      } catch (e) { }
     }
     window.addEventListener('surveys:open', onOpen as EventListener)
 
     return () => {
-      try { if (unsubSurveys) unsubSurveys() } catch (e) {}
-      try { if (unsubReports) unsubReports() } catch (e) {}
+      try { if (unsubSurveys) unsubSurveys() } catch (e) { }
+      try { if (unsubReports) unsubReports() } catch (e) { }
       window.removeEventListener('surveys:updated', onUpdated as EventListener)
       window.removeEventListener('survey:responded', onResponded as EventListener)
       window.removeEventListener('survey:reported', onReported as EventListener)
       window.removeEventListener('surveys:open', onOpen as EventListener)
-        try { window.removeEventListener('realtime:connected', onConnected as EventListener) } catch (e) {}
+      try { window.removeEventListener('realtime:connected', onConnected as EventListener) } catch (e) { }
     }
   }, [])
 
@@ -487,8 +519,8 @@ export default function Surveys(): JSX.Element {
             setModalSurveyId(String(id))
             setModalKind(kind === 'projects' ? 'projects' : 'view')
             // clear the state after handling so it doesn't reopen on refresh or unrelated nav
-            try { history.replaceState({}, '', location.pathname) } catch (e) {}
-          } catch (e) {}
+            try { history.replaceState({}, '', location.pathname) } catch (e) { }
+          } catch (e) { }
         }, 80)
       }
       // support opening report viewer directly from navigation state
@@ -500,10 +532,10 @@ export default function Surveys(): JSX.Element {
             try {
               setViewReportsFor(String(idr))
               if (reportId) setHighlightedReportId(String(reportId))
-              try { history.replaceState({}, '', location.pathname) } catch (e) {}
-            } catch (e) {}
+              try { history.replaceState({}, '', location.pathname) } catch (e) { }
+            } catch (e) { }
           }, 120)
-        } catch (e) {}
+        } catch (e) { }
       }
       // support opening the CreateSurvey form from other pages via navigation state
       if (st && st.openCreate) {
@@ -514,12 +546,12 @@ export default function Surveys(): JSX.Element {
               setEditSurvey(null)
               setCreateInitialType(type)
               setCreateModalOpen(true)
-              try { history.replaceState({}, '', location.pathname) } catch (e) {}
-            } catch (e) {}
+              try { history.replaceState({}, '', location.pathname) } catch (e) { }
+            } catch (e) { }
           }, 80)
-        } catch (e) {}
+        } catch (e) { }
       }
-    } catch (e) {}
+    } catch (e) { }
   }, [location])
 
   useEffect(() => {
@@ -579,7 +611,7 @@ export default function Surveys(): JSX.Element {
   const navigate = useNavigate();
   return (
     <div id="surveys-root" className="min-h-screen bg-slate-50 pb-20">
-      
+
       {/* Header Surveys */}
       <div className="bg-white border-b border-slate-200 shadow-md relative z-10">
         <div id="surveys-header-inner" className="px-5 sm:px-8 pt-8 pb-12 md:pt-12 md:pb-16 max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-8">
@@ -612,14 +644,14 @@ export default function Surveys(): JSX.Element {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 md:-mt-8 relative z-20">
-        
+
         {/* Barra de Filtros Premium */}
         <div id="surveys-filter-bar" className="bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-lg shadow-slate-300/50 rounded-2xl p-2 md:p-3 flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 mb-8 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-          
+
           {/* Buscador */}
           <div className="relative flex-1 min-w-0">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <svg className="h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
             </div>
             <input
               type="text"
@@ -630,7 +662,7 @@ export default function Surveys(): JSX.Element {
             />
             {titleSearch && (
               <button type="button" onClick={() => setTitleSearch('')} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
               </button>
             )}
           </div>
@@ -639,7 +671,7 @@ export default function Surveys(): JSX.Element {
 
           {/* Filtros Auxiliares */}
           <div id="surveys-filter-chips" className="flex flex-row items-center gap-2 overflow-x-auto md:overflow-x-visible pb-0 hide-scrollbar shrink-0">
-            
+
             {/* Checkbox Sin calificar */}
             <label id="surveys-filter-pending" className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl px-4 py-2.5 cursor-pointer transition-colors whitespace-nowrap">
               <input type="checkbox" checked={showOnlyPending} onChange={e => setShowOnlyPending(e.target.checked)} className="rounded text-blue-500 focus:ring-blue-500 w-4 h-4" />
@@ -648,9 +680,9 @@ export default function Surveys(): JSX.Element {
 
             {/* Select: Estado */}
             <div id="surveys-filter-status" className="relative shrink-0">
-              <select 
-                value={publishedFilter} 
-                onChange={e => setPublishedFilter(e.target.value as any)} 
+              <select
+                value={publishedFilter}
+                onChange={e => setPublishedFilter(e.target.value as any)}
                 className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-4 pr-10 py-2.5 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer w-full"
               >
                 <option value="all">Estado: Todas</option>
@@ -671,9 +703,9 @@ export default function Surveys(): JSX.Element {
               if (uniqueOwners.length === 0) return null
               return (
                 <div id="surveys-filter-owner" className="relative shrink-0">
-                  <select 
-                    value={ownerFilter} 
-                    onChange={e => setOwnerFilter(e.target.value)} 
+                  <select
+                    value={ownerFilter}
+                    onChange={e => setOwnerFilter(e.target.value)}
                     className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-4 pr-10 py-2.5 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors md:max-w-[170px] truncate cursor-pointer w-full"
                   >
                     <option value="all">Cualquier propietario</option>
@@ -685,6 +717,27 @@ export default function Surveys(): JSX.Element {
                 </div>
               )
             })()}
+
+
+            {/* Gestionar Categorías (solo admin o profesor owner) */}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => {
+                  const DEFAULT_CATS = ["Ingeniería de Software", "Sistemas", "Electrónica", "Otros"];
+                  const firstProject = surveys.find(s => s.type === 'project');
+                  const cats = firstProject ? (firstProject.allowedCategories || firstProject.allowed_categories || []) : [];
+                  setManageCategoriesList(Array.isArray(cats) && cats.length > 0 ? [...cats] : [...DEFAULT_CATS]);
+                  setNewCategoryInput('');
+                  setManageCategoriesId(firstProject ? String(firstProject.id) : '__global__');
+                }}
+                className="shrink-0 flex items-center gap-2 px-3.5 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 text-sm font-semibold rounded-xl transition-colors whitespace-nowrap"
+                title="Gestionar categorías de proyectos"
+              >
+                <span className="material-symbols-outlined text-[18px]">category</span>
+                Categorías
+              </button>
+            )}
 
             {/* Limpiar Filtros */}
             {(showOnlyPending || publishedFilter !== 'all' || ownerFilter !== 'all' || titleSearch.trim()) && (
@@ -700,6 +753,7 @@ export default function Surveys(): JSX.Element {
           </div>
         </div>
 
+
         {/* If the query param view=create, show inline CreateSurvey panel; if view=details show ViewSurvey */}
         {(() => {
           const view = new URLSearchParams(location.search).get('view')
@@ -710,282 +764,345 @@ export default function Surveys(): JSX.Element {
 
         <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           {/* Ocultamos el título "Encuestas guardadas" porque ya está explícito en la página y limpiamos el contenedor principal de la cuadrícula */}
-        {!surveysLoaded ? (
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 animate-pulse">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-              <div key={i} className="relative p-5 border border-slate-100 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 flex flex-col justify-between h-[280px] overflow-hidden">
-                {/* Acento superior placeholder */}
-                <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-200 dark:bg-slate-800"></div>
-                <div className="flex-1 mt-1">
-                  {/* Badges placeholder */}
-                  <div className="flex gap-1.5 mb-3">
-                    <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-full w-20"></div>
-                    <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-full w-16"></div>
-                  </div>
-                  {/* Título placeholder */}
-                  <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-lg w-11/12 mb-2.5"></div>
-                  {/* Propietario placeholder */}
-                  <div className="h-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg w-1/2 mb-6"></div>
-                  
-                  {/* Detalles placeholder */}
-                  <div className="border-t border-slate-100 dark:border-slate-800 pt-4 flex flex-col gap-3">
-                    <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-2/3"></div>
-                    <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/3"></div>
-                  </div>
-                </div>
-                {/* Botonera placeholder */}
-                <div className="mt-5 flex justify-end gap-2">
-                   <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded-lg w-24"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : surveys.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/20 border-2 border-dashed border-slate-300 dark:border-slate-700">
-            <div className="w-20 h-20 mb-6 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shadow-inner">
-              <span className="material-symbols-outlined text-4xl">inventory_2</span>
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Aún no tienes encuestas</h3>
-            <p className="text-slate-500 max-w-md mx-auto mb-6 leading-relaxed">
-              Comienza a recopilar información valiosa. Crea tu primera campaña, ya sea una encuesta simple para recabar opiniones o un proyecto de calificación avanzada.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <button type="button" onClick={() => handleCreate()} className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/30 transition duration-200">
-                <span className="material-symbols-outlined text-lg">add_circle</span> Encuesta Simple
-              </button>
-              <button type="button" onClick={() => { setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true) }} className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/30 transition duration-200">
-                <span className="material-symbols-outlined text-lg">fact_check</span> Proyecto
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {(() => {
-              const filteredSurveys = surveys.filter(s => {
-                // filter by pending (Sin calificar)
-                if (showOnlyPending) {
-                  // For project-type surveys: keep those where the user hasn't rated all projects
-                  if (s.type === 'project') {
-                    // compute per-user progress from ratedMap to avoid global flags
-                    const userRatedArrTop = Array.isArray(ratedMap[String(s.id)]) ? ratedMap[String(s.id)].filter(x => x !== '__simple') : []
-                    const progressTop = { rated: userRatedArrTop.length, total: ((s.projects || []).length) }
-                    // fallback to helper only if we have no per-user index
-                    if ((!progressTop || progressTop.rated === 0) && surveyHelpers.getProgressForUser) {
-                      try { const p = surveyHelpers.getProgressForUser(String(s.id), (s.projects || []).length); if (!(p.rated < p.total)) return false } catch (e) { return false }
-                    } else {
-                      if (!(progressTop.rated < progressTop.total)) return false
-                    }
-                  } else {
-                    // For non-project (simple) surveys: include when the current user has NOT responded
-                    const userRespondedLocal = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes('__simple')
-                    let responded = !!userRespondedLocal
-                    try {
-                      if (!responded && surveyHelpers.hasUserResponded) {
-                        responded = !!surveyHelpers.hasUserResponded(String(s.id))
-                      }
-                    } catch (e) { /* ignore */ }
-                    if (responded) return false
-                  }
-                }
-                // filter by reported state (exclusive)
-                if (publishedFilter === 'reported') {
-                  // Only show surveys that belong to the current user and
-                  // that have reports submitted by OTHER users (exclude self-reports)
-                  // Admins should see all reported surveys.
-                  if (!isOwnerOf(s)) return false
-                  const selfId = String(currentUserId || '').trim().toLowerCase()
-                  const count = surveyReports.filter(r => {
-                    try {
-                      if (!r) return false
-                      if (String(r.surveyId) !== String(s.id)) return false
-                      const reporter = String(r.reporterId || r.reporterEmail || '').trim().toLowerCase()
-                      // exclude reports created by the owner themself
-                      return reporter && reporter !== selfId
-                    } catch (e) { return false }
-                  }).length
-                  if (count === 0) return false
-                } else {
-                  // filter by published state
-                  if (publishedFilter === 'published' && !s.published) return false
-                  if (publishedFilter === 'unpublished' && s.published) return false
-                }
-                // visibility: unpublished surveys are visible only to their owner
-                if (!s.published && !isOwnerOf(s)) return false
-                // owner filter
-                if (ownerFilter !== 'all') {
-                  if (getOwnerDisplay(s) !== ownerFilter) return false
-                }
-                // title search (all users)
-                if (titleSearch.trim()) {
-                  const q = titleSearch.trim().toLowerCase()
-                  const title = String(s.title || s.name || '').toLowerCase()
-                  if (!title.includes(q)) return false
-                }
-                return true
-              })
-              const hasActive = showOnlyPending || publishedFilter !== 'all' || ownerFilter !== 'all' || !!titleSearch.trim()
-              if (filteredSurveys.length === 0) return (
-                <p className="col-span-full text-sm text-slate-500 py-6 text-center">
-                  Sin resultados para los filtros aplicados.
-                </p>
-              )
-              return [
-                hasActive ? (
-                  <p key="__count" className="col-span-full text-xs text-slate-400 -mt-1 mb-1">
-                    Mostrando <strong>{filteredSurveys.length}</strong> de {surveys.length} encuesta{surveys.length !== 1 ? 's' : ''}
-                    {ownerFilter !== 'all' && <> · Propietario: <strong>{ownerFilter}</strong></>}
-                    {titleSearch.trim() && <> · Búsqueda: <strong>&ldquo;{titleSearch.trim()}&rdquo;</strong></>}
-                  </p>
-                ) : null,
-                ...filteredSurveys.map(s => {
-                const isProjectType = s.type === 'project' || ((s.projects || []).length > 0) || ((s.rubric || []).length > 0)
-                // Prefer project-level metadata on the survey when available.
-                // surveyHelpers.* functions return neutral defaults now, so avoid depending on them synchronously.
-                const allProjects = s.projects || []
-                // resolve responses count from several possible metadata locations
-                const respCnt = (typeof s.responsesCount === 'number') ? s.responsesCount : (typeof s.responses === 'number') ? s.responses : (s.reportSummary && typeof s.reportSummary.totalResponses === 'number') ? s.reportSummary.totalResponses : (Array.isArray(s.responses) ? s.responses.length : 0)
-                let fullyRated = false
-                let progress = null as any
-                if (isProjectType) {
-                  // Compute per-user progress from ratedMap first; do not use
-                  // global `projects[].graded` flags because they reflect other
-                  // users' actions and should not affect the current user's view.
-                  const userRatedArr = Array.isArray(ratedMap[String(s.id)]) ? ratedMap[String(s.id)].filter(x => x !== '__simple') : []
-                  progress = { rated: userRatedArr.length, total: (allProjects || []).length }
-                  // fallback to server / helper computed progress only when user index is empty
-                  if ((!progress || progress.rated === 0) && surveyHelpers.getProgressForUser) {
-                    try { progress = surveyHelpers.getProgressForUser(String(s.id), (s.projects || []).length) } catch (e) {}
-                  }
-                  fullyRated = progress ? progress.rated >= progress.total && progress.total > 0 : false
-                }
-                const userRespondedLocal = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes('__simple')
-                const userResponded = !isProjectType ? (userRespondedLocal || surveyHelpers.hasUserResponded(String(s.id))) : false
-                const firstPending = allProjects.find((p: any) => !surveyHelpers.hasUserRated(String(s.id), String(p.id)))
-                return (
-                  <div key={s.id} id={`survey-${s.id}`} className={`group relative p-5 border rounded-2xl flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-xl transform hover:-translate-y-1 transition duration-200 ease-out focus-within:ring-2 bg-white dark:bg-slate-900 ${isProjectType ? 'border-indigo-100 dark:border-indigo-900/50 hover:border-indigo-300 dark:hover:border-indigo-700/50 focus-within:ring-indigo-200' : 'border-emerald-100 dark:border-emerald-900/50 hover:border-emerald-300 dark:hover:border-emerald-700/50 focus-within:ring-emerald-200'}`}>
-                    {/* Acento superior de color */}
-                    <div className={`absolute top-0 left-0 w-full h-1.5 ${isProjectType ? 'bg-indigo-600' : 'bg-emerald-600'}`}></div>
-                    
-                    <div className="flex-1">
-                      {/* Badges y status */}
-                      <div className="flex flex-wrap items-center gap-1.5 mb-3 mt-1 pr-9">
-                        <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1 ${isProjectType ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300 dark:border-indigo-800 border' : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800 border'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${isProjectType ? 'bg-indigo-600 dark:bg-indigo-400' : 'bg-emerald-600 dark:bg-emerald-400'}`}></span>
-                          {isProjectType ? 'Proyecto' : 'Simple'}
-                        </span>
-                        
-                        {s.published && (
-                          <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 px-2.5 py-0.5 rounded-full shadow-sm">
-                            Publicado
-                          </span>
-                        )}
-                        
-                        {isOwnerOf(s) && (() => {
-                          const count = surveyReports.filter(r => String(r.surveyId) === String(s.id)).length
-                          if (count > 0) return (
-                            <span className="text-[10px] uppercase font-bold tracking-wider bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/40 dark:text-rose-400 dark:border-rose-800 px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 bg-rose-600 dark:bg-rose-400 rounded-full animate-pulse"></span>
-                              {count} Reporte{count !== 1 ? 's' : ''}
-                            </span>
-                          )
-                          return null
-                        })()}
-                      </div>
+          {!surveysLoaded ? (
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 animate-pulse">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                <div key={i} className="relative p-5 border border-slate-100 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 flex flex-col justify-between h-[280px] overflow-hidden">
+                  {/* Acento superior placeholder */}
+                  <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-200 dark:bg-slate-800"></div>
+                  <div className="flex-1 mt-1">
+                    {/* Badges placeholder */}
+                    <div className="flex gap-1.5 mb-3">
+                      <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-full w-20"></div>
+                      <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-full w-16"></div>
+                    </div>
+                    {/* Título placeholder */}
+                    <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-lg w-11/12 mb-2.5"></div>
+                    {/* Propietario placeholder */}
+                    <div className="h-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg w-1/2 mb-6"></div>
 
-                      {/* Info principal */}
-                      <h4 className="font-bold text-slate-800 dark:text-slate-100 text-base leading-tight pr-8 line-clamp-2">{s.title}</h4>
-                      {getOwnerDisplay(s) && (
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 flex items-center gap-1.5 truncate" title={getOwnerDisplay(s)}>
-                          <svg className="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                          {getOwnerDisplay(s)}
-                        </div>
-                      )}
-                      
-                      {/* Detalles técnicos */}
-                      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                        <div className="flex flex-col gap-2">
-                          <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[15px] opacity-70">{isProjectType ? 'rule' : 'help_center'}</span>
-                            {isProjectType ? (
-                              <span>{(s.rubric?.length || 0)} criterios • {(s.projects || []).length} proyectos</span>
-                            ) : (
-                              <span>{(s.questions?.length || 0)} preguntas guardadas</span>
+                    {/* Detalles placeholder */}
+                    <div className="border-t border-slate-100 dark:border-slate-800 pt-4 flex flex-col gap-3">
+                      <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-2/3"></div>
+                      <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/3"></div>
+                    </div>
+                  </div>
+                  {/* Botonera placeholder */}
+                  <div className="mt-5 flex justify-end gap-2">
+                    <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded-lg w-24"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : surveys.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/20 border-2 border-dashed border-slate-300 dark:border-slate-700">
+              <div className="w-20 h-20 mb-6 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shadow-inner">
+                <span className="material-symbols-outlined text-4xl">inventory_2</span>
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Aún no tienes encuestas</h3>
+              <p className="text-slate-500 max-w-md mx-auto mb-6 leading-relaxed">
+                Comienza a recopilar información valiosa. Crea tu primera campaña, ya sea una encuesta simple para recabar opiniones o un proyecto de calificación avanzada.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button type="button" onClick={() => handleCreate()} className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/30 transition duration-200">
+                  <span className="material-symbols-outlined text-lg">add_circle</span> Encuesta Simple
+                </button>
+                <button type="button" onClick={() => { setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true) }} className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/30 transition duration-200">
+                  <span className="material-symbols-outlined text-lg">fact_check</span> Proyecto
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {(() => {
+                const filteredSurveys = surveys.filter(s => {
+                  // filter by pending (Sin calificar)
+                  if (showOnlyPending) {
+                    // For project-type surveys: keep those where the user hasn't rated all projects
+                    if (s.type === 'project') {
+                      // compute per-user progress from ratedMap to avoid global flags
+                      const userRatedArrTop = Array.isArray(ratedMap[String(s.id)]) ? ratedMap[String(s.id)].filter(x => x !== '__simple') : []
+                      const progressTop = { rated: userRatedArrTop.length, total: ((s.projects || []).length) }
+                      // fallback to helper only if we have no per-user index
+                      if ((!progressTop || progressTop.rated === 0) && surveyHelpers.getProgressForUser) {
+                        try { const p = surveyHelpers.getProgressForUser(String(s.id), (s.projects || []).length); if (!(p.rated < p.total)) return false } catch (e) { return false }
+                      } else {
+                        if (!(progressTop.rated < progressTop.total)) return false
+                      }
+                    } else {
+                      // For non-project (simple) surveys: include when the current user has NOT responded
+                      const userRespondedLocal = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes('__simple')
+                      let responded = !!userRespondedLocal
+                      try {
+                        if (!responded && surveyHelpers.hasUserResponded) {
+                          responded = !!surveyHelpers.hasUserResponded(String(s.id))
+                        }
+                      } catch (e) { /* ignore */ }
+                      if (responded) return false
+                    }
+                  }
+                  // filter system settings
+                  if (s.type === 'system') return false
+                  // filter by reported state (exclusive)
+                  if (publishedFilter === 'reported') {
+                    // Only show surveys that belong to the current user and
+                    // that have reports submitted by OTHER users (exclude self-reports)
+                    // Admins should see all reported surveys.
+                    if (!isOwnerOf(s)) return false
+                    const selfId = String(currentUserId || '').trim().toLowerCase()
+                    const count = surveyReports.filter(r => {
+                      try {
+                        if (!r) return false
+                        if (String(r.surveyId) !== String(s.id)) return false
+                        const reporter = String(r.reporterId || r.reporterEmail || '').trim().toLowerCase()
+                        // exclude reports created by the owner themself
+                        return reporter && reporter !== selfId
+                      } catch (e) { return false }
+                    }).length
+                    if (count === 0) return false
+                  } else {
+                    // filter by published state
+                    if (publishedFilter === 'published' && !s.published) return false
+                    if (publishedFilter === 'unpublished' && s.published) return false
+                  }
+                  // visibility: unpublished surveys are visible only to their owner
+                  if (!s.published && !isOwnerOf(s)) return false
+                  // owner filter
+                  if (ownerFilter !== 'all') {
+                    if (getOwnerDisplay(s) !== ownerFilter) return false
+                  }
+                  // title search (all users)
+                  if (titleSearch.trim()) {
+                    const q = titleSearch.trim().toLowerCase()
+                    const title = String(s.title || s.name || '').toLowerCase()
+                    if (!title.includes(q)) return false
+                  }
+                  return true
+                })
+                const hasActive = showOnlyPending || publishedFilter !== 'all' || ownerFilter !== 'all' || !!titleSearch.trim()
+                if (filteredSurveys.length === 0) return (
+                  <p className="col-span-full text-sm text-slate-500 py-6 text-center">
+                    Sin resultados para los filtros aplicados.
+                  </p>
+                )
+                return [
+                  hasActive ? (
+                    <p key="__count" className="col-span-full text-xs text-slate-400 -mt-1 mb-1">
+                      Mostrando <strong>{filteredSurveys.length}</strong> de {surveys.length} encuesta{surveys.length !== 1 ? 's' : ''}
+                      {ownerFilter !== 'all' && <> · Propietario: <strong>{ownerFilter}</strong></>}
+                      {titleSearch.trim() && <> · Búsqueda: <strong>&ldquo;{titleSearch.trim()}&rdquo;</strong></>}
+                    </p>
+                  ) : null,
+                  ...filteredSurveys.map(s => {
+                    const isProjectType = s.type === 'project' || ((s.projects || []).length > 0) || ((s.rubric || []).length > 0)
+                    // Prefer project-level metadata on the survey when available.
+                    // surveyHelpers.* functions return neutral defaults now, so avoid depending on them synchronously.
+                    const allProjects = s.projects || []
+                    // resolve responses count from several possible metadata locations
+                    const respCnt = (typeof s.responsesCount === 'number') ? s.responsesCount : (typeof s.responses === 'number') ? s.responses : (s.reportSummary && typeof s.reportSummary.totalResponses === 'number') ? s.reportSummary.totalResponses : (Array.isArray(s.responses) ? s.responses.length : 0)
+                    let fullyRated = false
+                    let progress = null as any
+                    if (isProjectType) {
+                      // Compute per-user progress from ratedMap first; do not use
+                      // global `projects[].graded` flags because they reflect other
+                      // users' actions and should not affect the current user's view.
+                      const userRatedArr = Array.isArray(ratedMap[String(s.id)]) ? ratedMap[String(s.id)].filter(x => x !== '__simple') : []
+                      progress = { rated: userRatedArr.length, total: (allProjects || []).length }
+                      // fallback to server / helper computed progress only when user index is empty
+                      if ((!progress || progress.rated === 0) && surveyHelpers.getProgressForUser) {
+                        try { progress = surveyHelpers.getProgressForUser(String(s.id), (s.projects || []).length) } catch (e) { }
+                      }
+                      fullyRated = progress ? progress.rated >= progress.total && progress.total > 0 : false
+                    }
+                    const userRespondedLocal = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes('__simple')
+                    const userResponded = !isProjectType ? (userRespondedLocal || surveyHelpers.hasUserResponded(String(s.id))) : false
+                    const firstPending = allProjects.find((p: any) => !surveyHelpers.hasUserRated(String(s.id), String(p.id)))
+                    return (
+                      <div key={s.id} id={`survey-${s.id}`} className={`group relative p-5 border rounded-2xl flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-xl transform hover:-translate-y-1 transition duration-200 ease-out focus-within:ring-2 bg-white dark:bg-slate-900 ${isProjectType ? 'border-indigo-100 dark:border-indigo-900/50 hover:border-indigo-300 dark:hover:border-indigo-700/50 focus-within:ring-indigo-200' : 'border-emerald-100 dark:border-emerald-900/50 hover:border-emerald-300 dark:hover:border-emerald-700/50 focus-within:ring-emerald-200'}`}>
+                        {/* Acento superior de color */}
+                        <div className={`absolute top-0 left-0 w-full h-1.5 ${isProjectType ? 'bg-indigo-600' : 'bg-emerald-600'}`}></div>
+
+                        <div className="flex-1">
+                          {/* Badges y status */}
+                          <div className="flex flex-wrap items-center gap-1.5 mb-3 mt-1 pr-9">
+                            <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1 ${isProjectType ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300 dark:border-indigo-800 border' : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800 border'}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${isProjectType ? 'bg-indigo-600 dark:bg-indigo-400' : 'bg-emerald-600 dark:bg-emerald-400'}`}></span>
+                              {isProjectType ? 'Proyecto' : 'Simple'}
+                            </span>
+
+                            {s.published && (
+                              <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 px-2.5 py-0.5 rounded-full shadow-sm">
+                                Publicado
+                              </span>
+                            )}
+
+                            {isOwnerOf(s) && (() => {
+                              const count = surveyReports.filter(r => String(r.surveyId) === String(s.id)).length
+                              if (count > 0) return (
+                                <span className="text-[10px] uppercase font-bold tracking-wider bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/40 dark:text-rose-400 dark:border-rose-800 px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 bg-rose-600 dark:bg-rose-400 rounded-full animate-pulse"></span>
+                                  {count} Reporte{count !== 1 ? 's' : ''}
+                                </span>
+                              )
+                              return null
+                            })()}
+                          </div>
+
+                          {/* Info principal */}
+                          <h4 className="font-bold text-slate-800 dark:text-slate-100 text-base leading-tight pr-8 line-clamp-2">{s.title}</h4>
+                          {getOwnerDisplay(s) && (
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 flex items-center gap-1.5 truncate" title={getOwnerDisplay(s)}>
+                              <svg className="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                              {getOwnerDisplay(s)}
+                            </div>
+                          )}
+
+                          {/* Detalles técnicos */}
+                          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                            <div className="flex flex-col gap-2">
+                              <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[15px] opacity-70">{isProjectType ? 'rule' : 'help_center'}</span>
+                                {isProjectType ? (
+                                  <span>{(s.rubric?.length || 0)} criterios • {(s.projects || []).length} proyectos</span>
+                                ) : (
+                                  <span>{(s.questions?.length || 0)} preguntas guardadas</span>
+                                )}
+                              </div>
+                              <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[15px] opacity-70">event</span>
+                                <span>{new Date(s.createdAt).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+
+                            {/* Metricas mini */}
+                            {typeof respCnt === 'number' && respCnt > 0 && !isProjectType && (
+                              <div className="mt-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg p-2.5 flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                <span>Respuestas emitidas</span>
+                                <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 px-2 py-0.5 rounded-md shadow-sm">{respCnt}</span>
+                              </div>
+                            )}
+                            {progress && isProjectType && (
+                              <div className="mt-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg p-2.5">
+                                <div className="flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                  <span>Progreso de calificación</span>
+                                  <span className="font-bold">{progress.rated} / {progress.total}</span>
+                                </div>
+                                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                                  <div className="bg-indigo-500 h-1.5 transition-all duration-700 ease-out" style={{ width: `${progress.total > 0 ? (progress.rated / progress.total) * 100 : 0}%` }}></div>
+                                </div>
+                              </div>
                             )}
                           </div>
-                          <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[15px] opacity-70">event</span>
-                            <span>{new Date(s.createdAt).toLocaleDateString()}</span>
-                          </div>
+
+                          {isProjectType && isOwnerOf(s) && (
+                            <div className={`mt-4 pt-4 border-t transition-colors ${s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() ? 'border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-900/10 -mx-5 px-5 pb-5 -mb-5' : 'border-slate-100 dark:border-slate-800'}`}>
+                              <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div className="flex flex-col min-w-[120px] flex-1">
+                                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Enlace de Inscripción</span>
+                                  {s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() && (
+                                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                                      Vence el {new Date(s.linkExpiresAt).toLocaleDateString()}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() ? (
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/50 px-2 flex items-center gap-1.5 py-1.5 rounded-md whitespace-nowrap">
+                                      <span className="w-1.5 h-1.5 shrink-0 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_4px_rgba(16,185,129,0.6)]"></span>
+                                      Activo ({(() => {
+                                        const diffDays = Math.floor((new Date(s.linkExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                                        const diffHrs = Math.floor(((new Date(s.linkExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60)) % 24);
+                                        return diffDays >= 1 ? `${diffDays}d ${diffHrs}h` : `${diffHrs}h`;
+                                      })()})
+                                    </span>
+                                    <button type="button" onClick={() => {
+                                      const link = window.location.origin + '/inscripcion/' + s.linkToken;
+                                      if (navigator.clipboard && window.isSecureContext) {
+                                        navigator.clipboard.writeText(link).then(() => {
+                                          setToastMessage('Enlace copiado al portapapeles');
+                                          setTimeout(() => setToastMessage(null), 3000);
+                                        }).catch(() => fallback());
+                                      } else {
+                                        fallback();
+                                      }
+                                      function fallback() {
+                                        const textArea = document.createElement("textarea");
+                                        textArea.value = link;
+                                        textArea.style.position = "fixed";
+                                        document.body.appendChild(textArea);
+                                        textArea.focus();
+                                        textArea.select();
+                                        try {
+                                          document.execCommand('copy');
+                                          setToastMessage('Enlace copiado al portapapeles');
+                                        } catch (err) {
+                                          setToastMessage('No se pudo copiar el enlace automáticamente');
+                                        }
+                                        document.body.removeChild(textArea);
+                                        setTimeout(() => setToastMessage(null), 3000);
+                                      }
+                                    }} className="flex items-center gap-1.5 text-[11px] font-bold bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700/50 shadow-sm text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:border-emerald-600 px-3 py-1.5 rounded-md transition-colors whitespace-nowrap shrink-0" title="Copiar link">
+                                      <span className="material-symbols-outlined text-[14px]">content_copy</span> Copiar Link
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button type="button" onClick={() => setGenerateLinkSurveyId(String(s.id))} className="text-[11px] bg-indigo-50 border border-indigo-200 text-indigo-700 dark:bg-indigo-900/40 dark:border-indigo-800 dark:text-indigo-400 px-3 py-1.5 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/60 font-bold shadow-sm transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                                    <span className="material-symbols-outlined text-[15px]">calendar_month</span> Elegir Fecha Límite
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
 
-                        {/* Metricas mini */}
-                        {typeof respCnt === 'number' && respCnt > 0 && !isProjectType && (
-                          <div className="mt-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg p-2.5 flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
-                             <span>Respuestas emitidas</span>
-                             <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 px-2 py-0.5 rounded-md shadow-sm">{respCnt}</span>
-                          </div>
-                        )}
-                        {progress && isProjectType && (
-                           <div className="mt-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg p-2.5">
-                             <div className="flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
-                               <span>Progreso de calificación</span>
-                               <span className="font-bold">{progress.rated} / {progress.total}</span>
-                             </div>
-                             <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
-                               <div className="bg-indigo-500 h-1.5 transition-all duration-700 ease-out" style={{ width: `${progress.total > 0 ? (progress.rated / progress.total) * 100 : 0}%` }}></div>
-                             </div>
-                           </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Botonera inferior */}
-                    <div className="mt-5 flex justify-end items-center gap-2">
-                      {!s.published ? (
-                        <button type="button" onClick={() => setConfirmPublish({ id: String(s.id), action: 'publish' })} className={`px-4 py-1.5 text-sm font-bold rounded-lg text-white shadow-md transition-all flex items-center gap-2 ${isProjectType ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'}`}>
-                          <span className="material-symbols-outlined text-[18px]">publish</span> Publicar
-                        </button>
-                      ) : isProjectType ? (
-                        fullyRated ? (
-                          <button type="button" onClick={() => {
-                            setModalSurveyId(String(s.id))
-                            setModalKind('projects')
-                            setViewingProjectId(null)
-                          }} title="Ver proyectos (todos calificados)" className="px-4 py-1.5 text-sm font-semibold border-2 border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors dark:border-indigo-800 dark:text-indigo-400 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50">Revisar Notas</button>
-                        ) : (
-                          <button type="button" onClick={() => {
-                            setModalSurveyId(String(s.id))
-                            setModalKind('projects')
-                            setViewingProjectId(null)
-                          }} className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all">Calificar</button>
-                        )
-                      ) : (
-                        userResponded ? (
-                          <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50">Respondido</button>
-                        ) : (
-                          <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all">Responder</button>
-                        )
-                      )}
+                        {/* Botonera inferior */}
+                        <div className="mt-5 flex justify-end items-center gap-2">
+                          {!s.published ? (
+                            <button type="button" onClick={() => setConfirmPublish({ id: String(s.id), action: 'publish' })} className={`px-4 py-1.5 text-sm font-bold rounded-lg text-white shadow-md transition-all flex items-center gap-2 ${isProjectType ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'}`}>
+                              <span className="material-symbols-outlined text-[18px]">publish</span> Publicar
+                            </button>
+                          ) : isProjectType ? (
+                            fullyRated ? (
+                              <button type="button" onClick={() => {
+                                setModalSurveyId(String(s.id))
+                                setModalKind('projects')
+                                setViewingProjectId(null)
+                              }} title="Ver proyectos (todos calificados)" className="px-4 py-1.5 text-sm font-semibold border-2 border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors dark:border-indigo-800 dark:text-indigo-400 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50">Revisar Notas</button>
+                            ) : (
+                              <button type="button" onClick={() => {
+                                setModalSurveyId(String(s.id))
+                                setModalKind('projects')
+                                setViewingProjectId(null)
+                              }} className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all">Calificar</button>
+                            )
+                          ) : (
+                            userResponded ? (
+                              <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50">Respondido</button>
+                            ) : (
+                              <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all">Responder</button>
+                            )
+                          )}
 
-                      {/* Dropdown 3 dots Menu absolute */}
-                      <div className="absolute top-4 right-4">
-                        <div className="relative inline-block text-left">
-                          <button ref={el => { menuButtonRefs.current[String(s.id)] = el as HTMLButtonElement | null }} type="button" onClick={(ev) => { ev.stopPropagation(); setMenuOpenFor(String(s.id) === menuOpenFor ? null : String(s.id)) }} aria-haspopup="true" aria-expanded={menuOpenFor === String(s.id)} className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-300 transition-colors" title="Opciones">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                              <circle cx="12" cy="6" r="2" fill="currentColor" />
-                              <circle cx="12" cy="12" r="2" fill="currentColor" />
-                              <circle cx="12" cy="18" r="2" fill="currentColor" />
-                            </svg>
-                          </button>
+                          {/* Dropdown 3 dots Menu absolute */}
+                          <div className="absolute top-4 right-4">
+                            <div className="relative inline-block text-left">
+                              <button ref={el => { menuButtonRefs.current[String(s.id)] = el as HTMLButtonElement | null }} type="button" onClick={(ev) => { ev.stopPropagation(); setMenuOpenFor(String(s.id) === menuOpenFor ? null : String(s.id)) }} aria-haspopup="true" aria-expanded={menuOpenFor === String(s.id)} className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-300 transition-colors" title="Opciones">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                  <circle cx="12" cy="6" r="2" fill="currentColor" />
+                                  <circle cx="12" cy="12" r="2" fill="currentColor" />
+                                  <circle cx="12" cy="18" r="2" fill="currentColor" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                )
-              })]
-            })()}
-          </div>
-        )}
+                    )
+                  })]
+              })()}
+            </div>
+          )}
         </div> {/* Cierra animacion grid */}
       </div> {/* Cierra max-w-7xl */}
 
@@ -1023,17 +1140,27 @@ export default function Surveys(): JSX.Element {
                     <span className="material-symbols-outlined text-[18px]">visibility_off</span> Retirar publicación
                   </button>
                 )}
-                
+
                 <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
-                
+
                 <button type="button" onClick={() => {
                   if (!isOwnerOf(s)) { setToastMessage('No tienes permiso para editar esta encuesta'); setTimeout(() => setToastMessage(null), 3000); setMenuOpenFor(null); return }
                   setEditSurvey(s); setCreateInitialType(undefined); setCreateModalOpen(true); setMenuOpenFor(null)
                 }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
                   <span className="material-symbols-outlined text-[18px]">edit</span> Editar contenidos
                 </button>
-                
-                { (() => {
+
+                {s.type === 'project' && (
+                  <button type="button" onClick={() => {
+                    setManageAccessSurveyId(String(s.id));
+                    setMenuOpenFor(null);
+                  }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+                    <span className="material-symbols-outlined text-[18px]">manage_accounts</span> Configurar Evaluadores
+                  </button>
+                )}
+
+
+                {(() => {
                   const count = surveyReports.filter(r => String(r.surveyId) === String(s.id)).length
                   if (count > 0) {
                     return (
@@ -1043,16 +1170,16 @@ export default function Surveys(): JSX.Element {
                     )
                   }
                   return null
-                })() }
-                
-                { isAdmin ? (
+                })()}
+
+                {isAdmin ? (
                   <button type="button" onClick={() => { setConfirmReportId(String(s.id)); setMenuOpenFor(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
                     <span className="material-symbols-outlined text-[18px]">warning</span> Reportar
                   </button>
-                ) : null }
-                
+                ) : null}
+
                 <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
-                
+
                 <button type="button" onClick={() => {
                   if (!isOwnerOf(s)) { setToastMessage('No tienes permiso para eliminar esta encuesta'); setTimeout(() => setToastMessage(null), 3000); setMenuOpenFor(null); return }
                   setConfirmDeleteId(String(s.id)); setMenuOpenFor(null)
@@ -1070,292 +1197,495 @@ export default function Surveys(): JSX.Element {
           </div>, document.body
         )
       })()}
-        {/* Modal for viewing a survey */}
-        {(modalSurveyId !== null || isModalVisible) && ReactDOM.createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => closeModal()} />
-            <div className="relative w-full sm:max-w-4xl sm:mx-4 sm:mb-0">
-              <div
-                ref={modalRef}
-                role="dialog"
-                aria-modal="true"
-                tabIndex={-1}
-                className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-                style={{
-                  overscrollBehaviorY: 'contain',
-                  ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
-                }}
-                onTouchStart={(e) => {
-                  const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
-                  touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
-                }}
-                onTouchEnd={() => {
-                  if (pullDownY > 80) closeModal();
-                  setPullDownY(0);
-                }}>
-                {/* Drag handle for mobile */}
-                <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={() => closeModal()}>
-                  <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
+
+      {/* ── Categories Manager Modal ── */}
+      {(manageCategoriesId || isManageCategoriesVisible) && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
+          <div className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity ${isManageCategoriesVisible ? 'opacity-100' : 'opacity-0'}`} onClick={() => !manageCategoriesSaving && closeManageCategoriesModal()} />
+          <div className="relative w-full sm:max-w-md sm:mx-4">
+            <div
+              ref={manageCategoriesRef}
+              role="dialog"
+              aria-modal="true"
+              tabIndex={-1}
+              className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[90dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isManageCategoriesVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
+              style={{
+                overscrollBehaviorY: 'contain',
+                ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
+              }}
+              onTouchStart={(e) => {
+                const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
+                touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
+              }}
+              onTouchMove={(e) => {
+                const touchY = e.touches[0].clientY;
+                const diff = touchY - touchStartRef.current.y;
+                if (diff > 0 && touchStartRef.current.scrollY <= 0) {
+                  setPullDownY(diff);
+                }
+              }}
+              onTouchEnd={() => {
+                if (pullDownY > 80) closeManageCategoriesModal();
+                setPullDownY(0);
+              }}
+            >
+              {/* Drag handle for mobile */}
+              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={() => closeManageCategoriesModal()}>
+                <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
+              </div>
+
+              {/* Header — teal sólido */}
+              <div className="flex items-center justify-between px-5 py-4 shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)' }}>
+                <h3 className="text-lg sm:text-xl font-bold text-white tracking-wide">Categorías del Proyecto</h3>
+                <div className="hidden sm:block">
+                  <button
+                    type="button"
+                    onClick={() => closeManageCategoriesModal()}
+                    disabled={manageCategoriesSaving}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[22px]">close</span>
+                  </button>
                 </div>
-                {/* Header (sticky) */}
-                <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
-                  <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
-                  <div className="ml-auto hidden sm:block">
-                    <button type="button" onClick={() => closeModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
-                      <span className="material-symbols-outlined text-[22px]">close</span>
+              </div>
+
+              {/* Subtitle bar — Contador posicionado arriba del texto */}
+              <div className="px-5 py-2.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 flex flex-col gap-1.5 items-start">
+                <span className="text-[10px] font-black px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full">
+                  {manageCategoriesList.length} REGISTRADAS
+                </span>
+                <p className="text-[11px] text-slate-500 font-semibold dark:text-slate-400 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[14px]">info</span>
+                  Opciones visibles para los alumnos al inscribir su proyecto
+                </p>
+              </div>
+
+              {/* List */}
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-white dark:bg-slate-900">
+                {manageCategoriesList.length === 0 && (
+                  <div className="py-10 text-center">
+                    <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 block mb-2">category</span>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">No hay categorías aún.<br />Añade la primera usando el campo de abajo.</p>
+                  </div>
+                )}
+                {manageCategoriesList.map((cat, idx) => (
+                  <div key={idx} className="flex items-center gap-3 px-4 py-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl shadow-sm">
+                    <span className="w-7 h-7 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 text-xs font-black shrink-0 shadow-sm">{idx + 1}</span>
+                    <div className="flex-1">
+                      <input
+                        className="min-w-0 w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        value={cat}
+                        onChange={e => setManageCategoriesList(prev => prev.map((c, i) => i === idx ? e.target.value : c))}
+                        placeholder="Nombre de categoría"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setManageCategoriesList(prev => prev.filter((_, i) => i !== idx))}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors shrink-0"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">delete</span>
                     </button>
                   </div>
+                ))}
+              </div>
+
+              {/* Add new input */}
+              <div className="px-4 sm:px-5 py-4 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 shrink-0 shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)]">
+                <div className="flex gap-1.5 sm:gap-2">
+                  <input
+                    className="min-w-0 flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl px-3.5 sm:px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 shadow-sm"
+                    placeholder="Nueva categoría..."
+                    value={newCategoryInput}
+                    onChange={e => setNewCategoryInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && newCategoryInput.trim()) {
+                        e.preventDefault();
+                        setManageCategoriesList(prev => [...prev, newCategoryInput.trim()]);
+                        setNewCategoryInput('');
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newCategoryInput.trim()) {
+                        setManageCategoriesList(prev => [...prev, newCategoryInput.trim()]);
+                        setNewCategoryInput('');
+                      }
+                    }}
+                    disabled={!newCategoryInput.trim()}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all text-sm flex items-center gap-1.5 shrink-0 disabled:opacity-50 disabled:bg-blue-400 shadow-md shadow-blue-500/20 whitespace-nowrap active:scale-95"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">add</span> Añadir
+                  </button>
                 </div>
-                {/* Scrollable content area */}
-                <div className="p-3 sm:p-6 flex-1 overflow-y-auto w-full">
-                  {/* If survey is a project-type, show projects list or the RateProject UI */}
-                  {(() => {
-                    const s = surveys.find(x => String(x.id) === String(modalSurveyId))
-                    if (!s) return !surveysLoaded
-                      ? <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 0',gap:10}}>
-                          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{animation:'spin 0.9s linear infinite'}}>
-                            <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4"/>
-                            <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round"/>
-                          </svg>
-                          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                          <div style={{fontSize:'0.8rem',color:'#94a3b8',fontWeight:500}}>Cargando...</div>
-                        </div>
-                      : <div className="text-slate-600">Encuesta no encontrada.</div>
-                    if (modalKind === 'projects') {
-                          // if viewing a single project, render RateProject
-                        if (viewingProjectId) {
-                        console.debug('[Surveys] rendering RateProject for surveyId=', s.id, 'viewingProjectId=', viewingProjectId)
-                        const proj = (s.projects || []).find((p: any) => String(p.id) === String(viewingProjectId))
-                        if (!proj) return <div className="text-slate-600">Proyecto no encontrado.</div>
-                        return <RateProject survey={s} project={proj} readOnly={viewingReadOnly} onClose={() => setViewingProjectId(null)} onSaved={(opts) => {
-                          // After saving a project's rating, return to the projects list view
-                          // Update local ratedMap so the UI shows 'Calificado' immediately for this project
-                          try {
-                            const pid = opts && (opts as any).projectId
-                            if (pid) {
-                              setRatedMap(prev => {
-                                const copy: Record<string, string[]> = { ...(prev || {}) }
-                                const arr = Array.isArray(copy[String(s.id)]) ? copy[String(s.id)] : []
-                                if (!arr.includes(String(pid))) arr.push(String(pid))
-                                copy[String(s.id)] = arr
-                                return copy
-                              })
-                            }
-                          } catch (e) {}
-                          setViewingProjectId(null)
-                        }} />
-                      }
+              </div>
 
-                      // otherwise render list of projects with Calificar buttons
-                      const allProjects = (s.projects || [])
-                      // Prefer per-user indexed responses (ratedMap) here so the
-                      // 'Calificados X / Y' shown in the modal reflects the
-                      // current user's progress only.
-                      const userRatedArrModal = Array.isArray(ratedMap[String(s.id)]) ? ratedMap[String(s.id)].filter(x => x !== '__simple') : []
-                      let progress = { rated: userRatedArrModal.length, total: allProjects.length }
-                      // fallback to server helper when no per-user index available
-                      if ((!progress || progress.rated === 0) && surveyHelpers.getProgressForUser) {
-                        try { progress = surveyHelpers.getProgressForUser(String(s.id), (s.projects || []).length) } catch (e) {}
+              {/* Footer */}
+              <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 px-5 py-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => closeManageCategoriesModal()}
+                  disabled={manageCategoriesSaving}
+                  className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl transition-all text-sm shadow-sm border border-slate-100 dark:border-slate-700"
+                >
+                  Cancelar y Volver
+                </button>
+                <button
+                  type="button"
+                  disabled={manageCategoriesSaving}
+                  onClick={async () => {
+                    try {
+                      setManageCategoriesSaving(true);
+                      const s = surveys.find(x => String(x.id) === manageCategoriesId);
+                      if (s) {
+                        const updated = { ...s, allowed_categories: manageCategoriesList.filter(Boolean) };
+                        await (dataClientNow as any).setSurvey(manageCategoriesId, updated);
+                        setSurveys(prev => prev.map(x => String(x.id) === manageCategoriesId ? { ...x, allowedCategories: manageCategoriesList.filter(Boolean), allowed_categories: manageCategoriesList.filter(Boolean) } : x));
+                        setToastMessage('Categorías guardadas');
+                        setTimeout(() => setToastMessage(null), 3000);
+                        closeManageCategoriesModal();
                       }
-                      // compute categories for dropdown
-                      const categories = Array.from(new Set(allProjects.map((p: any) => (p.category || '').trim()).filter(Boolean))) as string[]
+                    } catch (e) {
+                      setToastMessage('Error al guardar');
+                      setTimeout(() => setToastMessage(null), 3000);
+                    } finally {
+                      setManageCategoriesSaving(false);
+                    }
+                  }}
+                  className="w-full sm:w-auto px-6 py-2.5 sm:py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-black rounded-2xl transition-all text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 active:scale-95"
+                >
+                  {manageCategoriesSaving ? (
+                    <span className="animate-spin material-symbols-outlined">refresh</span>
+                  ) : (
+                    <><span className="material-symbols-outlined text-[20px]">save</span> Guardar Categorías</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>, document.body
+      )}
 
-                      // apply project-level filter + search + category
-                      const filteredProjects = allProjects.filter((p: any) => {
-                        // search by name or category
-                        const q = projectSearch.trim().toLowerCase()
-                        if (q) {
-                          const hay = `${p.name || ''} ${p.category || ''}`.toLowerCase()
-                          if (!hay.includes(q)) return false
-                        }
-                        // category filter
-                        if (projectCategory !== 'all') {
-                          if ((p.category || '').trim() !== projectCategory) return false
-                        }
-                        const isRated = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id));
-                        if (projectFilter === 'pending') {
-                          return !isRated;
-                        }
-                        if (projectFilter === 'rated') {
-                          return isRated;
-                        }
-                        return true
-                      })
-                      return (
-                        <div>
-                          <div className="flex flex-col gap-4 mb-6">
-                            {/* Stats */}
-                            <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                              <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Proyectos: <span className="font-bold text-slate-800 dark:text-slate-200 ml-1">{allProjects.length}</span></div>
-                              <div className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">done_all</span> Calificados: {progress.rated} / {progress.total}</div>
-                            </div>
-                            
-                            {/* Filters */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <select value={projectFilter} onChange={e => setProjectFilter(e.target.value as any)} className="w-full p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm font-medium text-slate-700 dark:text-slate-300">
-                                <option value="all">Todos los estados</option>
-                                <option value="pending">Sin calificar</option>
-                                <option value="rated">Calificados</option>
-                              </select>
-                              <select value={projectCategory} onChange={e => setProjectCategory(e.target.value)} className="w-full p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm font-medium text-slate-700 dark:text-slate-300">
-                                <option value="all">Todas las categorías</option>
-                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                              </select>
-                              <div className="relative w-full">
-                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
-                                <input placeholder="Buscar proyecto..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400" />
-                              </div>
+
+      {/* Modal for viewing a survey */}
+
+      {(modalSurveyId !== null || isModalVisible) && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => closeModal()} />
+          <div className="relative w-full sm:max-w-4xl sm:mx-4 sm:mb-0">
+            <div
+              ref={modalRef}
+              role="dialog"
+              aria-modal="true"
+              tabIndex={-1}
+              className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
+              style={{
+                overscrollBehaviorY: 'contain',
+                ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
+              }}
+              onTouchStart={(e) => {
+                const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
+                touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
+              }}
+              onTouchEnd={() => {
+                if (pullDownY > 80) closeModal();
+                setPullDownY(0);
+              }}>
+              {/* Drag handle for mobile */}
+              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={() => closeModal()}>
+                <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
+              </div>
+              {/* Header (sticky) */}
+              <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
+                <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
+                <div className="ml-auto hidden sm:block">
+                  <button type="button" onClick={() => closeModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <span className="material-symbols-outlined text-[22px]">close</span>
+                  </button>
+                </div>
+              </div>
+              {/* Scrollable content area */}
+              <div className="p-3 sm:p-6 flex-1 overflow-y-auto w-full">
+                {/* If survey is a project-type, show projects list or the RateProject UI */}
+                {(() => {
+                  const s = surveys.find(x => String(x.id) === String(modalSurveyId))
+                  if (!s) return !surveysLoaded
+                    ? <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: 10 }}>
+                      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 0.9s linear infinite' }}>
+                        <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" />
+                        <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round" />
+                      </svg>
+                      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                      <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 500 }}>Cargando...</div>
+                    </div>
+                    : <div className="text-slate-600">Encuesta no encontrada.</div>
+                  if (modalKind === 'projects') {
+                    // if viewing a single project, render RateProject
+                    if (viewingProjectId) {
+                      console.debug('[Surveys] rendering RateProject for surveyId=', s.id, 'viewingProjectId=', viewingProjectId)
+                      const proj = (s.projects || []).find((p: any) => String(p.id) === String(viewingProjectId))
+                      if (!proj) return <div className="text-slate-600">Proyecto no encontrado.</div>
+                      return <RateProject survey={s} project={proj} readOnly={viewingReadOnly} onClose={() => setViewingProjectId(null)} onSaved={(opts) => {
+                        // After saving a project's rating, return to the projects list view
+                        // Update local ratedMap so the UI shows 'Calificado' immediately for this project
+                        try {
+                          const pid = opts && (opts as any).projectId
+                          if (pid) {
+                            setRatedMap(prev => {
+                              const copy: Record<string, string[]> = { ...(prev || {}) }
+                              const arr = Array.isArray(copy[String(s.id)]) ? copy[String(s.id)] : []
+                              if (!arr.includes(String(pid))) arr.push(String(pid))
+                              copy[String(s.id)] = arr
+                              return copy
+                            })
+                          }
+                        } catch (e) { }
+                        setViewingProjectId(null)
+                      }} />
+                    }
+
+                    // otherwise render list of projects with Calificar buttons
+                    const allProjects = (s.projects || [])
+                    // Prefer per-user indexed responses (ratedMap) here so the
+                    // 'Calificados X / Y' shown in the modal reflects the
+                    // current user's progress only.
+                    const userRatedArrModal = Array.isArray(ratedMap[String(s.id)]) ? ratedMap[String(s.id)].filter(x => x !== '__simple') : []
+                    let progress = { rated: userRatedArrModal.length, total: allProjects.length }
+                    // fallback to server helper when no per-user index available
+                    if ((!progress || progress.rated === 0) && surveyHelpers.getProgressForUser) {
+                      try { progress = surveyHelpers.getProgressForUser(String(s.id), (s.projects || []).length) } catch (e) { }
+                    }
+                    // compute categories for dropdown
+                    const categories = Array.from(new Set(allProjects.map((p: any) => (p.category || '').trim()).filter(Boolean))) as string[]
+
+                    // apply project-level filter + search + category + assignment restrictions
+                    const isSurveyOwnerOrAdmin = isOwnerOf(s) || isAdmin
+                    const filteredProjects = allProjects.filter((p: any) => {
+                      // 1-to-1 evaluator assignment restriction
+                      if (!isSurveyOwnerOrAdmin) {
+                        const assignedEvaluator = String(p.evaluator || '').trim().toLowerCase()
+                        const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase()
+                        if (!assignedEvaluator || assignedEvaluator !== currentUserEmail) return false
+                      }
+                      // search by name or category
+                      const q = projectSearch.trim().toLowerCase()
+                      if (q) {
+                        const hay = `${p.name || ''} ${p.category || ''}`.toLowerCase()
+                        if (!hay.includes(q)) return false
+                      }
+                      // category filter
+                      if (projectCategory !== 'all') {
+                        if ((p.category || '').trim() !== projectCategory) return false
+                      }
+                      const isRated = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id));
+                      if (projectFilter === 'pending') {
+                        return !isRated;
+                      }
+                      if (projectFilter === 'rated') {
+                        return isRated;
+                      }
+                      return true
+                    })
+                    return (
+                      <div>
+                        <div className="flex flex-col gap-4 mb-6">
+                          {/* Stats */}
+                          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                            <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Proyectos: <span className="font-bold text-slate-800 dark:text-slate-200 ml-1">{allProjects.length}</span></div>
+                            <div className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">done_all</span> Calificados: {progress.rated} / {progress.total}</div>
+                          </div>
+
+                          {/* Filters */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <select value={projectFilter} onChange={e => setProjectFilter(e.target.value as any)} className="w-full p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm font-medium text-slate-700 dark:text-slate-300">
+                              <option value="all">Todos los estados</option>
+                              <option value="pending">Sin calificar</option>
+                              <option value="rated">Calificados</option>
+                            </select>
+                            <select value={projectCategory} onChange={e => setProjectCategory(e.target.value)} className="w-full p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm font-medium text-slate-700 dark:text-slate-300">
+                              <option value="all">Todas las categorías</option>
+                              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                            <div className="relative w-full">
+                              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
+                              <input placeholder="Buscar proyecto..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400" />
                             </div>
                           </div>
-                          {/* project-level filter intentionally removed; use top-level 'Sin calificar' */}
-                          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                            {filteredProjects.map((p: any) => {
-                              const ratedLocal = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id))
-                              const rated = ratedLocal || surveyHelpers.hasUserRated(String(s.id), String(p.id))
-                              return (
-                                <div key={p.id} className="p-4 sm:p-5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 group h-full">
-                                  <div>
-                                    <div className="mb-3">
-                                      <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] leading-snug line-clamp-2" title={p.name}>{p.name || 'Proyecto sin nombre'}</h4>
+                        </div>
+                        {/* project-level filter intentionally removed; use top-level 'Sin calificar' */}
+                        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                          {filteredProjects.map((p: any) => {
+                            const ratedLocal = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id))
+                            const rated = ratedLocal || surveyHelpers.hasUserRated(String(s.id), String(p.id))
+                            return (
+                              <div key={p.id} className="p-4 sm:p-5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 group h-full">
+                                <div>
+                                  <div className="mb-3">
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] leading-snug line-clamp-2" title={p.name}>{p.name || 'Proyecto sin nombre'}</h4>
+                                  </div>
+                                  {p.category && (
+                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-3">
+                                      <span className="material-symbols-outlined text-[13px]">category</span> {p.category}
                                     </div>
-                                    {p.category && (
-                                      <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-3">
-                                        <span className="material-symbols-outlined text-[13px]">category</span> {p.category}
+                                  )}
+                                  <div className="space-y-2 mt-1">
+                                    {p.members && (
+                                      <div className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                                        <span className="material-symbols-outlined text-[15px] mt-[1px] text-slate-400">groups</span>
+                                        <div className="flex-1 leading-relaxed whitespace-pre-wrap"><span className="font-semibold text-slate-700 dark:text-slate-300 block mb-0.5">Integrantes:</span>{String(p.members).replace(/([a-zñáéíóú])([A-Z])/g, '$1, $2')}</div>
                                       </div>
                                     )}
-                                    <div className="space-y-2 mt-1">
-                                      {p.members && (
-                                        <div className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                          <span className="material-symbols-outlined text-[15px] mt-[1px] text-slate-400">groups</span>
-                                          <div className="flex-1 leading-relaxed whitespace-pre-wrap"><span className="font-semibold text-slate-700 dark:text-slate-300 block mb-0.5">Integrantes:</span>{String(p.members).replace(/([a-zñáéíóú])([A-Z])/g, '$1, $2')}</div>
-                                        </div>
-                                      )}
-                                      {p.advisor && (
-                                        <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                          <span className="material-symbols-outlined text-[15px] text-slate-400">school</span>
-                                          <div className="flex-1 leading-relaxed truncate"><span className="font-semibold text-slate-700 dark:text-slate-300 mr-1">Asesor:</span>{p.advisor}</div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
-                                    {rated ? (
-                                      <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(true); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-4 py-2 text-sm font-bold rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">check_circle</span> Calificado</button>
-                                    ) : (
-                                      <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(false); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">edit_document</span> Calificar</button>
+                                    {p.advisor && (
+                                      <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                                        <span className="material-symbols-outlined text-[15px] text-slate-400">school</span>
+                                        <div className="flex-1 leading-relaxed truncate"><span className="font-semibold text-slate-700 dark:text-slate-300 mr-1">Asesor:</span>{p.advisor}</div>
+                                      </div>
                                     )}
                                   </div>
                                 </div>
-                              )
-                            })}
-                          </div>
+                                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                                  {rated ? (
+                                    <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(true); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-4 py-2 text-sm font-bold rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">check_circle</span> Calificado</button>
+                                  ) : (
+                                    <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(false); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">edit_document</span> Calificar</button>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
-                      )
-                    }
-                    // default for non-project surveys
-                    return <ViewSurvey surveyId={modalSurveyId ?? undefined} onClose={() => closeModal()} hideCloseButton={true} />
-                  })()}
-                </div>
+                      </div>
+                    )
+                  }
+                  // default for non-project surveys
+                  return <ViewSurvey surveyId={modalSurveyId ?? undefined} onClose={() => closeModal()} hideCloseButton={true} />
+                })()}
               </div>
             </div>
-          </div>, document.body
-        )}
-        {/* Custom delete confirmation modal */}
-        {confirmDeleteId && ReactDOM.createPortal(
-          <div className="fixed inset-0 z-[10000] flex items-center justify-center">
-            <div className="absolute inset-0 bg-black opacity-40" onClick={() => { if (!confirmDeleting) setConfirmDeleteId(null) }} />
-            <div className={`relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded p-6 shadow-lg` } role="dialog" aria-modal="true">
-              <h3 className="text-lg font-semibold mb-2">¿Eliminar esta encuesta?</h3>
-              <p className="text-sm text-slate-600 mb-4">Esta acción es irreversible. ¿Deseas eliminarla definitivamente?</p>
-                <div className="flex justify-end gap-3">
-                <button type="button" onClick={() => setConfirmDeleteId(null)} disabled={confirmDeleting} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-                <button type="button" onClick={async () => {
-                      try {
-                            setConfirmDeleting(true)
-                            // If a DB backend is enabled, remove via its API
-                            if (backendEnabled) {
-                        // find target in local state for ownership check
-                        const target = surveys.find((x: any) => String(x.id) === String(confirmDeleteId))
-                        if (target && !isOwnerOf(target)) {
-                          setToastMessage('No tienes permiso para eliminar esta encuesta')
-                          setTimeout(() => setToastMessage(null), 3000)
-                          setConfirmDeleting(false)
-                          setConfirmDeleteId(null)
-                          return
-                        }
-                        try {
-                                // remove survey and all related data (responses, userResponses, reports, notifications, published index)
-                                if ((dataClientNow as any).removeSurveyCascade) {
-                                  await (dataClientNow as any).removeSurveyCascade(String(confirmDeleteId))
-                                } else {
-                                  await dataClientNow.removeSurveyById(String(confirmDeleteId))
-                                }
-                        } catch (e: any) {
-                          console.error('delete survey failed', e)
-                          const msg = (e && e.message) ? String(e.message) : 'Error al eliminar la encuesta'
-                          setToastMessage(msg)
-                          setTimeout(() => setToastMessage(null), 4000)
-                          setConfirmDeleting(false)
-                          setConfirmDeleteId(null)
-                          return
-                        }
-                        // Only do optimistic removal after confirming DB delete succeeded
-                        setSurveys(prev => prev.filter(x => String(x.id) !== String(confirmDeleteId)))
-                        setToastMessage('Encuesta eliminada')
-                        setTimeout(() => setToastMessage(null), 3000)
-                        try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { surveyId: confirmDeleteId } })) } catch (e) {}
-                      } else {
-                        // Not allowed when no backend is configured
-                        setToastMessage('No se puede eliminar: no hay servicio de datos configurado.')
-                        setTimeout(() => setToastMessage(null), 3000)
-                        setConfirmDeleting(false)
-                        setConfirmDeleteId(null)
-                        return
-                      }
-                    } catch (e) {
-                      console.error(e)
-                    } finally {
+          </div>
+        </div>, document.body
+      )}
+      {/* Custom delete confirmation modal */}
+      {confirmDeleteId && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-40" onClick={() => { if (!confirmDeleting) setConfirmDeleteId(null) }} />
+          <div className={`relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded p-6 shadow-lg`} role="dialog" aria-modal="true">
+            <h3 className="text-lg font-semibold mb-2">¿Eliminar esta encuesta?</h3>
+            <p className="text-sm text-slate-600 mb-4">Esta acción es irreversible. ¿Deseas eliminarla definitivamente?</p>
+            <div className="flex justify-end gap-3">
+              <button type="button" onClick={() => setConfirmDeleteId(null)} disabled={confirmDeleting} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+              <button type="button" onClick={async () => {
+                try {
+                  setConfirmDeleting(true)
+                  // If a DB backend is enabled, remove via its API
+                  if (backendEnabled) {
+                    // find target in local state for ownership check
+                    const target = surveys.find((x: any) => String(x.id) === String(confirmDeleteId))
+                    if (target && !isOwnerOf(target)) {
+                      setToastMessage('No tienes permiso para eliminar esta encuesta')
+                      setTimeout(() => setToastMessage(null), 3000)
                       setConfirmDeleting(false)
                       setConfirmDeleteId(null)
+                      return
                     }
-                  }} disabled={confirmDeleting} className="px-4 py-2 bg-red-600 text-white rounded">{confirmDeleting ? 'Eliminando...' : 'Eliminar'}</button>
-              </div>
-            </div>
-          </div>, document.body
-        )}
-          {/* Publish / Unpublish confirmation modal */}
-          {confirmPublish && ReactDOM.createPortal(
-            <div className="fixed inset-0 z-[10000] flex items-center justify-center">
-              <div className="absolute inset-0 bg-black opacity-40" onClick={() => { if (!confirmPublishing) setConfirmPublish(null) }} />
-              <div className={`relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded p-6 shadow-lg` } role="dialog" aria-modal="true">
-                <h3 className="text-lg font-semibold mb-2">{confirmPublish.action === 'publish' ? 'Publicar encuesta' : 'Retirar publicación'}</h3>
-                <div className="text-sm text-slate-600 mb-4">
-                  {(() => {
-                    const s = surveys.find(x => String(x.id) === String(confirmPublish.id))
-                    if (!s) return 'Encuesta no encontrada.'
-                    if (confirmPublish.action === 'publish') {
-                      // validate minimal requirements
-                      const missing: string[] = []
-                      if (s.type !== 'project' && !(s.questions && s.questions.length > 0)) missing.push('Al menos 1 pregunta')
-                      if (s.type === 'project' && (!(s.rubric && s.rubric.length > 0) || !(s.projects && s.projects.length > 0))) {
-                        if (!(s.rubric && s.rubric.length > 0)) missing.push('Al menos 1 criterio (rubric)')
-                        if (!(s.projects && s.projects.length > 0)) missing.push('Al menos 1 proyecto')
+                    try {
+                      // remove survey and all related data (responses, userResponses, reports, notifications, published index)
+                      if ((dataClientNow as any).removeSurveyCascade) {
+                        await (dataClientNow as any).removeSurveyCascade(String(confirmDeleteId))
+                      } else {
+                        await dataClientNow.removeSurveyById(String(confirmDeleteId))
                       }
-                      if (missing.length === 0) return 'Confirma que deseas publicar esta encuesta. Será visible para el público.'
-                      return (<div>
-                        <div className="font-medium">No se puede publicar todavía:</div>
-                        <ul className="list-disc pl-5 mt-2 text-sm text-slate-600">{missing.map(m => <li key={m}>{m}</li>)}</ul>
-                      </div>)
+                    } catch (e: any) {
+                      console.error('delete survey failed', e)
+                      const msg = (e && e.message) ? String(e.message) : 'Error al eliminar la encuesta'
+                      setToastMessage(msg)
+                      setTimeout(() => setToastMessage(null), 4000)
+                      setConfirmDeleting(false)
+                      setConfirmDeleteId(null)
+                      return
                     }
-                    return 'Confirma que deseas retirar la publicación de esta encuesta. La encuesta dejará de estar visible.'
-                  })()}
-                </div>
-                <div className="flex justify-end gap-3">
-                  <button type="button" onClick={() => setConfirmPublish(null)} disabled={confirmPublishing} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+                    // Only do optimistic removal after confirming DB delete succeeded
+                    setSurveys(prev => prev.filter(x => String(x.id) !== String(confirmDeleteId)))
+                    setToastMessage('Encuesta eliminada')
+                    setTimeout(() => setToastMessage(null), 3000)
+                    try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { surveyId: confirmDeleteId } })) } catch (e) { }
+                  } else {
+                    // Not allowed when no backend is configured
+                    setToastMessage('No se puede eliminar: no hay servicio de datos configurado.')
+                    setTimeout(() => setToastMessage(null), 3000)
+                    setConfirmDeleting(false)
+                    setConfirmDeleteId(null)
+                    return
+                  }
+                } catch (e) {
+                  console.error(e)
+                } finally {
+                  setConfirmDeleting(false)
+                  setConfirmDeleteId(null)
+                }
+              }} disabled={confirmDeleting} className="px-4 py-2 bg-red-600 text-white rounded">{confirmDeleting ? 'Eliminando...' : 'Eliminar'}</button>
+            </div>
+          </div>
+        </div>, document.body
+      )}
+      {/* Publish / Unpublish confirmation modal */}
+      {confirmPublish && (() => {
+        const s = surveys.find(x => String(x.id) === String(confirmPublish.id))
+        if (!s) return null
+
+
+        const missing: string[] = []
+        if (confirmPublish.action === 'publish') {
+          if (s.type !== 'project' && !(s.questions && s.questions.length > 0)) missing.push('Al menos 1 pregunta')
+          if (s.type === 'project') {
+            if (!(s.rubric && s.rubric.length > 0)) missing.push('Al menos 1 criterio (rubric)')
+            if (s.linkExpiresAt && new Date(s.linkExpiresAt).getTime() > Date.now()) {
+              missing.push('El periodo de inscripción sigue abierto (debes esperar a que venza la fecha del enlace).')
+            }
+          }
+        }
+
+        return ReactDOM.createPortal(
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center">
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => { if (!confirmPublishing) setConfirmPublish(null) }} />
+            <div className={`relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-2xl`} role="dialog" aria-modal="true">
+              <h3 className="text-xl font-bold mb-2 flex items-center gap-2 text-slate-800 dark:text-slate-100">
+                <span className={`material-symbols-outlined ${confirmPublish.action === 'publish' ? 'text-indigo-500' : 'text-amber-500'}`}>
+                  {confirmPublish.action === 'publish' ? 'publish' : 'unpublished'}
+                </span>
+                {confirmPublish.action === 'publish' ? 'Publicar encuesta' : 'Retirar publicación'}
+              </h3>
+
+              <div className="text-sm mb-6 mt-4">
+                {confirmPublish.action === 'publish' ? (
+                  missing.length === 0 ? (
+                    <p className="text-slate-600 dark:text-slate-400 font-medium">Confirma que deseas publicar esta encuesta. Será visible para el público.</p>
+                  ) : (
+                    <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-900/50">
+                      <div className="font-bold flex items-center gap-2 mb-2 text-red-700 dark:text-red-400">
+                        <span className="material-symbols-outlined text-[18px]">warning</span> No se puede publicar todavía:
+                      </div>
+                      <ul className="list-disc pl-6 mt-1 text-sm font-semibold text-red-600/90 dark:text-red-400/90 space-y-1">
+                        {missing.map(m => <li key={m}>{m}</li>)}
+                      </ul>
+                    </div>
+                  )
+                ) : (
+                  <p className="text-slate-600 dark:text-slate-400 font-medium">Confirma que deseas retirar la publicación de esta encuesta. La encuesta dejará de estar visible.</p>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button type="button" onClick={() => setConfirmPublish(null)} disabled={confirmPublishing} className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-colors">
+                  Cancelar
+                </button>
+                {(confirmPublish.action !== 'publish' || missing.length === 0) && (
                   <button type="button" onClick={async () => {
                     try {
                       setConfirmPublishing(true)
-                        if (backendEnabled) {
+                      if (backendEnabled) {
                         const target = surveys.find((x: any) => String(x.id) === String(confirmPublish.id))
                         if (target && !isOwnerOf(target)) {
                           setToastMessage('No tienes permiso para cambiar el estado de publicación')
@@ -1378,7 +1708,7 @@ export default function Surveys(): JSX.Element {
                           try {
                             const s = updated
                             const note = {
-                              id: `notif-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+                              id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
                               type: 'survey_published',
                               surveyId: confirmPublish.id,
                               title: s ? (`Nueva encuesta: ${s.title}`) : 'Nueva encuesta publicada',
@@ -1409,10 +1739,10 @@ export default function Surveys(): JSX.Element {
                                 if (n && String(n.surveyId) === String(confirmPublish.id)) {
                                   await dataClientNow.removeNotificationById(String(n.id))
                                 }
-                              } catch (e) {}
+                              } catch (e) { }
                             }
-                            try { window.dispatchEvent(new CustomEvent('notifications:updated', { detail: { surveyId: String(confirmPublish.id) } })) } catch (e) {}
-                          } catch (e) {}
+                            try { window.dispatchEvent(new CustomEvent('notifications:updated', { detail: { surveyId: String(confirmPublish.id) } })) } catch (e) { }
+                          } catch (e) { }
                           try {
                             const reps = await dataClientNow.getSurveyReportsOnce()
                             for (const r of reps || []) {
@@ -1420,12 +1750,12 @@ export default function Surveys(): JSX.Element {
                                 if (r && String(r.surveyId) === String(confirmPublish.id)) {
                                   await dataClientNow.removeSurveyReportById(String(r.id))
                                 }
-                              } catch (e) {}
+                              } catch (e) { }
                             }
-                            try { window.dispatchEvent(new CustomEvent('survey:reports:updated', { detail: { surveyId: String(confirmPublish.id) } })) } catch (e) {}
-                          } catch (e) {}
+                            try { window.dispatchEvent(new CustomEvent('survey:reports:updated', { detail: { surveyId: String(confirmPublish.id) } })) } catch (e) { }
+                          } catch (e) { }
                         }
-                        try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { surveyId: confirmPublish.id, survey: updated } })) } catch (e) {}
+                        try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { surveyId: confirmPublish.id, survey: updated } })) } catch (e) { }
                       } else {
                         // Not allowed when no backend is configured
                         setToastMessage('No se puede cambiar el estado de publicación: no hay servicio de datos configurado.')
@@ -1436,231 +1766,397 @@ export default function Surveys(): JSX.Element {
                       }
                     } catch (e) { console.error(e) }
                     finally { setConfirmPublishing(false); setConfirmPublish(null) }
-                  }} disabled={confirmPublishing} className={`px-4 py-2 rounded ${confirmPublishing ? 'btn-disabled' : 'btn btn-primary'}`}>{confirmPublishing ? 'Procesando...' : (confirmPublish.action === 'publish' ? 'Publicar' : 'Retirar')}</button>
+                  }} disabled={confirmPublishing} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-indigo-600/30">
+                    {confirmPublishing ? 'Procesando...' : (confirmPublish.action === 'publish' ? 'Publicar Ahora' : 'Confirmar Retiro')}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>, document.body
+        )
+      })()}
+      {/* Reports viewer modal (owner) */}
+      {viewReportsFor && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} />
+          <div className={`relative w-full sm:max-w-2xl sm:mx-4 sm:mb-0 bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col h-[90dvh] sm:h-auto sm:max-h-[80vh] overflow-hidden transform transition-all duration-300 ${isReportsVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`} role="dialog" aria-modal="true"
+            ref={reportsModalRef}
+            style={{
+              overscrollBehaviorY: 'contain',
+              ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
+            }}
+            onTouchStart={(e) => {
+              const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
+              touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
+            }}
+            onTouchEnd={() => {
+              if (pullDownY > 80) closeReportsModal();
+              setPullDownY(0);
+            }}>
+            {/* Drag handle */}
+            <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => closeReportsModal()}>
+              <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+            </div>
+            {/* Header */}
+            <div className="px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10" style={{ touchAction: 'none' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[22px]">flag</span>
                 </div>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Buzón de Reportes</h3>
               </div>
-            </div>, document.body
-          )}
-        {/* Reports viewer modal (owner) */}
-        {viewReportsFor && ReactDOM.createPortal(
-          <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} />
-            <div className={`relative w-full sm:max-w-2xl sm:mx-4 sm:mb-0 bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col h-[90dvh] sm:h-auto sm:max-h-[80vh] overflow-hidden transform transition-all duration-300 ${isReportsVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`} role="dialog" aria-modal="true"
-                 ref={reportsModalRef}
-                 style={{
-                   overscrollBehaviorY: 'contain',
-                   ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
-                 }}
-                 onTouchStart={(e) => {
-                   const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
-                   touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
-                 }}
-                 onTouchEnd={() => {
-                   if (pullDownY > 80) closeReportsModal();
-                   setPullDownY(0);
-                 }}>
-              {/* Drag handle */}
-              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => closeReportsModal()}>
-                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+              <div className="ml-auto hidden sm:block">
+                <button
+                  type="button"
+                  onClick={() => closeReportsModal()}
+                  aria-label="Cerrar"
+                  className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center justify-center hover:bg-slate-200 hover:text-slate-800 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
               </div>
-              {/* Header */}
-              <div className="px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10" style={{ touchAction: 'none' }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[22px]">flag</span>
+            </div>
+            {/* Scrollable list */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {(() => {
+                if (!reportsLoaded) return (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 0', gap: 10 }}>
+                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 0.9s linear infinite' }}>
+                      <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" />
+                      <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round" />
+                    </svg>
+                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 500 }}>Cargando reportes...</div>
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Buzón de Reportes</h3>
-                </div>
+                )
+                const reports = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
+                if (!reports || reports.length === 0) return <div className="text-slate-600 text-sm">No hay reportes para esta encuesta.</div>
+                return reports.map(r => {
+                  const isHighlighted = highlightedReportId && String(r.id) === String(highlightedReportId)
+                  return (
+                    <div
+                      key={r.id}
+                      id={`report-item-${r.id}`}
+                      ref={isHighlighted ? (el) => { if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80) } : undefined}
+                      className={`p-4 border rounded-2xl shadow-sm ${isHighlighted ? 'bg-amber-50 border-amber-300 dark:bg-amber-900/20 dark:border-amber-500/50 ring-4 ring-amber-400/20' : 'bg-white border-slate-200 dark:bg-slate-800/80 dark:border-slate-700'} relative overflow-hidden group`}
+                    >
+                      <div className="absolute top-0 left-0 w-1.5 h-full bg-red-400 dark:bg-red-500"></div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pl-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0 text-slate-500">
+                            <span className="material-symbols-outlined text-[16px]">person_alert</span>
+                          </div>
+                          <div className="text-sm font-bold text-slate-700 dark:text-slate-300 truncate">{r.reporterEmail || r.reporterId || 'Usuario Anónimo'}</div>
+                        </div>
+                        <div className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700/50 px-2 py-1 rounded-md self-start sm:self-auto flex items-center gap-1.5 font-medium whitespace-nowrap ml-10 sm:ml-0"><span className="material-symbols-outlined text-[14px]">schedule</span>{new Date(r.createdAt).toLocaleString()}</div>
+                      </div>
+                      <div className="text-[15px] leading-relaxed text-slate-700 dark:text-slate-300 pl-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 ml-10 sm:ml-0">{r.comment}</div>
+                      {isHighlighted && <div className="mt-3 text-xs text-amber-700 dark:text-amber-400 font-bold bg-amber-100 dark:bg-amber-900/40 inline-flex px-2 py-1.5 rounded-md flex items-center gap-1.5 w-fit ml-10 sm:ml-0"><span className="material-symbols-outlined text-[14px]">notifications_active</span> Este es el reporte referenciado de la notificación</div>}
+                    </div>
+                  )
+                })
+              })()}
+            </div>
+          </div>
+        </div>, document.body
+      )}
+      {/* Report modal */}
+      {confirmReportId && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-0 sm:p-4 perspective-1000">
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => { if (!confirmReporting) setConfirmReportId(null) }} />
+          <div className={`relative w-full max-w-md bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl p-6 sm:p-8 shadow-2xl animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-200`} role="dialog" aria-modal="true">
+            <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-6 sm:hidden"></div>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[22px]">warning</span>
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Reportar encuesta</h3>
+            </div>
+            <div className="text-sm text-slate-500 dark:text-slate-400 mb-5 pl-[52px]">
+              Describe detalladamente el problema con esta encuesta para que la moderación evalúe el caso.
+            </div>
+            <textarea value={reportComment} onChange={e => setReportComment(e.target.value)} rows={5} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-red-400 focus:ring-4 focus:ring-red-400/20 rounded-xl text-sm p-4 text-slate-700 dark:text-slate-200 outline-none resize-none transition-all placeholder:text-slate-400 mb-6" placeholder="¿Qué problema encontraste?" />
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
+              <button type="button" onClick={() => { setConfirmReportId(null); setReportComment('') }} disabled={confirmReporting} className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-colors">Cancelar</button>
+              <button type="button" onClick={async () => {
+                try {
+                  if (!reportComment || reportComment.trim().length < 3) {
+                    setToastMessage('Escribe un comentario válido para reportar')
+                    setTimeout(() => setToastMessage(null), 3000)
+                    return
+                  }
+                  setConfirmReporting(true)
+                  const _reportSurvey = (surveys || []).find((sv: any) => String(sv.id) === String(confirmReportId))
+                  const report = {
+                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    surveyId: confirmReportId,
+                    reporterId: currentUserId,
+                    reporterEmail: currentUser && (currentUser.email || null),
+                    comment: reportComment.trim(),
+                    createdAt: new Date().toISOString(),
+                    payload: { surveyTitle: (_reportSurvey && (_reportSurvey.title || _reportSurvey.name)) || '' }
+                  }
+                  if (backendEnabled) {
+                    try {
+                      await (dataClientNow as any).pushSurveyReport(report)
+                    } catch (e: any) {
+                      console.error('[Surveys] pushSurveyReport failed:', e?.code, e?.message, e?.details, e?.hint)
+                      setToastMessage('Error al enviar el reporte: ' + (e?.message || 'Error desconocido'))
+                      setTimeout(() => setToastMessage(null), 5000)
+                      setConfirmReporting(false)
+                      return
+                    }
+                    // optimistic update until realtime notifies
+                    setSurveyReports(prev => [...prev, report])
+                    try { window.dispatchEvent(new CustomEvent('survey:reported', { detail: { report } })) } catch (e) { }
+                    setToastMessage('Reporte enviado. Gracias.')
+                    setTimeout(() => setToastMessage(null), 3000)
+                    setConfirmReportId(null)
+                    setReportComment('')
+                  } else {
+                    // Not allowed when no backend is configured
+                    setToastMessage('No se puede enviar reportes: no hay servicio de datos configurado.')
+                    setTimeout(() => setToastMessage(null), 3000)
+                    setConfirmReporting(false)
+                    return
+                  }
+                } catch (e) { console.error(e) }
+                finally { setConfirmReporting(false) }
+              }} disabled={confirmReporting} className={`w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 ${confirmReporting ? 'bg-red-200 text-red-500 cursor-not-allowed dark:bg-red-900/40 dark:text-red-400/50' : 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/20'}`}>{confirmReporting ? <><span className="material-symbols-outlined text-[18px] animate-spin">refresh</span> Procesando...</> : 'Enviar reporte'}</button>
+            </div>
+          </div>
+        </div>, document.body
+      )}
+      {/* Create modal */}
+      {createModalOpen && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => closeCreateModal()} />
+          <div className="relative w-full sm:max-w-xl sm:mx-4 sm:mb-0">
+            <div className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isCreateVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
+              ref={createModalRef}
+              style={{
+                overscrollBehaviorY: 'contain',
+                ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
+              }}
+              onTouchStart={(e) => {
+                const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
+                touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
+              }}
+              onTouchEnd={() => {
+                if (pullDownY > 80) closeCreateModal();
+                setPullDownY(0);
+              }}>
+              {/* Drag handle for mobile */}
+              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={() => closeCreateModal()}>
+                <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
+              </div>
+              {/* Header (sticky) */}
+              <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
+                <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{editSurvey ? 'Editar encuesta' : 'Crear encuesta'}</div>
                 <div className="ml-auto hidden sm:block">
-                  <button
-                    type="button"
-                    onClick={() => closeReportsModal()}
-                    aria-label="Cerrar"
-                    className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center justify-center hover:bg-slate-200 hover:text-slate-800 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[20px]">close</span>
+                  <button type="button" onClick={() => closeCreateModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <span className="material-symbols-outlined text-[22px]">close</span>
                   </button>
                 </div>
               </div>
-              {/* Scrollable list */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div className="flex-1 overflow-y-auto px-0 sm:px-4 pb-0 sm:pb-4 w-full">
+                <CreateSurvey
+                  hideTypeSelector={true}
+                  initialType={createInitialType}
+                  editSurvey={editSurvey}
+                  onSaved={(key: any, surveyData?: any) => {
+                    const wasEditing = !!editSurvey
+                    closeCreateModal()
+                    setEditSurvey(null)
+                    setCreateInitialType(undefined)
+                    setToastMessage(wasEditing ? 'Encuesta actualizada' : 'Encuesta creada')
+                    setTimeout(() => setToastMessage(null), 3000)
+                    // Optimistic: add/update survey in local state immediately
+                    if (surveyData) {
+                      setSurveys(prev => {
+                        const copy = Array.isArray(prev) ? [...prev] : []
+                        const idx = copy.findIndex((s: any) => String(s.id) === String(key))
+                        return idx >= 0
+                          ? copy.map((s: any) => String(s.id) === String(key) ? surveyData : s)
+                          : [...copy, surveyData]
+                      })
+                    }
+                    // Then sync from server in case optimistic data differs
+                    try {
+                      dataClientNow.getSurveysOnce().then((arr: any[]) => {
+                        try { setSurveys(arr) } catch (e) { }
+                      }).catch(() => { })
+                    } catch (e) { }
+                  }}
+                  onClose={() => { setCreateModalOpen(false); setEditSurvey(null); setCreateInitialType(undefined); }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>, document.body
+      )}
+      {/* Manage Access (Evaluators) modal */}
+      {manageAccessSurveyId && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setManageAccessSurveyId(null)} />
+          <div className="relative w-full sm:max-w-3xl sm:mx-4 sm:mb-0">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[90dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300">
+              {/* Header (sticky) */}
+              <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)' }}>
+                <div className="text-lg sm:text-xl font-bold mr-4 tracking-wide">Configurar Evaluadores</div>
+                <div className="ml-auto hidden sm:block">
+                  <button type="button" onClick={() => setManageAccessSurveyId(null)} className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <span className="material-symbols-outlined text-[22px]">close</span>
+                  </button>
+                </div>
+              </div>
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto w-full bg-slate-50 dark:bg-slate-900 p-4 sm:p-6">
                 {(() => {
-                  if (!reportsLoaded) return (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 0', gap: 10 }}>
-                      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 0.9s linear infinite' }}>
-                        <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4"/>
-                        <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round"/>
-                      </svg>
-                      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                      <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 500 }}>Cargando reportes...</div>
+                  const s = surveys.find(x => String(x.id) === String(manageAccessSurveyId))
+                  if (!s) return <div className="text-slate-600">Encuesta no encontrada.</div>
+                  const projects = s.projects || []
+                  if (projects.length === 0) return <div className="text-slate-600">No hay proyectos inscritos.</div>
+
+                  return (
+                    <div className="space-y-4">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                        Asigna el correo de un profesor evaluador a cada proyecto individual. Cuando ese profesor inicie sesión, solo podrá revisar y calificar el proyecto que le fue asignado.
+                      </p>
+                      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[500px]">
+                          <thead>
+                            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400">
+                              <th className="p-3">Proyecto</th>
+                              <th className="p-3">Categoría</th>
+                              <th className="p-3 w-72">Correo del Evaluador</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {projects.map((p: any) => (
+                              <tr key={p.id} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                                <td className="p-3">
+                                  <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{p.name || 'Sin nombre'}</div>
+                                  <div className="text-xs text-slate-500 truncate max-w-[200px]">Asesor: {p.advisor || '-'}</div>
+                                </td>
+                                <td className="p-3">
+                                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 text-xs font-bold dark:bg-indigo-900/30 dark:text-indigo-400">
+                                    {p.category || 'N/A'}
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  <input
+                                    type="email"
+                                    placeholder="correo@ejemplo.com"
+                                    defaultValue={p.evaluator || ''}
+                                    onBlur={async (e) => {
+                                      const val = e.target.value.trim().toLowerCase()
+                                      if (val === (p.evaluator || '').trim().toLowerCase()) return;
+                                      try {
+                                        const updatedProjects = projects.map((x: any) => x.id === p.id ? { ...x, evaluator: val } : x)
+                                        const updatedSurvey = { ...s, projects: updatedProjects }
+                                        await (dataClientNow as any).setSurvey(String(s.id), updatedSurvey)
+                                        setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updatedSurvey : x))
+                                        setToastMessage('Evaluador guardado')
+                                        setTimeout(() => setToastMessage(null), 3000)
+                                      } catch (err) {
+                                        setToastMessage('Error guardando evaluador')
+                                        setTimeout(() => setToastMessage(null), 3000)
+                                      }
+                                    }}
+                                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-colors"
+                                  />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   )
-                  const reports = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
-                  if (!reports || reports.length === 0) return <div className="text-slate-600 text-sm">No hay reportes para esta encuesta.</div>
-                  return reports.map(r => {
-                    const isHighlighted = highlightedReportId && String(r.id) === String(highlightedReportId)
-                    return (
-                      <div
-                        key={r.id}
-                        id={`report-item-${r.id}`}
-                        ref={isHighlighted ? (el) => { if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80) } : undefined}
-                        className={`p-4 border rounded-2xl shadow-sm ${isHighlighted ? 'bg-amber-50 border-amber-300 dark:bg-amber-900/20 dark:border-amber-500/50 ring-4 ring-amber-400/20' : 'bg-white border-slate-200 dark:bg-slate-800/80 dark:border-slate-700'} relative overflow-hidden group`}
-                      >
-                        <div className="absolute top-0 left-0 w-1.5 h-full bg-red-400 dark:bg-red-500"></div>
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pl-2">
-                          <div className="flex items-center gap-2">
-                             <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0 text-slate-500">
-                               <span className="material-symbols-outlined text-[16px]">person_alert</span>
-                             </div>
-                             <div className="text-sm font-bold text-slate-700 dark:text-slate-300 truncate">{r.reporterEmail || r.reporterId || 'Usuario Anónimo'}</div>
-                          </div>
-                          <div className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700/50 px-2 py-1 rounded-md self-start sm:self-auto flex items-center gap-1.5 font-medium whitespace-nowrap ml-10 sm:ml-0"><span className="material-symbols-outlined text-[14px]">schedule</span>{new Date(r.createdAt).toLocaleString()}</div>
-                        </div>
-                        <div className="text-[15px] leading-relaxed text-slate-700 dark:text-slate-300 pl-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 ml-10 sm:ml-0">{r.comment}</div>
-                        {isHighlighted && <div className="mt-3 text-xs text-amber-700 dark:text-amber-400 font-bold bg-amber-100 dark:bg-amber-900/40 inline-flex px-2 py-1.5 rounded-md flex items-center gap-1.5 w-fit ml-10 sm:ml-0"><span className="material-symbols-outlined text-[14px]">notifications_active</span> Este es el reporte referenciado de la notificación</div>}
-                      </div>
-                    )
-                  })
                 })()}
               </div>
             </div>
-          </div>, document.body
-        )}
-          {/* Report modal */}
-          {confirmReportId && ReactDOM.createPortal(
-            <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-0 sm:p-4 perspective-1000">
-              <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => { if (!confirmReporting) setConfirmReportId(null) }} />
-              <div className={`relative w-full max-w-md bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl p-6 sm:p-8 shadow-2xl animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-200`} role="dialog" aria-modal="true">
-                <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-6 sm:hidden"></div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[22px]">warning</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Reportar encuesta</h3>
-                </div>
-                <div className="text-sm text-slate-500 dark:text-slate-400 mb-5 pl-[52px]">
-                  Describe detalladamente el problema con esta encuesta para que la moderación evalúe el caso.
-                </div>
-                <textarea value={reportComment} onChange={e => setReportComment(e.target.value)} rows={5} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-red-400 focus:ring-4 focus:ring-red-400/20 rounded-xl text-sm p-4 text-slate-700 dark:text-slate-200 outline-none resize-none transition-all placeholder:text-slate-400 mb-6" placeholder="¿Qué problema encontraste?" />
-                <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
-                  <button type="button" onClick={() => { setConfirmReportId(null); setReportComment('') }} disabled={confirmReporting} className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-colors">Cancelar</button>
-                  <button type="button" onClick={async () => {
-                    try {
-                      if (!reportComment || reportComment.trim().length < 3) {
-                        setToastMessage('Escribe un comentario válido para reportar')
-                        setTimeout(() => setToastMessage(null), 3000)
-                        return
-                      }
-                      setConfirmReporting(true)
-                      const _reportSurvey = (surveys || []).find((sv: any) => String(sv.id) === String(confirmReportId))
-                      const report = {
-                        id: `${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
-                        surveyId: confirmReportId,
-                        reporterId: currentUserId,
-                        reporterEmail: currentUser && (currentUser.email || null),
-                        comment: reportComment.trim(),
-                        createdAt: new Date().toISOString(),
-                        payload: { surveyTitle: (_reportSurvey && (_reportSurvey.title || _reportSurvey.name)) || '' }
-                      }
-                      if (backendEnabled) {
-                        try {
-                          await (dataClientNow as any).pushSurveyReport(report)
-                        } catch (e: any) {
-                          console.error('[Surveys] pushSurveyReport failed:', e?.code, e?.message, e?.details, e?.hint)
-                          setToastMessage('Error al enviar el reporte: ' + (e?.message || 'Error desconocido'))
-                          setTimeout(() => setToastMessage(null), 5000)
-                          setConfirmReporting(false)
-                          return
-                        }
-                        // optimistic update until realtime notifies
-                        setSurveyReports(prev => [...prev, report])
-                        try { window.dispatchEvent(new CustomEvent('survey:reported', { detail: { report } })) } catch (e) {}
-                        setToastMessage('Reporte enviado. Gracias.')
-                        setTimeout(() => setToastMessage(null), 3000)
-                        setConfirmReportId(null)
-                        setReportComment('')
-                      } else {
-                        // Not allowed when no backend is configured
-                        setToastMessage('No se puede enviar reportes: no hay servicio de datos configurado.')
-                        setTimeout(() => setToastMessage(null), 3000)
-                        setConfirmReporting(false)
-                        return
-                      }
-                    } catch (e) { console.error(e) }
-                    finally { setConfirmReporting(false) }
-                  }} disabled={confirmReporting} className={`w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 ${confirmReporting ? 'bg-red-200 text-red-500 cursor-not-allowed dark:bg-red-900/40 dark:text-red-400/50' : 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/20'}`}>{confirmReporting ? <><span className="material-symbols-outlined text-[18px] animate-spin">refresh</span> Procesando...</> : 'Enviar reporte'}</button>
-                </div>
+          </div>
+        </div>, document.body
+      )}
+      {/* Generate Link modal */}
+      {generateLinkSurveyId && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setGenerateLinkSurveyId(null)} />
+          <div className="relative w-full sm:max-w-md sm:mx-4 sm:mb-0">
+            <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl p-6 transform transition-all duration-300">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-indigo-500 text-[26px]">calendar_clock</span>
+                  Establecer Fecha Límite
+                </h3>
+                <button type="button" onClick={() => setGenerateLinkSurveyId(null)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
               </div>
-            </div>, document.body
-          )}
-        {/* Create modal */}
-        {createModalOpen && ReactDOM.createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => closeCreateModal()} />
-            <div className="relative w-full sm:max-w-xl sm:mx-4 sm:mb-0">
-              <div className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isCreateVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-                   ref={createModalRef}
-                   style={{
-                     overscrollBehaviorY: 'contain',
-                     ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
-                   }}
-                   onTouchStart={(e) => {
-                     const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
-                     touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
-                   }}
-                   onTouchEnd={() => {
-                     if (pullDownY > 80) closeCreateModal();
-                     setPullDownY(0);
-                   }}>
-                {/* Drag handle for mobile */}
-                <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={() => closeCreateModal()}>
-                  <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
-                </div>
-                {/* Header (sticky) */}
-                <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
-                  <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{editSurvey ? 'Editar encuesta' : 'Crear encuesta'}</div>
-                  <div className="ml-auto hidden sm:block">
-                    <button type="button" onClick={() => closeCreateModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
-                      <span className="material-symbols-outlined text-[22px]">close</span>
-                    </button>
-                  </div>
-                </div>
-                <div className="flex-1 overflow-y-auto px-0 sm:px-4 pb-0 sm:pb-4 w-full">
-                  <CreateSurvey
-                    hideTypeSelector={true}
-                    initialType={createInitialType}
-                    editSurvey={editSurvey}
-                    onSaved={(key: any, surveyData?: any) => {
-                      const wasEditing = !!editSurvey
-                      closeCreateModal()
-                      setEditSurvey(null)
-                      setCreateInitialType(undefined)
-                      setToastMessage(wasEditing ? 'Encuesta actualizada' : 'Encuesta creada')
-                      setTimeout(() => setToastMessage(null), 3000)
-                      // Optimistic: add/update survey in local state immediately
-                      if (surveyData) {
-                        setSurveys(prev => {
-                          const copy = Array.isArray(prev) ? [...prev] : []
-                          const idx = copy.findIndex((s: any) => String(s.id) === String(key))
-                          return idx >= 0
-                            ? copy.map((s: any) => String(s.id) === String(key) ? surveyData : s)
-                            : [...copy, surveyData]
-                        })
-                      }
-                      // Then sync from server in case optimistic data differs
-                      try {
-                        dataClientNow.getSurveysOnce().then((arr: any[]) => {
-                          try { setSurveys(arr) } catch (e) {}
-                        }).catch(() => {})
-                      } catch (e) {}
-                    }}
-                    onClose={() => { setCreateModalOpen(false); setEditSurvey(null); setCreateInitialType(undefined); }}
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">
+                Guarda la fecha máxima de inscripción para habilitar el enlace público.
+              </p>
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+                const formData = new FormData(e.currentTarget)
+                const dateVal = formData.get('expiryDate') as string
+                if (!dateVal) return
+                const s = surveys.find(x => String(x.id) === String(generateLinkSurveyId))
+                if (!s) return
+
+                // Para que expire AL FINAL de ese día (23:59:59), de forma segura:
+                const parts = dateVal.split('-')
+                let expires = new Date().toISOString()
+                if (parts.length === 3) {
+                  const y = parseInt(parts[0], 10)
+                  const m = parseInt(parts[1], 10) - 1
+                  const d = parseInt(parts[2], 10)
+                  expires = new Date(y, m, d, 23, 59, 59).toISOString()
+                }
+
+                const token = Math.random().toString(36).substring(2, 12)
+
+                try {
+                  const updated = { ...s, linkToken: token, linkExpiresAt: expires }
+                  await (dataClientNow as any).setSurvey(String(s.id), updated)
+
+                  // Actualización Inmediata UI Local:
+                  setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updated : x))
+                  setToastMessage('Fecha guardada. El enlace ahora está activo para copiar.')
+                  setTimeout(() => setToastMessage(null), 3000)
+                  setGenerateLinkSurveyId(null)
+                } catch (err: any) {
+                  console.error("DEBUG Link Error:", err)
+                  setToastMessage(`Error: ${err?.message || err?.details || 'Error desconocido'}`)
+                  setTimeout(() => setToastMessage(null), 5000)
+                }
+              }}>
+                <div className="mb-6">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Fecha límite de inscripción</label>
+                  <input
+                    name="expiryDate"
+                    type="date"
+                    required
+                    min={new Date().toISOString().split('T')[0]}
+                    defaultValue={new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 appearance-none shadow-inner"
                   />
                 </div>
-              </div>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setGenerateLinkSurveyId(null)} className="w-1/3 px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors">
+                    Cancelar
+                  </button>
+                  <button type="submit" className="w-2/3 flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all">
+                    <span className="material-symbols-outlined text-[20px]">save</span> Guardar Fecha
+                  </button>
+                </div>
+              </form>
             </div>
-          </div>, document.body
-        )}
+          </div>
+        </div>, document.body
+      )}
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

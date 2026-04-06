@@ -29,6 +29,7 @@ module.exports = async function (req, res) {
     const email = body.email || null
     const userId = body.userId || null
     const role = body.role || null
+    const asignatura = body.asignatura || null
     const password = body.password || null
 
     if (!legacyKey && !email && !userId) return res.status(400).json({ error: 'Missing target identifier (legacyKey, email or userId)' })
@@ -80,7 +81,11 @@ module.exports = async function (req, res) {
     if (!targetId) return res.status(404).json({ error: 'User not found' })
 
     const payload = {}
-    if (role) payload.app_metadata = { role: String(role) }
+    if (role || asignatura) {
+      payload.app_metadata = {}
+      if (role) payload.app_metadata.role = String(role)
+      if (asignatura) payload.app_metadata.asignatura = String(asignatura)
+    }
     if (password) payload.password = String(password)
     if (Object.keys(payload).length === 0) return res.status(400).json({ error: 'Nothing to update' })
 
@@ -104,9 +109,13 @@ module.exports = async function (req, res) {
     }
 
     try {
-      if (role) {
-        if (legacyKey) await admin.from('app_users').update({ role: String(role) }).eq('legacy_key', legacyKey)
-        else if (email) await admin.from('app_users').update({ role: String(role) }).eq('email', email)
+      if (role || asignatura) {
+        const upds = {}
+        if (role) upds.role = String(role)
+        if (asignatura) upds.asignatura = String(asignatura)
+        
+        if (legacyKey) await admin.from('app_users').update(upds).eq('legacy_key', legacyKey)
+        else if (email) await admin.from('app_users').update(upds).eq('email', email)
       }
     } catch (e) {}
 

@@ -26,8 +26,11 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
   const [questions, setQuestions] = useState<Question[]>([{ id: Date.now(), text: '', type: 'text', options: [] }])
   type Project = { id: string; name: string; category?: string; description?: string; members?: string; advisor?: string }
   const [projects, setProjects] = useState<Project[]>([])
+
   type RubricQ = { id: string; text: string; kind: 'score' | 'text' }
   const [rubric, setRubric] = useState<RubricQ[]>([])
+  
+  const [allowedCategories, setAllowedCategories] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const navigate = useNavigate()
@@ -42,6 +45,24 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
     return () => { try { window.removeEventListener('auth:changed', onAuth as EventListener) } catch (e) {} }
   }, [])
 
+  const [globalAsignaturas, setGlobalAsignaturas] = useState<string[]>([])
+  
+  React.useEffect(() => {
+    const loadGlobals = async () => {
+      try {
+        if (dataClientNow.getSurveyById) {
+          const sys = await dataClientNow.getSurveyById('sys_settings_asignaturas')
+          if (sys && Array.isArray(sys.rubric) && sys.rubric.length > 0) {
+            setGlobalAsignaturas(sys.rubric)
+          } else {
+             setGlobalAsignaturas(["Matemáticas", "Ingeniería de Software", "Finanzas", "Tecnología", "Salud", "Ciencias Básicas", "Ciencias Sociales", "Negocios"])
+          }
+        }
+      } catch(e){}
+    }
+    loadGlobals()
+  }, [dataClientNow])
+
   // initialize when editing
   React.useEffect(() => {
     if (!editSurvey) return
@@ -54,6 +75,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
       } else {
         setProjects((editSurvey.projects || []).map((p: any) => ({ id: p.id || String(Date.now() + Math.random()), name: p.name || '', category: p.category || '', description: p.description || '', members: Array.isArray(p.members) ? (p.members || []).join(', ') : (p.members || ''), advisor: p.advisor || '' })))
         setRubric((editSurvey.rubric || []).map((r: any) => ({ id: r.id || String(Date.now() + Math.random()), text: r.text || '', kind: r.kind || 'score' })))
+        setAllowedCategories(editSurvey.allowedCategories || editSurvey.allowed_categories || [])
       }
     } catch (e) {}
   }, [editSurvey])
@@ -83,10 +105,6 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
         return
       }
     } else {
-      if (projects.length === 0) {
-        setMessage('Agregue al menos un proyecto')
-        return
-      }
       if (rubric.length === 0) {
         setMessage('Defina la rúbrica (criterios)')
         return
@@ -108,6 +126,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
           // normalize members to array before saving
           updated.projects = projects.map(p => ({ id: p.id || (Date.now() + Math.random()), name: p.name, category: p.category, description: p.description, members: typeof p.members === 'string' ? p.members.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean) : (Array.isArray(p.members) ? p.members : []), advisor: p.advisor || '' }))
           updated.rubric = rubric.map(r => ({ id: r.id, text: r.text, kind: r.kind }))
+          updated.allowed_categories = allowedCategories.map(c => c.trim()).filter(Boolean)
           delete updated.questions
         }
 
@@ -145,6 +164,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
       } else {
         newSurvey.projects = projects.map(p => ({ id: p.id || (Date.now() + Math.random()), name: p.name, category: p.category, description: p.description, members: typeof p.members === 'string' ? p.members.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean) : (Array.isArray(p.members) ? p.members : []), advisor: p.advisor || '' }))
         newSurvey.rubric = rubric.map(r => ({ id: r.id, text: r.text, kind: r.kind }))
+        newSurvey.allowed_categories = allowedCategories.map(c => c.trim()).filter(Boolean)
       }
 
       if ((dataClientNow as any).isEnabled && (dataClientNow as any).isEnabled()) {
@@ -307,11 +327,14 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
           </div>
         ) : (
           <div className="mb-4">
-            <div className="mt-6 border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
+
+            <div className="mt-8 border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-start sm:items-center gap-2">
-                 <span className="material-symbols-outlined text-indigo-500 mt-0.5 sm:mt-0 text-[24px]">groups</span> Equipos / Proyectos a Evaluar
+                 <span className="material-symbols-outlined text-indigo-500 mt-0.5 sm:mt-0 text-[24px]">groups</span> Equipos / Proyectos a Evaluar (Opcional)
                </h3>
-               <p className="text-sm text-slate-500 mt-1 pl-8 sm:pl-0">Declara aquí los equipos que los profesores deberán calificar con la rúbrica.</p>
+               <p className="text-sm text-slate-500 mt-1 pl-8 sm:pl-0 pt-2 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
+                 <b>Nota:</b> Puedes dejar esta sección completamente vacía al guardar. Una vez creada la encuesta, podrás generar un Enlace Mágico que se compartirá enviando directamente a cada estudiante. A través de este link temporal de 24 horas, ellos mismos subirán sus datos, llenarán esta lista y asignarán sus proyectos a tu asignatura de forma automática.
+               </p>
             </div>
             
             <div className="flex flex-col gap-4">
@@ -336,7 +359,10 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                     {/* Categoría */}
                     <div>
                       <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Categoría</label>
-                      <input className="w-full mt-1 bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder:text-slate-400 transition-shadow" placeholder="Ej. Software, Hardware, Diseño..." value={p.category} onChange={e => setProjects(prev => prev.map(x => x.id === p.id ? { ...x, category: e.target.value } : x))} />
+                      <select className="w-full mt-1 bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-shadow cursor-pointer" value={p.category} onChange={e => setProjects(prev => prev.map(x => x.id === p.id ? { ...x, category: e.target.value } : x))}>
+                         <option value="">(Selecciona una categoría)</option>
+                         {globalAsignaturas.filter(x => x.trim()).map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
                     </div>
                     {/* Asesor */}
                     <div>
@@ -360,6 +386,14 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
               <button type="button" onClick={() => setProjects(prev => [...prev, { id: String(Date.now() + Math.random()), name: '', category: '', members: '', advisor: '', description: '' }])} className="w-full border-2 border-dashed border-indigo-200 dark:border-indigo-800/50 rounded-2xl flex items-center justify-center gap-2 py-4 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors font-semibold text-sm">
                  <span className="material-symbols-outlined text-[20px]">add_circle</span> Añadir otro Proyecto
               </button>
+            </div>
+
+            <div className="mt-8 mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl flex items-start gap-3">
+              <span className="material-symbols-outlined text-amber-500 shrink-0 text-[22px] mt-0.5">category</span>
+              <div>
+                <p className="text-sm font-bold text-amber-800 dark:text-amber-300">Categorías de proyectos</p>
+                <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">Una vez creada la encuesta, podrás gestionar la lista de categorías desde el menú <span className="font-bold">⋮ → Gestionar Categorías</span> en la tarjeta de la feria.</p>
+              </div>
             </div>
 
             <div className="mt-12 border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
@@ -434,7 +468,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
              ) : (
                <>
                  <span className="material-symbols-outlined text-[20px]">save</span>
-                 {editSurvey ? 'Actualizar Encuesta' : 'Publicar Encuesta'}
+                 {editSurvey ? 'Actualizar Encuesta' : 'Guardar Encuesta'}
                </>
              )}
           </button>

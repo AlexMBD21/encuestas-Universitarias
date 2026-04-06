@@ -15,13 +15,17 @@ CREATE TABLE IF NOT EXISTS public.surveys (
   published boolean DEFAULT false,
   created_at timestamptz,
   published_at timestamptz,
-  type text
+  type text,
+  allowed_categories jsonb
 );
 
 -- Migration: add missing columns to existing tables (safe to run multiple times)
 ALTER TABLE public.surveys ADD COLUMN IF NOT EXISTS projects jsonb;
 ALTER TABLE public.surveys ADD COLUMN IF NOT EXISTS rubric jsonb;
 ALTER TABLE public.surveys ADD COLUMN IF NOT EXISTS owner_email text;
+ALTER TABLE public.surveys ADD COLUMN IF NOT EXISTS link_token text;
+ALTER TABLE public.surveys ADD COLUMN IF NOT EXISTS link_expires_at text;
+ALTER TABLE public.surveys ADD COLUMN IF NOT EXISTS allowed_categories jsonb;
 
 -- Backfill owner_email for existing surveys that have an auth UUID as owner_uid/owner_id
 -- but no owner_email yet. Reads from auth.users (requires service role or superuser).

@@ -34,11 +34,17 @@ export default function Configuracion() {
   const [userMsgType, setUserMsgType] = useState<'success' | 'error'>('success')
   const [searchQ, setSearchQ] = useState('')
   const [page, setPage] = useState(1)
-  const pageSize = 10
+  const pageSize = 5
+
+  const defaultAsignaturas = ["Matemáticas", "Ingeniería de Software", "Finanzas", "Tecnología", "Salud", "Ciencias Básicas", "Ciencias Sociales", "Negocios"]
+  const [globalAsignaturas, setGlobalAsignaturas] = useState<string[]>(defaultAsignaturas)
+  const [loadingAsig, setLoadingAsig] = useState(false)
+  const [newAsig, setNewAsig] = useState('')
+
   // modal state for create/edit/delete
   const [modalOpen, setModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'create' | 'edit' | 'delete' | null>(null)
-  const [modalData, setModalData] = useState<any>({ email: '', role: 'profesor', password: '' })
+  const [modalData, setModalData] = useState<any>({ email: '', role: 'profesor', password: '', asignatura: '' })
   const [modalLoading, setModalLoading] = useState(false)
   const [modalShowPassword, setModalShowPassword] = useState(false)
   const [modalMsg, setModalMsg] = useState<string | null>(null)
@@ -101,6 +107,15 @@ export default function Configuracion() {
       try {
         const u = await (dataClientNow as any).getUsersOnce()
         setUsersList(u || [])
+        // Load settings for asignaturas
+        if (dataClientNow.getSurveyById) {
+          try {
+            const sys = await dataClientNow.getSurveyById('sys_settings_asignaturas')
+            if (sys && Array.isArray(sys.rubric) && sys.rubric.length > 0) {
+              setGlobalAsignaturas(sys.rubric)
+            }
+          } catch(err) { /* no settings survey yet */ }
+        }
       } catch (e) {
         console.error('load users failed', e)
         setUsersList([])
@@ -111,6 +126,43 @@ export default function Configuracion() {
     loadUsers()
     if (isAdmin) setAdminVisible(true)
   }, [isAdmin])
+
+  const saveGlobalAsignaturas = async (newList: string[]) => {
+    try {
+      setLoadingAsig(true)
+      const dataClientNow: any = supabaseClient
+      if (dataClientNow.setSurvey) {
+        await dataClientNow.setSurvey('sys_settings_asignaturas', {
+          id: 'sys_settings_asignaturas',
+          title: 'System Settings',
+          type: 'system',
+          published: true,
+          ownerId: 'admin',
+          rubric: newList
+        })
+        setGlobalAsignaturas(newList)
+        showToast('Asignaturas actualizadas', 'edit', true)
+      }
+    } catch (e) {
+      console.error('Error saving asignaturas', e)
+      showToast('Error al guardar asignaturas', 'delete', false)
+    } finally {
+      setLoadingAsig(false)
+    }
+  }
+
+  const handleAddAsig = () => {
+    const val = newAsig.trim()
+    if (!val || globalAsignaturas.some(a => a.toLowerCase() === val.toLowerCase())) return
+    const updated = [...globalAsignaturas, val]
+    saveGlobalAsignaturas(updated)
+    setNewAsig('')
+  }
+
+  const handleRemoveAsig = (val: string) => {
+    const updated = globalAsignaturas.filter(a => a !== val)
+    saveGlobalAsignaturas(updated)
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -161,7 +213,7 @@ export default function Configuracion() {
   }
 
   const openCreateModal = () => {
-    setModalData({ email: '', role: 'profesor', password: '', confirmPassword: '' })
+    setModalData({ email: '', role: 'profesor', password: '', confirmPassword: '', asignatura: '' })
     setModalType('create')
     setModalShowPassword(false)
     setModalMsg(null)
@@ -171,7 +223,7 @@ export default function Configuracion() {
   }
 
   const openEditModal = (u: any) => {
-    setModalData({ id: u.id, email: u.email, role: u.role || 'profesor', password: '' })
+    setModalData({ id: u.id, email: u.email, role: u.role || 'profesor', password: '', asignatura: u.asignatura || '' })
     setModalType('edit')
     setModalShowPassword(false)
     setModalMsg(null)
@@ -195,7 +247,7 @@ export default function Configuracion() {
     setTimeout(() => {
       setModalOpen(false)
       setModalType(null)
-      setModalData({ email: '', role: 'profesor', password: '' })
+      setModalData({ email: '', role: 'profesor', password: '', asignatura: '' })
       setModalLoading(false)
       setModalShowPassword(false)
     }, 300)
@@ -252,12 +304,12 @@ export default function Configuracion() {
           const resp = await fetch('/api/create_user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ email: modalData.email, password: pwd, role: modalData.role || 'profesor' })
+            body: JSON.stringify({ email: modalData.email, password: pwd, role: modalData.role || 'profesor', asignatura: modalData.asignatura || '' })
           })
           if (!resp.ok) {
             let errBody: any = {}
             try { errBody = await resp.json() } catch (e) {}
-            try { await (dataClientNow as any).pushUser({ email: modalData.email, role: modalData.role }) } catch (e) {}
+            try { await (dataClientNow as any).pushUser({ email: modalData.email, role: modalData.role, asignatura: modalData.asignatura }) } catch (e) {}
             if (resp.status === 404) {
               const msg = 'Endpoint /api/create_user no disponible (404). Se creó solo la metadata en app_users. Para crear la cuenta Auth en local, ejecuta `vercel dev` o usa el script `backend/scripts/create_admin_user.js` con una Service Role key.'
               setModalMsgType('success')
@@ -278,7 +330,7 @@ export default function Configuracion() {
             setTimeout(() => closeModal(), 1200)
           }
         } else {
-          await (dataClientNow as any).pushUser({ email: modalData.email, role: modalData.role })
+          await (dataClientNow as any).pushUser({ email: modalData.email, role: modalData.role, asignatura: modalData.asignatura })
           const msg = 'Usuario creado (metadata). Para crear la cuenta Auth, especifique una contraseña o use la función segura del servidor.'
           setModalMsgType('success')
           setModalMsg(msg)
@@ -286,11 +338,11 @@ export default function Configuracion() {
           setTimeout(() => closeModal(), 1200)
         }
       } else if (modalType === 'edit') {
-        const updateObj: any = { email: modalData.email, role: modalData.role }
+        const updateObj: any = { email: modalData.email, role: modalData.role, asignatura: modalData.asignatura }
         try {
           const token = await ((dataClientNow as any).getAccessToken ? (dataClientNow as any).getAccessToken() : (supabaseClient as any).getAccessToken())
           if (!token) throw new Error('Debes iniciar sesión como administrador para aplicar cambios')
-          const body: any = { legacyKey: modalData.id, email: modalData.email, role: modalData.role }
+          const body: any = { legacyKey: modalData.id, email: modalData.email, role: modalData.role, asignatura: modalData.asignatura }
           if (modalData.password) body.password = modalData.password
           const resp = await fetch('/api/update_user', {
             method: 'POST',
@@ -515,13 +567,14 @@ export default function Configuracion() {
                         {/* Desktop table */}
                         <table className="hidden sm:table w-full text-left border-collapse">
                           <thead>
-                            <tr className="border-b"><th className="p-2">Email</th><th className="p-2">Rol</th><th className="p-2">Acciones</th></tr>
+                            <tr className="border-b"><th className="p-2">Email</th><th className="p-2">Rol</th><th className="p-2">Asignatura</th><th className="p-2">Acciones</th></tr>
                           </thead>
                           <tbody>
                             {pageItems.map(u => (
                               <tr key={u.id} className="border-b">
                                 <td className="p-2 text-sm">{u.email}</td>
                                 <td className="p-2 text-sm">{u.role || 'profesor'}</td>
+                                <td className="p-2 text-sm text-slate-500">{u.asignatura || '-'}</td>
                                 <td className="p-2 text-sm">
                                   <button className="px-2 py-1 mr-2 rounded btn btn-outline" onClick={() => openEditModal(u)}>Editar</button>
                                   <button className="px-2 py-1 rounded btn btn-danger" onClick={() => openDeleteModal(u)}>Eliminar</button>
@@ -539,6 +592,9 @@ export default function Configuracion() {
                                 <span className="text-sm font-medium break-all">{u.email}</span>
                                 <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 whitespace-nowrap shrink-0">{u.role || 'profesor'}</span>
                               </div>
+                              {u.asignatura && (
+                                <div className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">Asignatura: {u.asignatura}</div>
+                              )}
                               <div className="flex gap-2">
                                 <button className="flex-1 py-1.5 text-sm rounded-lg btn btn-outline" onClick={() => openEditModal(u)}>Editar</button>
                                 <button className="flex-1 py-1.5 text-sm rounded-lg btn btn-danger" onClick={() => openDeleteModal(u)}>Eliminar</button>
@@ -561,6 +617,59 @@ export default function Configuracion() {
                   })()
                 )}
               </div>
+
+              {/* Asignaturas Management Card */}
+              <div className="mt-8 bg-white border border-slate-200 shadow-sm rounded-3xl p-6 sm:p-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[20px]">category</span>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-800">Gestión de Asignaturas Globales</h2>
+                    <p className="text-sm text-slate-500">Modifica las disciplinas o asignaturas disponibles para los profesores.</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                   <div className="flex gap-2">
+                     <input 
+                       className="border px-4 py-2 rounded-xl flex-1 bg-slate-50 text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                       placeholder="Ej. Medicina, Psicología..."
+                       value={newAsig}
+                       onChange={e => setNewAsig(e.target.value)}
+                       onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAsig() } }}
+                     />
+                     <button 
+                       className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                       onClick={handleAddAsig}
+                       disabled={loadingAsig || !newAsig.trim()}
+                     >
+                       <span className="material-symbols-outlined text-[18px]">add</span>
+                       Agregar
+                     </button>
+                   </div>
+                   
+                   <div className="flex flex-wrap gap-2 mt-2">
+                     {globalAsignaturas.map(asig => (
+                       <div key={asig} className="bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm text-slate-700 font-medium">
+                         {asig}
+                         <button 
+                           onClick={() => handleRemoveAsig(asig)}
+                           disabled={loadingAsig}
+                           className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-0.5 rounded-md transition-colors"
+                           title="Eliminar"
+                         >
+                           <span className="material-symbols-outlined text-[16px]">close</span>
+                         </button>
+                       </div>
+                     ))}
+                     {globalAsignaturas.length === 0 && (
+                       <span className="text-sm text-slate-500 italic">No hay asignaturas registradas.</span>
+                     )}
+                   </div>
+                </div>
+              </div>
+
             </div>
           )}
         </div>
@@ -644,6 +753,22 @@ export default function Configuracion() {
                         <option value="admin">Administrador</option>
                       </select>
                     </div>
+                    {modalData.role !== 'admin' && (
+                      <div>
+                        <label className="block text-sm">Asignatura (Categoría de Proyectos a Evaluar)</label>
+                        <select
+                          name="newUserAsignatura"
+                          className="w-full border px-3 py-2 rounded bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                          value={modalData.asignatura || ''}
+                          onChange={e => setModalData({...modalData, asignatura: e.target.value})}
+                        >
+                          <option value="">-- Selecciona una asignatura --</option>
+                          {globalAsignaturas.map(asig => (
+                            <option key={asig} value={asig}>{asig}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     <div className="mt-4 flex justify-end gap-2">
                       <button type="button" className="btn btn-ghost" onClick={closeModal} disabled={modalLoading}>Cancelar</button>
                       <button type="submit" className="btn btn-primary" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar' : 'Crear')}</button>

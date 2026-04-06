@@ -10,6 +10,7 @@ import Reports from './profesor/pages/Reports'
 import ReportDetail from './profesor/pages/ReportDetail'
 import Configuracion from './profesor/pages/Configuracion'
 import RequireAuth from './components/RequireAuth'
+import Inscripcion from './public/pages/Inscripcion'
 
 function ScrollToTop(): null {
   const { pathname } = useLocation()
@@ -51,6 +52,7 @@ export default function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/inscripcion/:token" element={<Inscripcion />} />
         <Route path="/profesor" element={
           <RequireAuth>
             <ProfesorLayout />
