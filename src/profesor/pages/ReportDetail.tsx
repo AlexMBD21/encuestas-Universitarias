@@ -232,8 +232,14 @@ export default function ReportDetail(): JSX.Element {
                   <span className="material-symbols-outlined">inbox</span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-blue-900">Aún no hay respuestas</h4>
-                  <p className="text-sm text-blue-700">Esta encuesta está vacía. ¡Comparte el enlace para empezar a recibir datos!</p>
+                  <h4 className="font-bold text-blue-900">
+                    {survey?.type === 'project' ? 'Aún no hay calificaciones' : 'Aún no hay respuestas'}
+                  </h4>
+                  <p className="text-sm text-blue-700">
+                    {survey?.type === 'project' 
+                      ? 'Este proyecto aún no ha sido evaluado. Asigna evaluadores desde el menú de la encuesta para comenzar a recibir resultados.' 
+                      : 'Esta encuesta está vacía. ¡Comparte el enlace para empezar a recibir datos!'}
+                  </p>
                 </div>
               </div>
             )}
@@ -378,7 +384,12 @@ export default function ReportDetail(): JSX.Element {
                                                     <span className="text-xs font-bold text-slate-400">/5</span>
                                                   </div>
                                                   <button
-                                                    onClick={() => setModalProject(ps)}
+                                                    onClick={() => {
+                                                      const projectRaw = Array.isArray(report.rawResponses)
+                                                        ? report.rawResponses.filter((r: any) => String(r.projectId) === String(ps.project.id))
+                                                        : []
+                                                      setModalProject({ ...ps, _rawResponses: projectRaw })
+                                                    }}
                                                     className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm group-hover:scale-105"
                                                     title="Ver detalle"
                                                   >
@@ -426,7 +437,7 @@ export default function ReportDetail(): JSX.Element {
       </div>
 
       {modalProject && (
-        <ProjectDetailModal ps={modalProject} onClose={() => setModalProject(null)} />
+        <ProjectDetailModal ps={modalProject} onClose={() => setModalProject(null)} usersCache={usersCache} />
       )}
       
       <style>{`

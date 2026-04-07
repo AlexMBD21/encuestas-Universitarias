@@ -12,6 +12,197 @@ import ScrollFloatingButton from '../components/ScrollFloatingButton'
 
 import { useNavigate } from 'react-router-dom';
 
+const EvaluatorAutocomplete = ({ value, evaluatorUsers, onChange, onSave }: any) => {
+  const [val, setVal] = React.useState(value || '');
+  const [focused, setFocused] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [rect, setRect] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    setVal(value || '');
+  }, [value]);
+
+  const openDropdown = () => {
+    if (inputRef.current) setRect(inputRef.current.getBoundingClientRect());
+    setFocused(true);
+  }
+
+  React.useEffect(() => {
+    if (focused && inputRef.current) {
+      setRect(inputRef.current.getBoundingClientRect());
+      const handleScroll = (e: any) => {
+        if (e.target && (e.target as HTMLElement).closest && (e.target as HTMLElement).closest('.evaluator-dropdown')) return;
+        setFocused(false);
+      }
+      window.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', handleScroll);
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', handleScroll);
+      }
+    }
+  }, [focused]);
+
+  // Si hacemos click en el input y val está vacío, muestra todos.
+  // En este caso siempre filtramos para que responda al tipeo.
+  const filtered = (evaluatorUsers || []).filter((u: any) => 
+    (u.email || '').toLowerCase().includes(val.toLowerCase()) || 
+    (u.name || '').toLowerCase().includes(val.toLowerCase())
+  );
+
+  return (
+    <>
+      <div className="relative w-full group">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+          <span className="material-symbols-outlined text-[18px]">person</span>
+        </div>
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Seleccionar profesor..."
+          value={val}
+          onFocus={openDropdown}
+          onClick={openDropdown}
+          onChange={(e) => {
+            setVal(e.target.value);
+            openDropdown();
+            onChange && onChange(e.target.value);
+          }}
+          onBlur={() => {
+            setTimeout(() => {
+              setFocused(false);
+              onSave && onSave(val);
+            }, 200);
+          }}
+          className="w-full pl-9 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
+        />
+        <button 
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            if (focused) setFocused(false);
+            else { inputRef.current?.focus(); openDropdown(); }
+          }}
+          className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-indigo-500 transition-colors outline-none cursor-pointer"
+        >
+           <span className="material-symbols-outlined text-[20px] transition-transform duration-200" style={{ transform: focused ? 'rotate(180deg)' : 'rotate(0)' }}>expand_more</span>
+        </button>
+      </div>
+      {focused && rect && ReactDOM.createPortal(
+        <div 
+          style={{
+            position: 'fixed',
+            top: rect.bottom + 6,
+            left: rect.left,
+            width: rect.width,
+            zIndex: 999999
+          }}
+          className="evaluator-dropdown bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 rounded-xl shadow-2xl overflow-hidden animate-fade-in-down origin-top"
+        >
+          <div className="max-h-[180px] overflow-y-auto overscroll-contain custom-scrollbar-sm">
+            {filtered.length > 0 ? filtered.map((u: any) => (
+              <div
+                key={u.id || u.email}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setVal(u.email);
+                  onChange && onChange(u.email);
+                  onSave && onSave(u.email);
+                  setFocused(false);
+                }}
+                className="group px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0 flex items-center gap-3 transition-colors"
+              >
+                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors shrink-0">
+                  <span className="material-symbols-outlined text-[16px]">account_circle</span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-slate-900 dark:text-slate-100 truncate">{u.name || (u.email ? u.email.split('@')[0] : 'Profesor')}</div>
+                  <div className="text-[12px] text-slate-500 dark:text-slate-400 truncate mt-0.5">{u.email}</div>
+                  {u.asignatura && <div className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 mt-1 truncate px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/40 rounded inline-block uppercase tracking-wider">{u.asignatura}</div>}
+                </div>
+              </div>
+            )) : (
+              <div className="px-4 py-8 text-center flex flex-col items-center gap-2">
+                <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-3xl">sentiment_dissatisfied</span>
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">No se encontraron profesores</span>
+              </div>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
+  );
+}
+
+const EvaluatorModalContent = ({ survey, evaluatorUsers, dataClientNow, onSave, onCancel }: any) => {
+  const [draftProjects, setDraftProjects] = React.useState<any[]>(survey.projects || []);
+  const [saving, setSaving] = React.useState(false);
+
+  return (
+    <>
+      <div className="flex-1 overflow-y-auto w-full bg-slate-50 dark:bg-slate-900 p-4 sm:p-6 pb-20 sm:pb-6">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          Asigna el correo de un profesor evaluador a cada proyecto individual. Cuando ese profesor inicie sesión, solo podrá revisar y calificar el proyecto que le fue asignado.
+        </p>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-visible sm:overflow-hidden overflow-x-auto pb-[150px] sm:pb-0 min-h-[250px]">
+          <table className="w-full text-left border-collapse min-w-[500px]">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400">
+                <th className="p-3">Proyecto</th>
+                <th className="p-3 w-40">Categoría</th>
+                <th className="p-3 w-72">Correo del Evaluador</th>
+              </tr>
+            </thead>
+            <tbody>
+              {draftProjects.map((p: any) => (
+                <tr key={p.id} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                  <td className="p-3">
+                    <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{p.name || 'Sin nombre'}</div>
+                    <div className="text-xs text-slate-500 truncate max-w-[200px]">Asesor: {p.advisor || '-'}</div>
+                  </td>
+                  <td className="p-3">
+                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 text-xs font-bold dark:bg-indigo-900/30 dark:text-indigo-400">
+                      {p.category || 'N/A'}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <EvaluatorAutocomplete 
+                      value={p.evaluator || ''}
+                      evaluatorUsers={evaluatorUsers}
+                      onChange={(cleanVal: string) => {
+                         setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluator: cleanVal.trim().toLowerCase() } : x));
+                      }}
+                      onSave={() => {}}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div className="border-t border-slate-200 dark:border-slate-800 p-4 bg-white dark:bg-slate-900 flex justify-end gap-3 flex-shrink-0 z-20 relative">
+        <button type="button" onClick={onCancel} disabled={saving} className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors">
+          Cancelar
+        </button>
+        <button type="button" disabled={saving} onClick={async () => {
+           setSaving(true);
+           try {
+             const updatedSurvey = { ...survey, projects: draftProjects };
+             await dataClientNow.setSurvey(String(survey.id), updatedSurvey);
+             onSave(updatedSurvey);
+           } catch(e) { console.error(e) }
+           finally { setSaving(false); }
+        }} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-colors">
+          {saving ? <span className="material-symbols-outlined text-[20px] animate-spin">refresh</span> : <span className="material-symbols-outlined text-[20px]">save</span>}
+          {saving ? 'Guardando...' : 'Guardar Cambios'}
+        </button>
+      </div>
+    </>
+  )
+}
+
 export default function Surveys(): JSX.Element {
   const location = useLocation()
   const [currentUser, setCurrentUser] = useState<any | null>(() => AuthAdapter.getUser())
@@ -50,11 +241,6 @@ export default function Surveys(): JSX.Element {
       // Identifiers from AuthContext (may differ during loading transitions)
       if (authUser) { add(authUser.email); add(authUser.id) }
       if (ownerId && Array.from(curCandidates).some(x => x === ownerId)) return true
-
-      // Check supervisors exactly matching current user's email
-      const isSurveyObj = sOrOwnerId && typeof sOrOwnerId === 'object';
-      const supervisors = isSurveyObj && Array.isArray(sOrOwnerId.supervisors) ? sOrOwnerId.supervisors.map((x: string) => String(x || '').trim().toLowerCase()) : []
-      if (curCandidates.size > 0 && supervisors.some((sup: string) => Array.from(curCandidates).includes(sup))) return true
 
       // Legacy: surveys created before login had ownerId = 'local'
       if (!currentUser && !authUser && ownerId === 'local') return true
@@ -127,6 +313,7 @@ export default function Surveys(): JSX.Element {
   const [ownerFilter, setOwnerFilter] = useState<string>('all')
   const [titleSearch, setTitleSearch] = useState<string>('')
   const [ownerEmailMap, setOwnerEmailMap] = useState<Record<string, string>>({})
+  const [evaluatorUsers, setEvaluatorUsers] = useState<any[]>([])
 
   // close menu when clicking outside
   React.useEffect(() => {
@@ -179,6 +366,16 @@ export default function Surveys(): JSX.Element {
             if (mounted && map) setOwnerEmailMap(map)
           }
         }
+        
+        // Also fetch all users so we can populate the Evaluators dropdown
+        if (isAdmin && client.getUsersOnce) {
+          const allUsers = await client.getUsersOnce();
+          if (mounted && allUsers) {
+            // filter out non-professors if desired, or keep all
+            const profs = allUsers.filter((u: any) => u.role !== 'admin');
+            setEvaluatorUsers(profs);
+          }
+        }
       } catch (e) { }
     }
     load()
@@ -211,7 +408,8 @@ export default function Surveys(): JSX.Element {
   const [viewingProjectId, setViewingProjectId] = useState<string | null>(null)
   const [viewingReadOnly, setViewingReadOnly] = useState<boolean>(false)
   const [ratedMap, setRatedMap] = useState<Record<string, string[]>>({})
-  const [projectFilter, setProjectFilter] = useState<'all' | 'pending' | 'rated'>('all')
+  const [globalRatedMap, setGlobalRatedMap] = useState<Record<string, string[]>>({})
+  const [projectFilter, setProjectFilter] = useState<'all' | 'pending' | 'rated' | 'unassigned'>('all')
   const [projectSearch, setProjectSearch] = useState<string>('')
   const [projectCategory, setProjectCategory] = useState<string>('all')
   const modalRef = useRef<HTMLDivElement | null>(null)
@@ -454,6 +652,14 @@ export default function Surveys(): JSX.Element {
                 copy[String(sid)] = arr
                 return copy
               })
+              // Also update global rated map so the badge 'Calificados X/Y' updates in real-time
+              setGlobalRatedMap(prev => {
+                const copy: Record<string, string[]> = { ...(prev || {}) }
+                const arr = Array.isArray(copy[String(sid)]) ? copy[String(sid)] : []
+                if (!arr.includes(String(pid))) arr.push(String(pid))
+                copy[String(sid)] = arr
+                return copy
+              })
             } else {
               // mark simple survey as responded using a special token
               setRatedMap(prev => {
@@ -571,6 +777,21 @@ export default function Surveys(): JSX.Element {
         // focus the modal container
         setTimeout(() => modalRef.current?.focus(), 40)
       }, 50)
+
+      // Load global rated projects for this survey (all evaluators, not just current user)
+      const surveyIdStr = String(modalSurveyId)
+      ;(async () => {
+        try {
+          const allResponses = await dataClientNow.getSurveyResponsesOnce(surveyIdStr)
+          const ratedProjectIds = Array.from(
+            new Set(
+              (allResponses || []).map((r: any) => String(r.projectId || '')).filter(Boolean)
+            )
+          ) as string[]
+          setGlobalRatedMap(prev => ({ ...prev, [surveyIdStr]: ratedProjectIds }))
+        } catch (e) { /* non-fatal */ }
+      })()
+
       return () => {
         clearTimeout(t)
         window.removeEventListener('keydown', onKey)
@@ -724,13 +945,25 @@ export default function Surveys(): JSX.Element {
             {isAdmin && (
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   const DEFAULT_CATS = ["Ingeniería de Software", "Sistemas", "Electrónica", "Otros"];
-                  const firstProject = surveys.find(s => s.type === 'project');
-                  const cats = firstProject ? (firstProject.allowedCategories || firstProject.allowed_categories || []) : [];
+                  let cats = [];
+                  try {
+                    const sys = await (dataClientNow as any).getSurveyById('sys_settings_asignaturas');
+                    if (sys && Array.isArray(sys.rubric)) cats = sys.rubric;
+                    else if (sys && Array.isArray(sys.allowed_categories)) cats = sys.allowed_categories;
+                  } catch (e) {
+                    console.error('Error fetching global categories:', e);
+                  }
+
+                  if (cats.length === 0) {
+                    const firstProject = surveys.find(s => s.type === 'project');
+                    cats = firstProject ? (firstProject.allowedCategories || firstProject.allowed_categories || []) : [];
+                  }
+
                   setManageCategoriesList(Array.isArray(cats) && cats.length > 0 ? [...cats] : [...DEFAULT_CATS]);
                   setNewCategoryInput('');
-                  setManageCategoriesId(firstProject ? String(firstProject.id) : '__global__');
+                  setManageCategoriesId('sys_settings_asignaturas');
                 }}
                 className="shrink-0 flex items-center gap-2 px-3.5 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 text-sm font-semibold rounded-xl transition-colors whitespace-nowrap"
                 title="Gestionar categorías de proyectos"
@@ -842,8 +1075,8 @@ export default function Surveys(): JSX.Element {
                       if (responded) return false
                     }
                   }
-                  // filter system settings
-                  if (s.type === 'system') return false
+                  // filter system settings and internal records
+                  if (s.type === 'system' || s.type === 'settings' || String(s.id).startsWith('sys_')) return false
                   // filter by reported state (exclusive)
                   if (publishedFilter === 'reported') {
                     // Only show surveys that belong to the current user and
@@ -908,7 +1141,16 @@ export default function Surveys(): JSX.Element {
                       // global `projects[].graded` flags because they reflect other
                       // users' actions and should not affect the current user's view.
                       const userRatedArr = Array.isArray(ratedMap[String(s.id)]) ? ratedMap[String(s.id)].filter(x => x !== '__simple') : []
-                      progress = { rated: userRatedArr.length, total: (allProjects || []).length }
+                      const isOwnerOrAdmin = isOwnerOf(s) || isAdmin;
+                      let filteredTotal = (allProjects || []).length;
+                      if (!isOwnerOrAdmin) {
+                        const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase();
+                        filteredTotal = (allProjects || []).filter((p: any) => {
+                          const assignedEvaluator = String(p.evaluator || '').trim().toLowerCase();
+                          return assignedEvaluator === currentUserEmail;
+                        }).length;
+                      }
+                      progress = { rated: userRatedArr.length, total: filteredTotal }
                       // fallback to server / helper computed progress only when user index is empty
                       if ((!progress || progress.rated === 0) && surveyHelpers.getProgressForUser) {
                         try { progress = surveyHelpers.getProgressForUser(String(s.id), (s.projects || []).length) } catch (e) { }
@@ -1170,6 +1412,13 @@ export default function Surveys(): JSX.Element {
 
                 {s.type === 'project' && (
                   <button type="button" onClick={() => {
+                    const surveyProjects = s.projects || [];
+                    if (surveyProjects.length === 0) {
+                      setToastMessage('Aún no hay proyectos para evaluar');
+                      setTimeout(() => setToastMessage(null), 3000);
+                      setMenuOpenFor(null);
+                      return;
+                    }
                     setManageAccessSurveyId(String(s.id));
                     setMenuOpenFor(null);
                   }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
@@ -1192,7 +1441,7 @@ export default function Surveys(): JSX.Element {
 
                 {isAdmin ? (
                   <button type="button" onClick={() => { setConfirmReportId(String(s.id)); setMenuOpenFor(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
-                    <span className="material-symbols-outlined text-[18px]">warning</span> Reportar
+                    <span className="material-symbols-outlined text-[18px]">warning</span> Reportar encuesta
                   </button>
                 ) : null}
 
@@ -1356,17 +1605,33 @@ export default function Surveys(): JSX.Element {
                   onClick={async () => {
                     try {
                       setManageCategoriesSaving(true);
-                      const s = surveys.find(x => String(x.id) === manageCategoriesId);
-                      if (s) {
-                        const updated = { ...s, allowed_categories: manageCategoriesList.filter(Boolean) };
-                        await (dataClientNow as any).setSurvey(manageCategoriesId, updated);
-                        setSurveys(prev => prev.map(x => String(x.id) === manageCategoriesId ? { ...x, allowedCategories: manageCategoriesList.filter(Boolean), allowed_categories: manageCategoriesList.filter(Boolean) } : x));
-                        setToastMessage('Categorías guardadas');
-                        setTimeout(() => setToastMessage(null), 3000);
-                        closeManageCategoriesModal();
-                      }
+                      const finalCategories = manageCategoriesList.filter(Boolean);
+                      
+                      // Fetch existing or create minimal record for global settings
+                      let existing: any = null;
+                      try {
+                        existing = await (dataClientNow as any).getSurveyById('sys_settings_asignaturas');
+                      } catch (e) {}
+
+                      const updated = { 
+                        ...(existing || {}), 
+                        id: 'sys_settings_asignaturas',
+                        type: 'system', // Use 'system' so it is excluded from main lists by default
+                        title: 'Configuración Global de Asignaturas/Categorías',
+                        rubric: finalCategories, // for CreateSurvey.tsx compatibility
+                        allowed_categories: finalCategories // for legacy compatibility
+                      };
+
+                      await (dataClientNow as any).setSurvey('sys_settings_asignaturas', updated);
+
+                      // Also optimistically update any local project surveys so their local allowedCategories match
+                      setSurveys(prev => prev.map(x => (x.type === 'project') ? { ...x, allowedCategories: finalCategories, allowed_categories: finalCategories } : x));
+                      
+                      setToastMessage('Categorías guardadas globalmente');
+                      setTimeout(() => setToastMessage(null), 3000);
+                      closeManageCategoriesModal();
                     } catch (e) {
-                      setToastMessage('Error al guardar');
+                      setToastMessage('Error al guardar categorías');
                       setTimeout(() => setToastMessage(null), 3000);
                     } finally {
                       setManageCategoriesSaving(false);
@@ -1466,27 +1731,17 @@ export default function Surveys(): JSX.Element {
 
                     // otherwise render list of projects with Calificar buttons
                     const allProjects = (s.projects || [])
-                    // Prefer per-user indexed responses (ratedMap) here so the
-                    // 'Calificados X / Y' shown in the modal reflects the
-                    // current user's progress only.
-                    const userRatedArrModal = Array.isArray(ratedMap[String(s.id)]) ? ratedMap[String(s.id)].filter(x => x !== '__simple') : []
-                    let progress = { rated: userRatedArrModal.length, total: allProjects.length }
-                    // fallback to server helper when no per-user index available
-                    if ((!progress || progress.rated === 0) && surveyHelpers.getProgressForUser) {
-                      try { progress = surveyHelpers.getProgressForUser(String(s.id), (s.projects || []).length) } catch (e) { }
-                    }
+                    // Calificados globales: proyectos calificados por CUALQUIER evaluador
+                    const globalRatedArr = Array.isArray(globalRatedMap[String(s.id)]) ? globalRatedMap[String(s.id)] : []
+                    const globalProgress = { rated: globalRatedArr.length, total: allProjects.length }
                     // compute categories for dropdown
                     const categories = Array.from(new Set(allProjects.map((p: any) => (p.category || '').trim()).filter(Boolean))) as string[]
 
                     // apply project-level filter + search + category + assignment restrictions
                     const isSurveyOwnerOrAdmin = isOwnerOf(s) || isAdmin
+                    // we remove the filter that hides projects not assigned to this evaluator, 
+                    // instead we show them all and conditionally disable the button below
                     const filteredProjects = allProjects.filter((p: any) => {
-                      // 1-to-1 evaluator assignment restriction
-                      if (!isSurveyOwnerOrAdmin) {
-                        const assignedEvaluator = String(p.evaluator || '').trim().toLowerCase()
-                        const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase()
-                        if (!assignedEvaluator || assignedEvaluator !== currentUserEmail) return false
-                      }
                       // search by name or category
                       const q = projectSearch.trim().toLowerCase()
                       if (q) {
@@ -1498,11 +1753,18 @@ export default function Surveys(): JSX.Element {
                         if ((p.category || '').trim() !== projectCategory) return false
                       }
                       const isRated = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id));
+                      const assignedEvaluator = String(p.evaluator || '').trim().toLowerCase()
+                      const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase()
+                      const canEvaluate = isSurveyOwnerOrAdmin || (assignedEvaluator && assignedEvaluator === currentUserEmail)
+                      
                       if (projectFilter === 'pending') {
-                        return !isRated;
+                        return canEvaluate && !isRated;
                       }
                       if (projectFilter === 'rated') {
-                        return isRated;
+                        return canEvaluate && isRated;
+                      }
+                      if (projectFilter === 'unassigned') {
+                        return !canEvaluate;
                       }
                       return true
                     })
@@ -1512,15 +1774,16 @@ export default function Surveys(): JSX.Element {
                           {/* Stats */}
                           <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                             <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Proyectos: <span className="font-bold text-slate-800 dark:text-slate-200 ml-1">{allProjects.length}</span></div>
-                            <div className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">done_all</span> Calificados: {progress.rated} / {progress.total}</div>
+                            <div className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">done_all</span> Calificados: {globalProgress.rated} / {globalProgress.total}</div>
                           </div>
 
                           {/* Filters */}
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <select value={projectFilter} onChange={e => setProjectFilter(e.target.value as any)} className="w-full p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm font-medium text-slate-700 dark:text-slate-300">
-                              <option value="all">Todos los estados</option>
-                              <option value="pending">Sin calificar</option>
-                              <option value="rated">Calificados</option>
+                              <option value="all">Todos los proyectos</option>
+                              <option value="pending">Mis pendientes</option>
+                              <option value="rated">Mis calificados</option>
+                              <option value="unassigned">No asignados a mí</option>
                             </select>
                             <select value={projectCategory} onChange={e => setProjectCategory(e.target.value)} className="w-full p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm font-medium text-slate-700 dark:text-slate-300">
                               <option value="all">Todas las categorías</option>
@@ -1534,6 +1797,15 @@ export default function Surveys(): JSX.Element {
                         </div>
                         {/* project-level filter intentionally removed; use top-level 'Sin calificar' */}
                         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                          {filteredProjects.length === 0 && !isSurveyOwnerOrAdmin && (
+                            <div className="col-span-full py-12 flex flex-col items-center justify-center text-center">
+                              <span className="material-symbols-outlined text-[48px] text-slate-300 dark:text-slate-600 mb-3 block">inventory_2</span>
+                              <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-1">Aún no se te han asignado proyectos</h3>
+                              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">
+                                El administrador debe asignarte proyectos individualmente para poder calificarlos.
+                              </p>
+                            </div>
+                          )}
                           {filteredProjects.map((p: any) => {
                             const ratedLocal = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id))
                             const rated = ratedLocal || surveyHelpers.hasUserRated(String(s.id), String(p.id))
@@ -1564,11 +1836,27 @@ export default function Surveys(): JSX.Element {
                                   </div>
                                 </div>
                                 <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
-                                  {rated ? (
-                                    <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(true); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-4 py-2 text-sm font-bold rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">check_circle</span> Calificado</button>
-                                  ) : (
-                                    <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(false); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">edit_document</span> Calificar</button>
-                                  )}
+                                  {(() => {
+                                    const assignedEvaluator = String(p.evaluator || '').trim().toLowerCase()
+                                    const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase()
+                                    const canEvaluate = isSurveyOwnerOrAdmin || (assignedEvaluator && assignedEvaluator === currentUserEmail)
+                                    
+                                    if (!canEvaluate) {
+                                      return (
+                                        <button type="button" disabled className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed flex justify-center items-center gap-2 shadow-inner">
+                                          <span className="material-symbols-outlined text-[18px]">lock</span> No Asignado
+                                        </button>
+                                      )
+                                    }
+
+                                    if (rated) {
+                                      return <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(true); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-4 py-2 text-sm font-bold rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">check_circle</span> Calificado</button>
+                                    }
+                                    
+                                    return (
+                                      <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(false); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">edit_document</span> Calificar</button>
+                                    )
+                                  })()}
                                 </div>
                               </div>
                             )
@@ -1655,12 +1943,19 @@ export default function Surveys(): JSX.Element {
 
 
         const missing: string[] = []
+        const warnings: string[] = []
         if (confirmPublish.action === 'publish') {
           if (s.type !== 'project' && !(s.questions && s.questions.length > 0)) missing.push('Al menos 1 pregunta')
           if (s.type === 'project') {
             if (!(s.rubric && s.rubric.length > 0)) missing.push('Al menos 1 criterio (rubric)')
-            if (s.linkExpiresAt && new Date(s.linkExpiresAt).getTime() > Date.now()) {
-              missing.push('El periodo de inscripción sigue abierto (debes esperar a que venza la fecha del enlace).')
+            
+            const hasProjects = s.projects && s.projects.length > 0;
+            const isLinkActive = s.linkExpiresAt && new Date(s.linkExpiresAt).getTime() > Date.now();
+            
+            if (!hasProjects) {
+              missing.push('No hay proyectos inscritos. Debes esperar a que los estudiantes se inscriban.')
+            } else if (isLinkActive) {
+              warnings.push('El periodo de inscripción sigue abierto. Al publicar, se desactivará el enlace de inscripción.')
             }
           }
         }
@@ -1679,11 +1974,23 @@ export default function Surveys(): JSX.Element {
               <div className="text-sm mb-6 mt-4">
                 {confirmPublish.action === 'publish' ? (
                   missing.length === 0 ? (
-                    <p className="text-slate-600 dark:text-slate-400 font-medium">Confirma que deseas publicar esta encuesta. Será visible para el público.</p>
+                    warnings.length === 0 ? (
+                      <p className="text-slate-600 dark:text-slate-400 font-medium">Confirma que deseas publicar esta encuesta. Será visible para el público.</p>
+                    ) : (
+                      <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-200 dark:border-amber-900/50">
+                        <div className="font-bold flex items-center gap-2 mb-2 text-amber-700 dark:text-amber-400">
+                          <span className="material-symbols-outlined text-[18px]">warning</span> Advertencia
+                        </div>
+                        <ul className="list-disc pl-6 mt-1 text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 space-y-1">
+                          {warnings.map(w => <li key={w}>{w}</li>)}
+                        </ul>
+                        <p className="mt-3 text-amber-800 dark:text-amber-300 font-bold">¿Estás seguro que quieres publicar sin haber finalizado el tiempo del link?</p>
+                      </div>
+                    )
                   ) : (
                     <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-900/50">
                       <div className="font-bold flex items-center gap-2 mb-2 text-red-700 dark:text-red-400">
-                        <span className="material-symbols-outlined text-[18px]">warning</span> No se puede publicar todavía:
+                        <span className="material-symbols-outlined text-[18px]">error</span> No se puede publicar todavía:
                       </div>
                       <ul className="list-disc pl-6 mt-1 text-sm font-semibold text-red-600/90 dark:text-red-400/90 space-y-1">
                         {missing.map(m => <li key={m}>{m}</li>)}
@@ -1714,6 +2021,11 @@ export default function Surveys(): JSX.Element {
                         }
                         const updated = { ...(target || {}), ...(confirmPublish.action === 'publish' ? { published: true, publishedAt: new Date().toISOString() } : { published: false }) }
                         if (confirmPublish.action !== 'publish') { delete (updated as any).publishedAt }
+                        
+                        if (confirmPublish.action === 'publish' && updated.type === 'project') {
+                          updated.linkExpiresAt = null;
+                          updated.linkToken = null;
+                        }
                         try {
                           await dataClientNow.setSurvey(String(confirmPublish.id), updated)
                         } catch (e) { console.error(e) }
@@ -2029,71 +2341,26 @@ export default function Surveys(): JSX.Element {
                 </div>
               </div>
               {/* Content */}
-              <div className="flex-1 overflow-y-auto w-full bg-slate-50 dark:bg-slate-900 p-4 sm:p-6">
-                {(() => {
-                  const s = surveys.find(x => String(x.id) === String(manageAccessSurveyId))
-                  if (!s) return <div className="text-slate-600">Encuesta no encontrada.</div>
-                  const projects = s.projects || []
-                  if (projects.length === 0) return <div className="text-slate-600">No hay proyectos inscritos.</div>
+              {(() => {
+                const s = surveys.find(x => String(x.id) === String(manageAccessSurveyId))
+                if (!s) return <div className="p-6 text-slate-600">Encuesta no encontrada.</div>
+                if (!s.projects || s.projects.length === 0) return <div className="p-6 text-slate-600">No hay proyectos inscritos.</div>
 
-                  return (
-                    <div className="space-y-4">
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                        Asigna el correo de un profesor evaluador a cada proyecto individual. Cuando ese profesor inicie sesión, solo podrá revisar y calificar el proyecto que le fue asignado.
-                      </p>
-                      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden overflow-x-auto">
-                        <table className="w-full text-left border-collapse min-w-[500px]">
-                          <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400">
-                              <th className="p-3">Proyecto</th>
-                              <th className="p-3">Categoría</th>
-                              <th className="p-3 w-72">Correo del Evaluador</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {projects.map((p: any) => (
-                              <tr key={p.id} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
-                                <td className="p-3">
-                                  <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{p.name || 'Sin nombre'}</div>
-                                  <div className="text-xs text-slate-500 truncate max-w-[200px]">Asesor: {p.advisor || '-'}</div>
-                                </td>
-                                <td className="p-3">
-                                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 text-xs font-bold dark:bg-indigo-900/30 dark:text-indigo-400">
-                                    {p.category || 'N/A'}
-                                  </span>
-                                </td>
-                                <td className="p-3">
-                                  <input
-                                    type="email"
-                                    placeholder="correo@ejemplo.com"
-                                    defaultValue={p.evaluator || ''}
-                                    onBlur={async (e) => {
-                                      const val = e.target.value.trim().toLowerCase()
-                                      if (val === (p.evaluator || '').trim().toLowerCase()) return;
-                                      try {
-                                        const updatedProjects = projects.map((x: any) => x.id === p.id ? { ...x, evaluator: val } : x)
-                                        const updatedSurvey = { ...s, projects: updatedProjects }
-                                        await (dataClientNow as any).setSurvey(String(s.id), updatedSurvey)
-                                        setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updatedSurvey : x))
-                                        setToastMessage('Evaluador guardado')
-                                        setTimeout(() => setToastMessage(null), 3000)
-                                      } catch (err) {
-                                        setToastMessage('Error guardando evaluador')
-                                        setTimeout(() => setToastMessage(null), 3000)
-                                      }
-                                    }}
-                                    className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-colors"
-                                  />
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )
-                })()}
-              </div>
+                return (
+                  <EvaluatorModalContent 
+                    survey={s}
+                    evaluatorUsers={evaluatorUsers}
+                    dataClientNow={dataClientNow}
+                    onCancel={() => setManageAccessSurveyId(null)}
+                    onSave={(updatedSurvey: any) => {
+                      setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updatedSurvey : x))
+                      setToastMessage('Evaluadores guardados')
+                      setTimeout(() => setToastMessage(null), 3000)
+                      setManageAccessSurveyId(null)
+                    }}
+                  />
+                )
+              })()}
             </div>
           </div>
         </div>, document.body

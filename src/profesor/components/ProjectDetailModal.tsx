@@ -21,9 +21,19 @@ type ProjectSummary = {
   responses: number
   overall: number | null
   criteria: Criterion[]
+  // rawResponses for this project to extract evaluators
+  rawResponses?: Array<{ userId?: string; user?: string; reporterId?: string; submittedAt?: string }>
 }
 
-export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary | null, onClose: () => void }) {
+export default function ProjectDetailModal({
+  ps,
+  onClose,
+  usersCache,
+}: {
+  ps: (ProjectSummary & { _rawResponses?: any[] }) | null
+  onClose: () => void
+  usersCache?: Record<string, any>
+}) {
   const [isVisible, setIsVisible] = useState(false)
   const [pullDownY, setPullDownY] = useState(0)
   const modalRef = useRef<HTMLDivElement>(null)
@@ -120,6 +130,23 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
       ? ps.project.members.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean)
       : []
   const advisor = typeof ps.project.advisor === 'string' ? ps.project.advisor.trim() : ''
+
+  // ── Build evaluators list from rawResponses on the ps object ──
+  const rawForProject: any[] = Array.isArray((ps as any)._rawResponses) ? (ps as any)._rawResponses : []
+  const evaluatorMap = new Map<string, { uid: string; label: string; count: number; lastAt?: string }>()
+  rawForProject.forEach((r: any) => {
+    const uid = String(r.userId || r.user || r.reporterId || r.reporterUid || 'anónimo')
+    const existing = evaluatorMap.get(uid)
+    const label = (usersCache && usersCache[uid] && (usersCache[uid].email || usersCache[uid].name || usersCache[uid].displayName)) || uid
+    const at = r.submittedAt || r.submitted_at || ''
+    evaluatorMap.set(uid, {
+      uid,
+      label,
+      count: (existing?.count || 0) + 1,
+      lastAt: at || existing?.lastAt,
+    })
+  })
+  const evaluators = Array.from(evaluatorMap.values()).sort((a, b) => b.count - a.count)
 
   const modal = (
     <div className={`fixed inset-0 z-[10000] flex items-end sm:items-center justify-center transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
@@ -225,6 +252,74 @@ export default function ProjectDetailModal({ ps, onClose }: { ps: ProjectSummary
                     <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Tutor Asignado</div>
                   </div>
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Evaluadores que calificaron este proyecto ── */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[16px]">how_to_reg</span>
+                </div>
+                <h3 className="text-sm font-bold text-slate-800 tracking-tight">Profesores que calificaron</h3>
+              </div>
+              {evaluators.length > 0 && (
+                <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-full">
+                  {evaluators.length} evaluador{evaluators.length !== 1 ? 'es' : ''}
+                </span>
+              )}
+            </div>
+
+            {evaluators.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+                  <span className="material-symbols-outlined text-2xl text-slate-300">person_off</span>
+                </div>
+                <p className="text-sm font-medium text-slate-400">Sin calificaciones aún</p>
+                <p className="text-xs text-slate-300 mt-1">Nadie ha evaluado este proyecto todavía.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-50">
+                {evaluators.map((ev, i) => {
+                  const initials = String(ev.label[0] || '?').toUpperCase()
+                  const avatarColors = [
+                    'bg-indigo-100 text-indigo-700',
+                    'bg-violet-100 text-violet-700',
+                    'bg-blue-100 text-blue-700',
+                    'bg-cyan-100 text-cyan-700',
+                    'bg-teal-100 text-teal-700',
+                  ]
+                  const colorClass = avatarColors[i % avatarColors.length]
+                  return (
+                    <div key={ev.uid} className="flex items-center gap-3.5 px-5 py-3.5 hover:bg-slate-50/80 transition-colors">
+                      {/* Avatar */}
+                      <div className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border shadow-sm ${colorClass}`}>
+                        {initials}
+                      </div>
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold text-slate-800 truncate">{ev.label}</div>
+                        {ev.lastAt && (
+                          <div className="text-[10px] text-slate-400 font-medium mt-0.5">
+                            {(() => {
+                              try { return new Date(ev.lastAt!).toLocaleString('es', { dateStyle: 'short', timeStyle: 'short' }) }
+                              catch { return ev.lastAt }
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                      {/* Badge */}
+                      <div className="shrink-0 flex flex-col items-end gap-1">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 tabular-nums">
+                          <span className="material-symbols-outlined text-[12px]">grade</span>
+                          {ev.count} cal.
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>

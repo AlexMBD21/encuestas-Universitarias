@@ -36,10 +36,7 @@ export default function Configuracion() {
   const [page, setPage] = useState(1)
   const pageSize = 5
 
-  const defaultAsignaturas = ["Matemáticas", "Ingeniería de Software", "Finanzas", "Tecnología", "Salud", "Ciencias Básicas", "Ciencias Sociales", "Negocios"]
-  const [globalAsignaturas, setGlobalAsignaturas] = useState<string[]>(defaultAsignaturas)
-  const [loadingAsig, setLoadingAsig] = useState(false)
-  const [newAsig, setNewAsig] = useState('')
+
 
   // modal state for create/edit/delete
   const [modalOpen, setModalOpen] = useState(false)
@@ -107,15 +104,7 @@ export default function Configuracion() {
       try {
         const u = await (dataClientNow as any).getUsersOnce()
         setUsersList(u || [])
-        // Load settings for asignaturas
-        if (dataClientNow.getSurveyById) {
-          try {
-            const sys = await dataClientNow.getSurveyById('sys_settings_asignaturas')
-            if (sys && Array.isArray(sys.rubric) && sys.rubric.length > 0) {
-              setGlobalAsignaturas(sys.rubric)
-            }
-          } catch(err) { /* no settings survey yet */ }
-        }
+
       } catch (e) {
         console.error('load users failed', e)
         setUsersList([])
@@ -127,42 +116,7 @@ export default function Configuracion() {
     if (isAdmin) setAdminVisible(true)
   }, [isAdmin])
 
-  const saveGlobalAsignaturas = async (newList: string[]) => {
-    try {
-      setLoadingAsig(true)
-      const dataClientNow: any = supabaseClient
-      if (dataClientNow.setSurvey) {
-        await dataClientNow.setSurvey('sys_settings_asignaturas', {
-          id: 'sys_settings_asignaturas',
-          title: 'System Settings',
-          type: 'system',
-          published: true,
-          ownerId: 'admin',
-          rubric: newList
-        })
-        setGlobalAsignaturas(newList)
-        showToast('Asignaturas actualizadas', 'edit', true)
-      }
-    } catch (e) {
-      console.error('Error saving asignaturas', e)
-      showToast('Error al guardar asignaturas', 'delete', false)
-    } finally {
-      setLoadingAsig(false)
-    }
-  }
 
-  const handleAddAsig = () => {
-    const val = newAsig.trim()
-    if (!val || globalAsignaturas.some(a => a.toLowerCase() === val.toLowerCase())) return
-    const updated = [...globalAsignaturas, val]
-    saveGlobalAsignaturas(updated)
-    setNewAsig('')
-  }
-
-  const handleRemoveAsig = (val: string) => {
-    const updated = globalAsignaturas.filter(a => a !== val)
-    saveGlobalAsignaturas(updated)
-  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -213,7 +167,7 @@ export default function Configuracion() {
   }
 
   const openCreateModal = () => {
-    setModalData({ email: '', role: 'profesor', password: '', confirmPassword: '', asignatura: '' })
+    setModalData({ email: '', role: 'profesor', password: '', confirmPassword: '' })
     setModalType('create')
     setModalShowPassword(false)
     setModalMsg(null)
@@ -223,7 +177,7 @@ export default function Configuracion() {
   }
 
   const openEditModal = (u: any) => {
-    setModalData({ id: u.id, email: u.email, role: u.role || 'profesor', password: '', asignatura: u.asignatura || '' })
+    setModalData({ id: u.id, email: u.email, role: u.role || 'profesor', password: '' })
     setModalType('edit')
     setModalShowPassword(false)
     setModalMsg(null)
@@ -247,7 +201,7 @@ export default function Configuracion() {
     setTimeout(() => {
       setModalOpen(false)
       setModalType(null)
-      setModalData({ email: '', role: 'profesor', password: '', asignatura: '' })
+      setModalData({ email: '', role: 'profesor', password: '' })
       setModalLoading(false)
       setModalShowPassword(false)
     }, 300)
@@ -304,12 +258,12 @@ export default function Configuracion() {
           const resp = await fetch('/api/create_user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ email: modalData.email, password: pwd, role: modalData.role || 'profesor', asignatura: modalData.asignatura || '' })
+            body: JSON.stringify({ email: modalData.email, password: pwd, role: modalData.role || 'profesor' })
           })
           if (!resp.ok) {
             let errBody: any = {}
             try { errBody = await resp.json() } catch (e) {}
-            try { await (dataClientNow as any).pushUser({ email: modalData.email, role: modalData.role, asignatura: modalData.asignatura }) } catch (e) {}
+            try { await (dataClientNow as any).pushUser({ email: modalData.email, role: modalData.role }) } catch (e) {}
             if (resp.status === 404) {
               const msg = 'Endpoint /api/create_user no disponible (404). Se creó solo la metadata en app_users. Para crear la cuenta Auth en local, ejecuta `vercel dev` o usa el script `backend/scripts/create_admin_user.js` con una Service Role key.'
               setModalMsgType('success')
@@ -330,7 +284,7 @@ export default function Configuracion() {
             setTimeout(() => closeModal(), 1200)
           }
         } else {
-          await (dataClientNow as any).pushUser({ email: modalData.email, role: modalData.role, asignatura: modalData.asignatura })
+          await (dataClientNow as any).pushUser({ email: modalData.email, role: modalData.role })
           const msg = 'Usuario creado (metadata). Para crear la cuenta Auth, especifique una contraseña o use la función segura del servidor.'
           setModalMsgType('success')
           setModalMsg(msg)
@@ -338,11 +292,11 @@ export default function Configuracion() {
           setTimeout(() => closeModal(), 1200)
         }
       } else if (modalType === 'edit') {
-        const updateObj: any = { email: modalData.email, role: modalData.role, asignatura: modalData.asignatura }
+        const updateObj: any = { email: modalData.email, role: modalData.role }
         try {
           const token = await ((dataClientNow as any).getAccessToken ? (dataClientNow as any).getAccessToken() : (supabaseClient as any).getAccessToken())
           if (!token) throw new Error('Debes iniciar sesión como administrador para aplicar cambios')
-          const body: any = { legacyKey: modalData.id, email: modalData.email, role: modalData.role, asignatura: modalData.asignatura }
+          const body: any = { legacyKey: modalData.id, email: modalData.email, role: modalData.role }
           if (modalData.password) body.password = modalData.password
           const resp = await fetch('/api/update_user', {
             method: 'POST',
@@ -618,61 +572,7 @@ export default function Configuracion() {
                 )}
               </div>
 
-              {/* Asignaturas Management Card */}
-              <div className="mt-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-3xl p-5 sm:p-8 animate-fade-in-up transition-all" style={{ animationDelay: '100ms' }}>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[22px]">category</span>
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 leading-tight">Gestión de Asignaturas Globales</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Define las disciplinas disponibles para el sistema.</p>
-                  </div>
-                </div>
 
-                <div className="flex flex-col gap-5">
-                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                     <div className="flex-1 relative group">
-                       <input 
-                         className="w-full border px-4 py-3 sm:py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all placeholder:text-slate-400"
-                         placeholder="Ej. Medicina, Psicología..."
-                         value={newAsig}
-                         onChange={e => setNewAsig(e.target.value)}
-                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAsig() } }}
-                       />
-                     </div>
-                     <button 
-                       className="w-full sm:w-auto bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-6 py-3 sm:py-2.5 rounded-xl font-black transition-all shadow-lg shadow-slate-900/10 dark:shadow-blue-600/20 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shrink-0 h-full"
-                       onClick={handleAddAsig}
-                       disabled={loadingAsig || !newAsig.trim()}
-                     >
-                       <span className="material-symbols-outlined text-[20px]">add</span>
-                       Agregar
-                     </button>
-                   </div>
-                   
-                   <div className="flex flex-wrap gap-2.5 mt-1">
-                     {globalAsignaturas.map(asig => (
-                       <div key={asig} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 pl-3.5 pr-2 py-2 rounded-xl flex items-center gap-2.5 text-sm text-slate-700 dark:text-slate-300 font-bold shadow-sm hover:border-slate-300 dark:hover:border-slate-600 transition-all group">
-                         <span className="truncate max-w-[150px]">{asig}</span>
-                         <button 
-                           onClick={() => handleRemoveAsig(asig)}
-                           disabled={loadingAsig}
-                           className="text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded-lg transition-all"
-                           title="Eliminar"
-                         >
-                           <span className="material-symbols-outlined text-[16px] leading-none">close</span>
-                         </button>
-                       </div>
-                     ))}
-                     {globalAsignaturas.length === 0 && (
-                       <div className="w-full flex flex-col items-center justify-center py-6 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl">
-                         <span className="text-sm text-slate-400 dark:text-slate-500 font-medium italic">No hay asignaturas registradas.</span>
-                       </div>
-                     )}
-                   </div>
-                </div>
-              </div>
 
             </div>
           )}
@@ -757,22 +657,7 @@ export default function Configuracion() {
                         <option value="admin">Administrador</option>
                       </select>
                     </div>
-                    {modalData.role !== 'admin' && (
-                      <div>
-                        <label className="block text-sm">Asignatura (Categoría de Proyectos a Evaluar)</label>
-                        <select
-                          name="newUserAsignatura"
-                          className="w-full border px-3 py-2 rounded bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
-                          value={modalData.asignatura || ''}
-                          onChange={e => setModalData({...modalData, asignatura: e.target.value})}
-                        >
-                          <option value="">-- Selecciona una asignatura --</option>
-                          {globalAsignaturas.map(asig => (
-                            <option key={asig} value={asig}>{asig}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+
                     <div className="mt-4 flex justify-end gap-2">
                       <button type="button" className="btn btn-ghost" onClick={closeModal} disabled={modalLoading}>Cancelar</button>
                       <button type="submit" className="btn btn-primary" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar' : 'Crear')}</button>

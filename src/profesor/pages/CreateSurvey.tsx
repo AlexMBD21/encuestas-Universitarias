@@ -356,11 +356,24 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                       <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Nombre del Proyecto</label>
                       <input className="w-full mt-1 bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm font-semibold rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder:text-slate-400 placeholder:font-normal transition-shadow" placeholder="Ej. Equipo Alfa — App de Gestón" value={p.name} onChange={e => setProjects(prev => prev.map(x => x.id === p.id ? { ...x, name: e.target.value } : x))} />
                     </div>
+                    {/* Descripción */}
+                    <div className="md:col-span-2">
+                      <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Descripción del proyecto</label>
+                      <textarea
+                      placeholder="Breve descripción del proyecto..."
+                      rows={2}
+                      className="w-full mt-1 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/20 rounded-xl text-sm p-3 text-slate-700 dark:text-slate-200 outline-none transition-all placeholder:text-slate-400 resize-y"
+                      value={p.description || ''}
+                      onChange={e => setProjects(prev => prev.map(x => x.id === p.id ? { ...x, description: e.target.value } : x))}
+                    /></div>
                     {/* Categoría */}
                     <div>
                       <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Categoría</label>
-                      <select className="w-full mt-1 bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-shadow cursor-pointer" value={p.category} onChange={e => setProjects(prev => prev.map(x => x.id === p.id ? { ...x, category: e.target.value } : x))}>
+                      <select className="w-full mt-1 bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-shadow cursor-pointer" value={p.category || ''} onChange={e => setProjects(prev => prev.map(x => x.id === p.id ? { ...x, category: e.target.value } : x))}>
                          <option value="">(Selecciona una categoría)</option>
+                         {p.category && !globalAsignaturas.includes(p.category) && (
+                           <option key={`missing-${p.category}`} value={p.category}>{p.category}</option>
+                         )}
                          {globalAsignaturas.filter(x => x.trim()).map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
@@ -375,7 +388,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                       <textarea
                       placeholder="Nombres de los integrantes..."
                       rows={2}
-                      className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/20 rounded-xl text-sm p-3 text-slate-700 dark:text-slate-200 outline-none transition-all placeholder:text-slate-400 resize-y"
+                      className="w-full mt-1 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/20 rounded-xl text-sm p-3 text-slate-700 dark:text-slate-200 outline-none transition-all placeholder:text-slate-400 resize-y"
                       value={p.members}
                       onChange={e => setProjects(prev => prev.map(x => x.id === p.id ? { ...x, members: e.target.value } : x))}
                     /></div>
@@ -392,7 +405,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
               <span className="material-symbols-outlined text-amber-500 shrink-0 text-[22px] mt-0.5">category</span>
               <div>
                 <p className="text-sm font-bold text-amber-800 dark:text-amber-300">Categorías de proyectos</p>
-                <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">Una vez creada la encuesta, podrás gestionar la lista de categorías desde el menú <span className="font-bold">⋮ → Gestionar Categorías</span> en la tarjeta de la feria.</p>
+                <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">Una vez creada la encuesta, podrás gestionar la lista de categorías desde el botón <span className="font-bold">Categorías</span> ubicado en la sección de filtros de la página principal.</p>
               </div>
             </div>
 

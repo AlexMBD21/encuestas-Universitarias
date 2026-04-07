@@ -204,9 +204,15 @@ export default function Reports(): JSX.Element {
             let r: any = null
             if (kind === 'simple') r = await (reportHelpers as any).getSimpleSurveyReport(String(s.id))
             else r = await (reportHelpers as any).getProjectSurveyReport(String(s.id))
-            return { id: s.id, title: s.title || s.name || s.id, type: s.type || 'simple', totalResponses: r ? (r.totalResponses || 0) : 0 }
+            // For project surveys, count unique evaluators from rawResponses
+            let evaluatorsCount: number | null = null
+            if (kind === 'projects' && r && Array.isArray(r.rawResponses)) {
+              const uids = new Set(r.rawResponses.map((resp: any) => String(resp.userId || resp.user || resp.reporterId || '')).filter(Boolean))
+              evaluatorsCount = uids.size
+            }
+            return { id: s.id, title: s.title || s.name || s.id, type: s.type || 'simple', totalResponses: r ? (r.totalResponses || 0) : 0, evaluatorsCount }
           } catch (e) {
-            return { id: s.id, title: s.title || s.name || s.id, type: s.type || 'simple', totalResponses: 0 }
+            return { id: s.id, title: s.title || s.name || s.id, type: s.type || 'simple', totalResponses: 0, evaluatorsCount: null }
           }
         }))
         try { clearTimeout(timeoutId) } catch (e) {}

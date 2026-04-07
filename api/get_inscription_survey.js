@@ -58,7 +58,16 @@ module.exports = async function handler(req, res) {
       return res.status(403).json({ error: 'Este enlace de inscripción ha expirado.' });
     }
 
-    return res.status(200).json({ success: true, survey });
+    // 2. Obtain global categories to populate the dropdown 
+    const { data: settingsData } = await supabaseAdmin
+      .from('surveys')
+      .select('rubric')
+      .eq('id', 'sys_settings_asignaturas')
+      .single();
+      
+    const globalCategories = (settingsData && settingsData.rubric) ? settingsData.rubric : null;
+
+    return res.status(200).json({ success: true, survey, globalCategories });
   } catch (error) {
     console.error('Error get_inscription_survey:', error);
     return res.status(500).json({ error: 'Error al buscar el enlace de inscripción.' });

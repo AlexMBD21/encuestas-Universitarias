@@ -1,5 +1,64 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+
+const CategorySelect = ({ value, options, onChange, placeholder }: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full px-5 py-4 bg-slate-50 border ${isOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10 bg-white' : 'border-slate-100'} rounded-[1.25rem] text-slate-800 cursor-pointer font-medium flex items-center justify-between transition-all hover:bg-white hover:border-slate-300`}
+      >
+        <span className={value ? 'text-slate-800' : 'text-slate-300'}>
+          {value || placeholder}
+        </span>
+        <span className={`material-symbols-outlined text-slate-400 text-[20px] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
+          expand_more
+        </span>
+      </div>
+      
+      {isOpen && (
+        <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white border border-slate-100 rounded-[1.5rem] shadow-2xl z-[100] py-2 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="max-h-64 overflow-y-auto overscroll-contain custom-scrollbar scroll-smooth">
+             <div 
+               className="px-5 py-3 text-sm font-bold text-slate-300 italic bg-slate-50/50 mb-1 pointer-events-none"
+             >
+               {placeholder}
+             </div>
+             {options.map((option: string) => (
+               <div 
+                 key={option}
+                 onClick={() => { onChange(option); setIsOpen(false); }}
+                 className={`px-5 py-3.5 text-sm font-semibold transition-all cursor-pointer flex items-center justify-between group ${value === option ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-indigo-50/50'}`}
+               >
+                 <span>{option}</span>
+                 {value === option && <span className="material-symbols-outlined text-[18px]">check</span>}
+               </div>
+             ))}
+          </div>
+        </div>
+      )}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+      `}</style>
+    </div>
+  );
+};
 
 export default function Inscripcion() {
   const { token } = useParams();
@@ -11,6 +70,7 @@ export default function Inscripcion() {
   // Categorías permitidas
   const [globalAsignaturas, setGlobalAsignaturas] = useState<string[]>([]);
   const [projectName, setProjectName] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
   const [projectCategory, setProjectCategory] = useState('');
   const [projectMembers, setProjectMembers] = useState('');
   const [projectAdvisor, setProjectAdvisor] = useState('');
@@ -38,7 +98,9 @@ export default function Inscripcion() {
            setSurvey(result.survey);
            
            let cats: string[] = [];
-           if (result.survey.allowed_categories && Array.isArray(result.survey.allowed_categories)) {
+           if (result.globalCategories && Array.isArray(result.globalCategories) && result.globalCategories.length > 0) {
+             cats = result.globalCategories;
+           } else if (result.survey.allowed_categories && Array.isArray(result.survey.allowed_categories)) {
              cats = result.survey.allowed_categories;
            } else if (result.survey.allowedCategories && Array.isArray(result.survey.allowedCategories)) {
              cats = result.survey.allowedCategories;
@@ -71,6 +133,7 @@ export default function Inscripcion() {
           token,
           projectData: {
             name: projectName.trim(),
+            description: projectDescription.trim(),
             category: projectCategory.trim(),
             members: projectMembers.trim(),
             advisor: projectAdvisor.trim()
@@ -206,24 +269,28 @@ export default function Inscripcion() {
                   />
                 </div>
 
+                {/* Descripción */}
+                <div>
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Descripción del Proyecto</label>
+                  <textarea 
+                    value={projectDescription}
+                    onChange={e => setProjectDescription(e.target.value)}
+                    placeholder="Breve descripción de lo que trata el proyecto..."
+                    rows={2}
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all placeholder:text-slate-300 font-medium resize-none shadow-inner"
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Categoría */}
                   <div>
                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Categoría <span className="text-red-500">*</span></label>
-                    <div className="relative">
-                      <select
-                        required
-                        value={projectCategory}
-                        onChange={e => setProjectCategory(e.target.value)}
-                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all appearance-none cursor-pointer font-medium"
-                      >
-                        <option value="" disabled>Seleccionar...</option>
-                        {globalAsignaturas.map((c: string) => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
-                      <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none select-none">unfold_more</span>
-                    </div>
+                    <CategorySelect
+                      value={projectCategory}
+                      options={globalAsignaturas}
+                      onChange={setProjectCategory}
+                      placeholder="Seleccionar..."
+                    />
                   </div>
 
                   {/* Asesor */}

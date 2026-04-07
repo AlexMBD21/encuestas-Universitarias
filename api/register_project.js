@@ -66,6 +66,7 @@ module.exports = async function handler(req, res) {
     const newProject = {
       id: `p_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
       name: projectData.name,
+      description: projectData.description || '',
       category: projectData.category,
       members: projectData.members,
       advisor: projectData.advisor || ''
