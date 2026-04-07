@@ -356,3 +356,17 @@ ALTER TABLE public.notifications
 ALTER TABLE public.notifications
   ADD CONSTRAINT fk_notifications_survey
   FOREIGN KEY (survey_id) REFERENCES public.surveys(id) ON DELETE CASCADE;
+
+-- ============================================================
+-- RPC FUNCTION: get_all_survey_responses_for_report
+-- Allows everyone (professors) to see the global responses in reports
+-- Bypasses RLS strictly for the report query.
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.get_all_survey_responses_for_report(p_survey_id text)
+RETURNS SETOF survey_responses
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT * FROM public.survey_responses WHERE survey_id = p_survey_id;
+$$;

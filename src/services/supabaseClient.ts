@@ -517,7 +517,18 @@ export async function removeUserById(id: string) {
 export async function getSurveyResponsesOnce(surveyId: string): Promise<any[]> {
   ensureClient()
   if (!supabase) return []
-  try { const r = await supabase.from('survey_responses').select('*').eq('survey_id', surveyId); return rowsToArray(r) } catch (e) { return [] }
+  try {
+    // Attempt to bypass RLS using the RPC function for full report visibility
+    try {
+      const rpcData = await supabase.rpc('get_all_survey_responses_for_report', { p_survey_id: surveyId })
+      if (!rpcData.error && Array.isArray(rpcData.data)) {
+        return await rowsToArray(rpcData)
+      }
+    } catch (e) {}
+    // Fallback to standard RLS query if RPC not exists or fails
+    const r = await supabase.from('survey_responses').select('*').eq('survey_id', surveyId)
+    return await rowsToArray(r)
+  } catch (e) { return [] }
 }
 
 export async function pushNotification(note: any) {

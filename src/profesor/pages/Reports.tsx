@@ -223,6 +223,7 @@ export default function Reports(): JSX.Element {
     return () => { try { clearTimeout(timeoutId) } catch (e) {}; mounted = false }
   }, [surveys, filterOwner, view])
 
+  
   return (
     <div id="reports-root" className="min-h-screen bg-slate-50/50 pb-20">
       {/* Header Limpio Minimalista con mayor profundidad */}

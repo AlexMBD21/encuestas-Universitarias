@@ -949,7 +949,7 @@ export default function Surveys(): JSX.Element {
                   const DEFAULT_CATS = ["Ingeniería de Software", "Sistemas", "Electrónica", "Otros"];
                   let cats = [];
                   try {
-                    const sys = await (dataClientNow as any).getSurveyById('sys_settings_asignaturas');
+                    const sys = await (dataClientNow as any).getSurveyById('sys_settings_project_categories');
                     if (sys && Array.isArray(sys.rubric)) cats = sys.rubric;
                     else if (sys && Array.isArray(sys.allowed_categories)) cats = sys.allowed_categories;
                   } catch (e) {
@@ -963,7 +963,7 @@ export default function Surveys(): JSX.Element {
 
                   setManageCategoriesList(Array.isArray(cats) && cats.length > 0 ? [...cats] : [...DEFAULT_CATS]);
                   setNewCategoryInput('');
-                  setManageCategoriesId('sys_settings_asignaturas');
+                  setManageCategoriesId('sys_settings_project_categories');
                 }}
                 className="shrink-0 flex items-center gap-2 px-3.5 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 text-sm font-semibold rounded-xl transition-colors whitespace-nowrap"
                 title="Gestionar categorías de proyectos"
@@ -1610,19 +1610,19 @@ export default function Surveys(): JSX.Element {
                       // Fetch existing or create minimal record for global settings
                       let existing: any = null;
                       try {
-                        existing = await (dataClientNow as any).getSurveyById('sys_settings_asignaturas');
+                        existing = await (dataClientNow as any).getSurveyById('sys_settings_project_categories');
                       } catch (e) {}
 
                       const updated = { 
                         ...(existing || {}), 
-                        id: 'sys_settings_asignaturas',
+                        id: 'sys_settings_project_categories',
                         type: 'system', // Use 'system' so it is excluded from main lists by default
-                        title: 'Configuración Global de Asignaturas/Categorías',
+                        title: 'Configuración Global de Categorías de Proyecto',
                         rubric: finalCategories, // for CreateSurvey.tsx compatibility
                         allowed_categories: finalCategories // for legacy compatibility
                       };
 
-                      await (dataClientNow as any).setSurvey('sys_settings_asignaturas', updated);
+                      await (dataClientNow as any).setSurvey('sys_settings_project_categories', updated);
 
                       // Also optimistically update any local project surveys so their local allowedCategories match
                       setSurveys(prev => prev.map(x => (x.type === 'project') ? { ...x, allowedCategories: finalCategories, allowed_categories: finalCategories } : x));

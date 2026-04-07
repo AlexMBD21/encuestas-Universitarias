@@ -51,7 +51,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
     const loadGlobals = async () => {
       try {
         if (dataClientNow.getSurveyById) {
-          const sys = await dataClientNow.getSurveyById('sys_settings_asignaturas')
+          const sys = await dataClientNow.getSurveyById('sys_settings_project_categories')
           if (sys && Array.isArray(sys.rubric) && sys.rubric.length > 0) {
             setGlobalAsignaturas(sys.rubric)
           } else {
