@@ -16,6 +16,8 @@ export default function ReportDetail(): JSX.Element {
   const [loading, setLoading] = useState(true)
   const [modalProject, setModalProject] = useState<any>(null)
   const [usersCache, setUsersCache] = useState<Record<string, any>>({})
+  const [selectedCategory, setSelectedCategory] = useState<string>('Todas')
+  const [showWinnersOnly, setShowWinnersOnly] = useState<boolean>(false)
 
   // Reiniciar scroll al entrar y cuando termina de cargar
   const resetScroll = () => {
@@ -292,11 +294,67 @@ export default function ReportDetail(): JSX.Element {
                            groups[cat].push(ps)
                         })
 
-                        return Object.entries(groups)
-                          .sort(([catA], [catB]) => catA.localeCompare(catB))
-                          .map(([category, catSummaries]) => {
+                        // Calculate category maximums
+                        const catMaxScore: Record<string, number> = {}
+                        Object.keys(groups).forEach(cat => {
+                           let max = -1;
+                           groups[cat].forEach((ps: any) => { 
+                               if (ps.overall !== null && ps.overall > max) { max = ps.overall }
+                           })
+                           catMaxScore[cat] = max;
+                        })
+
+                        const sortedGroupsEntry = Object.entries(groups).sort(([catA], [catB]) => {
+                           if (showWinnersOnly) return catMaxScore[catB] - catMaxScore[catA]
+                           return catA.localeCompare(catB)
+                        })
+                        const uniqueCats = sortedGroupsEntry.map(x => x[0])
+
+                        return (
+                          <div className="flex flex-col">
+                            {uniqueCats.length > 1 && (
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/50 p-3 rounded-2xl border border-slate-100 mb-8 mt-[-10px]">
+                                <div className="flex flex-1 items-center gap-2 overflow-hidden w-full">
+                                  <span className="text-sm font-bold text-slate-500 flex items-center gap-1.5 ml-1 shrink-0 hidden md:flex">
+                                    <span className="material-symbols-outlined text-[18px]">filter_list</span> Filtrar
+                                  </span>
+                                  <div className="relative flex-1 w-full max-w-[320px]">
+                                    <select
+                                      value={selectedCategory}
+                                      onChange={(e) => setSelectedCategory(e.target.value)}
+                                      className="w-full appearance-none bg-white border border-slate-200 text-slate-700 font-bold text-sm rounded-xl pl-4 pr-10 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm transition-shadow hover:border-slate-300 truncate"
+                                    >
+                                      <option value="Todas">Mostrar Todas las Categorías</option>
+                                      {uniqueCats.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                    </select>
+                                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">expand_more</span>
+                                  </div>
+                                </div>
+                                
+                                  <button
+                                    onClick={() => setShowWinnersOnly(prev => !prev)}
+                                    className={`shrink-0 mt-2 sm:mt-0 w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl transition-all border ${showWinnersOnly ? 'bg-amber-50 text-amber-700 border-amber-200 shadow-sm ring-1 ring-amber-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                                    title={selectedCategory === 'Todas' ? "Ver el mejor proyecto de cada categoría" : `Ver el mejor proyecto de ${selectedCategory}`}
+                                  >
+                                    <span className="material-symbols-outlined text-[18px]">workspace_premium</span>
+                                    {showWinnersOnly ? 'Ocultar resto' : 'Mostrar Ganadores'}
+                                  </button>
+                              </div>
+                            )}
+
+                            <div className="space-y-12">
+                              {sortedGroupsEntry
+                                .filter(([category]) => selectedCategory === 'Todas' || category === selectedCategory)
+                                .map(([category, catSummaries]) => {
+                            
+                            let visibleSummaries = [...catSummaries]
+                            if (showWinnersOnly) {
+                                const maxScore = catMaxScore[category]
+                                visibleSummaries = visibleSummaries.filter(ps => ps.overall !== null && ps.overall === maxScore && maxScore > -1)
+                            }
+
                             // Sort by score
-                            catSummaries.sort((a: any, b: any) => {
+                            visibleSummaries.sort((a: any, b: any) => {
                                const aScore = a.overall !== null ? a.overall : -1
                                const bScore = b.overall !== null ? b.overall : -1
                                return bScore - aScore
@@ -308,26 +366,26 @@ export default function ReportDetail(): JSX.Element {
                                   <span className="material-symbols-outlined text-[20px] text-indigo-500">category</span>
                                   {category}
                                   <span className="ml-auto text-xs font-bold bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md">
-                                    {catSummaries.length} result.
+                                    {visibleSummaries.length} result.
                                   </span>
                                 </h4>
                                 <div className="space-y-3">
-                                  {catSummaries.map((ps: any, i: number) => {
+                                  {visibleSummaries.map((ps: any, i: number) => {
                                     const overall: number | null = ps.overall ?? null
                                     const overallPct = overall !== null
                                       ? Math.max(0, Math.min(100, Math.round(((overall - 1) / 4) * 100)))
                                       : null
 
-                                    const prevOverall = i > 0 ? (catSummaries[i - 1].overall ?? null) : null
+                                    const prevOverall = i > 0 ? (visibleSummaries[i - 1].overall ?? null) : null
                                     const isTied = overall !== null && prevOverall !== null && Number(overall) === Number(prevOverall)
-                                    const nextOverall = i < catSummaries.length - 1 ? (catSummaries[i + 1].overall ?? null) : null
+                                    const nextOverall = i < visibleSummaries.length - 1 ? (visibleSummaries[i + 1].overall ?? null) : null
                                     const tiedWithNext = overall !== null && nextOverall !== null && Number(overall) === Number(nextOverall)
                                     const showTieBadge = isTied || tiedWithNext
 
                                     let colorIdx = i
                                     if (isTied) {
                                       let j = i
-                                      while (j > 0 && Number(catSummaries[j].overall) === Number(catSummaries[j - 1].overall)) j--
+                                      while (j > 0 && Number(visibleSummaries[j].overall) === Number(visibleSummaries[j - 1].overall)) j--
                                       colorIdx = j
                                     }
 
@@ -416,7 +474,10 @@ export default function ReportDetail(): JSX.Element {
                                 </div>
                               </div>
                             )
-                          })
+                          })}
+                            </div>
+                          </div>
+                        )
                       })()}
                     </div>
                   </div>
