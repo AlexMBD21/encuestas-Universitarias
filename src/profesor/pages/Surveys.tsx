@@ -139,34 +139,75 @@ const EvaluatorModalContent = ({ survey, evaluatorUsers, dataClientNow, onSave, 
   const [draftProjects, setDraftProjects] = React.useState<any[]>(survey.projects || []);
   const [saving, setSaving] = React.useState(false);
 
-  return (
-    <>
-      <div className="flex-1 overflow-y-auto w-full bg-slate-50 dark:bg-slate-900 p-4 sm:p-6 pb-20 sm:pb-6">
-        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+  return (    <div className="flex flex-col h-full overflow-hidden">
+      {/* Fixed Instructions at the top */}
+      <div className="p-4 sm:px-6 sm:py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+        <p className="text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
           Asigna el correo de un profesor evaluador a cada proyecto individual. Cuando ese profesor inicie sesión, solo podrá revisar y calificar el proyecto que le fue asignado.
         </p>
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-visible sm:overflow-hidden overflow-x-auto pb-[150px] sm:pb-0 min-h-[250px]">
-          <table className="w-full text-left border-collapse min-w-[500px]">
-            <thead>
-              <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400">
-                <th className="p-3">Proyecto</th>
-                <th className="p-3 w-40">Categoría</th>
-                <th className="p-3 w-72">Correo del Evaluador</th>
-              </tr>
-            </thead>
-            <tbody>
-              {draftProjects.map((p: any) => (
-                <tr key={p.id} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
-                  <td className="p-3">
-                    <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{p.name || 'Sin nombre'}</div>
-                    <div className="text-xs text-slate-500 truncate max-w-[200px]">Asesor: {p.advisor || '-'}</div>
-                  </td>
-                  <td className="p-3">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 text-xs font-bold dark:bg-indigo-900/30 dark:text-indigo-400">
+      </div>
+
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto w-full bg-slate-50 dark:bg-slate-900 p-4 sm:p-6 pt-5 pb-32 sm:pb-10">
+        <div className="bg-transparent sm:bg-white dark:sm:bg-slate-800 rounded-xl sm:border sm:border-slate-200 dark:sm:border-slate-700 sm:shadow-sm overflow-visible min-h-[350px]">
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[500px]">
+              <thead>
+                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400">
+                  <th className="p-3">Proyecto</th>
+                  <th className="p-3 w-40">Categoría</th>
+                  <th className="p-3 w-72">Correo del Evaluador</th>
+                </tr>
+              </thead>
+              <tbody>
+                {draftProjects.map((p: any) => (
+                  <tr key={p.id} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                    <td className="p-3">
+                      <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{p.name || 'Sin nombre'}</div>
+                      <div className="text-xs text-slate-500 truncate max-w-[200px]">Asesor: {p.advisor || '-'}</div>
+                    </td>
+                    <td className="p-3">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 text-xs font-bold dark:bg-indigo-900/30 dark:text-indigo-400">
+                        {p.category || 'N/A'}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <EvaluatorAutocomplete 
+                        value={p.evaluator || ''}
+                        evaluatorUsers={evaluatorUsers}
+                        onChange={(cleanVal: string) => {
+                           setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluator: cleanVal.trim().toLowerCase() } : x));
+                        }}
+                        onSave={() => {}}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="block sm:hidden space-y-3">
+            {draftProjects.map((p: any) => (
+              <div key={p.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm">
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1">
+                    <span className="self-start inline-flex items-center px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-600 text-[8px] font-black uppercase tracking-wider dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-100/50 dark:border-indigo-500/20">
                       {p.category || 'N/A'}
                     </span>
-                  </td>
-                  <td className="p-3">
+                    <h4 className="text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                      {p.name || 'Sin nombre'}
+                    </h4>
+                    <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">person</span>
+                      {p.advisor || '-'}
+                    </div>
+                  </div>
+
+                  {/* Evaluator Assignment Field */}
+                  <div className="mt-1 pt-2 border-t border-slate-100 dark:border-slate-700/50">
                     <EvaluatorAutocomplete 
                       value={p.evaluator || ''}
                       evaluatorUsers={evaluatorUsers}
@@ -175,16 +216,18 @@ const EvaluatorModalContent = ({ survey, evaluatorUsers, dataClientNow, onSave, 
                       }}
                       onSave={() => {}}
                     />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-      <div className="border-t border-slate-200 dark:border-slate-800 p-4 bg-white dark:bg-slate-900 flex justify-end gap-3 flex-shrink-0 z-20 relative">
-        <button type="button" onClick={onCancel} disabled={saving} className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors">
-          Cancelar
+
+      {/* Fixed Footer at the bottom */}
+      <div className="border-t border-slate-200 dark:border-slate-800 p-4 sm:px-6 bg-white dark:bg-slate-900 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 shrink-0 z-20 relative">
+        <button type="button" onClick={onCancel} disabled={saving} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">
+          Cancelar y Volver
         </button>
         <button type="button" disabled={saving} onClick={async () => {
            setSaving(true);
@@ -194,12 +237,12 @@ const EvaluatorModalContent = ({ survey, evaluatorUsers, dataClientNow, onSave, 
              onSave(updatedSurvey);
            } catch(e) { console.error(e) }
            finally { setSaving(false); }
-        }} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-colors">
+        }} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/30 transition-all text-sm active:scale-[0.98]">
           {saving ? <span className="material-symbols-outlined text-[20px] animate-spin">refresh</span> : <span className="material-symbols-outlined text-[20px]">save</span>}
           {saving ? 'Guardando...' : 'Guardar Cambios'}
         </button>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -401,6 +444,33 @@ export default function Surveys(): JSX.Element {
   const [manageAccessSurveyId, setManageAccessSurveyId] = useState<string | null>(null)
   const [isManageAccessVisible, setIsManageAccessVisible] = useState(false)
   const [generateLinkSurveyId, setGenerateLinkSurveyId] = useState<string | null>(null)
+  const [isGenerateLinkVisible, setIsGenerateLinkVisible] = useState(false)
+
+  useEffect(() => {
+    if (generateLinkSurveyId) {
+      const prevOverflow = document.body.style.overflow
+      const prevTouchAction = document.body.style.touchAction
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+      const t = setTimeout(() => setIsGenerateLinkVisible(true), 50);
+      return () => {
+        clearTimeout(t)
+        document.body.style.overflow = prevOverflow
+        document.body.style.touchAction = prevTouchAction
+      }
+    } else {
+      setIsGenerateLinkVisible(false);
+    }
+  }, [generateLinkSurveyId]);
+
+  const closeGenerateLinkModal = useCallback(() => {
+    setIsGenerateLinkVisible(false)
+    setTimeout(() => {
+      setGenerateLinkSurveyId(null)
+      setPullDownY(0)
+    }, 300)
+  }, [])
+
   const [confirmDeactivateLinkSurveyId, setConfirmDeactivateLinkSurveyId] = useState<string | null>(null)
   const [manageAccessTab, setManageAccessTab] = useState<'supervisors' | 'evaluators'>('supervisors')
 
@@ -416,6 +486,8 @@ export default function Surveys(): JSX.Element {
   const reportsModalRef = useRef<HTMLDivElement | null>(null)
   const createModalRef = useRef<HTMLDivElement | null>(null)
   const manageCategoriesRef = useRef<HTMLDivElement | null>(null)
+  const manageAccessRef = useRef<HTMLDivElement | null>(null)
+  const generateLinkRef = useRef<HTMLDivElement | null>(null)
   const lastActiveElement = useRef<HTMLElement | null>(null)
   const [pullDownY, setPullDownY] = useState(0)
   const touchStartRef = useRef({ y: 0, scrollY: 0 })
@@ -482,6 +554,27 @@ export default function Surveys(): JSX.Element {
       setViewingReadOnly(false)
     }, 210)
   }, [])
+
+  const closeManageAccess = useCallback(() => {
+    setIsManageAccessVisible(false)
+    setTimeout(() => { setManageAccessSurveyId(null); setPullDownY(0) }, 230)
+  }, [])
+
+  useEffect(() => {
+    if (manageAccessSurveyId !== null) {
+      setIsManageAccessVisible(false)
+      const prevOverflow = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      const t = setTimeout(() => setIsManageAccessVisible(true), 50)
+      const onKey = (ev: KeyboardEvent) => { if (ev.key === 'Escape') closeManageAccess() }
+      window.addEventListener('keydown', onKey)
+      return () => {
+        clearTimeout(t)
+        window.removeEventListener('keydown', onKey)
+        document.body.style.overflow = prevOverflow
+      }
+    }
+  }, [manageAccessSurveyId, closeManageAccess])
 
   useEffect(() => {
     let unsubSurveys: (() => void) | null = null
@@ -818,17 +911,23 @@ export default function Surveys(): JSX.Element {
     const m = modalRef.current;
     const r = reportsModalRef.current;
     const c = createModalRef.current;
+    const g = manageCategoriesRef.current;
+    const a = manageAccessRef.current;
 
     if (m) m.addEventListener('touchmove', handleTouchMove, options);
     if (r) r.addEventListener('touchmove', handleTouchMove, options);
     if (c) c.addEventListener('touchmove', handleTouchMove, options);
+    if (g) g.addEventListener('touchmove', handleTouchMove, options);
+    if (a) a.addEventListener('touchmove', handleTouchMove, options);
 
     return () => {
       if (m) m.removeEventListener('touchmove', handleTouchMove);
       if (r) r.removeEventListener('touchmove', handleTouchMove);
       if (c) c.removeEventListener('touchmove', handleTouchMove);
+      if (g) g.removeEventListener('touchmove', handleTouchMove);
+      if (a) a.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [isModalVisible, isReportsVisible, isCreateVisible]);
+  }, [isModalVisible, isReportsVisible, isCreateVisible, isManageCategoriesVisible, isManageAccessVisible]);
 
   const navigate = useNavigate();
   return (
@@ -1595,7 +1694,7 @@ export default function Surveys(): JSX.Element {
                   type="button"
                   onClick={() => closeManageCategoriesModal()}
                   disabled={manageCategoriesSaving}
-                  className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl transition-all text-sm shadow-sm border border-slate-100 dark:border-slate-700"
+                  className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl transition-all text-sm shadow-sm border border-slate-100 dark:border-slate-700"
                 >
                   Cancelar y Volver
                 </button>
@@ -1637,7 +1736,7 @@ export default function Surveys(): JSX.Element {
                       setManageCategoriesSaving(false);
                     }
                   }}
-                  className="w-full sm:w-auto px-6 py-2.5 sm:py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-black rounded-2xl transition-all text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 active:scale-95"
+                  className="w-full sm:w-auto px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-black rounded-2xl transition-all text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 active:scale-95"
                 >
                   {manageCategoriesSaving ? (
                     <span className="animate-spin material-symbols-outlined">refresh</span>
@@ -1880,8 +1979,10 @@ export default function Surveys(): JSX.Element {
           <div className={`relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded p-6 shadow-lg`} role="dialog" aria-modal="true">
             <h3 className="text-lg font-semibold mb-2">¿Eliminar esta encuesta?</h3>
             <p className="text-sm text-slate-600 mb-4">Esta acción es irreversible. ¿Deseas eliminarla definitivamente?</p>
-            <div className="flex justify-end gap-3">
-              <button type="button" onClick={() => setConfirmDeleteId(null)} disabled={confirmDeleting} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
+              <button type="button" onClick={() => setConfirmDeleteId(null)} disabled={confirmDeleting} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">
+                Cancelar y Volver
+              </button>
               <button type="button" onClick={async () => {
                 try {
                   setConfirmDeleting(true)
@@ -2096,7 +2197,7 @@ export default function Surveys(): JSX.Element {
                       }
                     } catch (e) { console.error(e) }
                     finally { setConfirmPublishing(false); setConfirmPublish(null) }
-                  }} disabled={confirmPublishing} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-indigo-600/30">
+                  }} disabled={confirmPublishing} className="w-full sm:w-auto px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/30 transition-all active:scale-[0.98]">
                     {confirmPublishing ? 'Procesando...' : (confirmPublish.action === 'publish' ? 'Publicar Ahora' : 'Confirmar Retiro')}
                   </button>
                 )}
@@ -2207,7 +2308,9 @@ export default function Surveys(): JSX.Element {
             </div>
             <textarea value={reportComment} onChange={e => setReportComment(e.target.value)} rows={5} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-red-400 focus:ring-4 focus:ring-red-400/20 rounded-xl text-sm p-4 text-slate-700 dark:text-slate-200 outline-none resize-none transition-all placeholder:text-slate-400 mb-6" placeholder="¿Qué problema encontraste?" />
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
-              <button type="button" onClick={() => { setConfirmReportId(null); setReportComment('') }} disabled={confirmReporting} className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-colors">Cancelar</button>
+              <button type="button" onClick={() => { setConfirmReportId(null); setReportComment('') }} disabled={confirmReporting} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">
+                Cancelar y Volver
+              </button>
               <button type="button" onClick={async () => {
                 try {
                   if (!reportComment || reportComment.trim().length < 3) {
@@ -2326,16 +2429,39 @@ export default function Surveys(): JSX.Element {
         </div>, document.body
       )}
       {/* Manage Access (Evaluators) modal */}
-      {manageAccessSurveyId && ReactDOM.createPortal(
+      {(manageAccessSurveyId || isManageAccessVisible) && ReactDOM.createPortal(
         <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setManageAccessSurveyId(null)} />
+          <div className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 ${isManageAccessVisible ? 'opacity-100' : 'opacity-0'}`} onClick={closeManageAccess} />
           <div className="relative w-full sm:max-w-3xl sm:mx-4 sm:mb-0">
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[90dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300">
+            <div
+              ref={manageAccessRef}
+              role="dialog"
+              aria-modal="true"
+              tabIndex={-1}
+              className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[90dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isManageAccessVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
+              style={{
+                overscrollBehaviorY: 'contain',
+                ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
+              }}
+              onTouchStart={(e) => {
+                const sc = e.currentTarget.querySelector('.overflow-y-auto')
+                touchStartRef.current = { y: e.touches[0].clientY, scrollY: sc ? sc.scrollTop : 0 }
+              }}
+              onTouchEnd={() => {
+                if (pullDownY > 80) closeManageAccess()
+                else setPullDownY(0)
+              }}
+            >
+              {/* Drag handle – mobile only */}
+              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={closeManageAccess}>
+                <div className="w-12 h-1.5 rounded-full bg-white/40" />
+              </div>
+
               {/* Header (sticky) */}
-              <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)' }}>
+              <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
                 <div className="text-lg sm:text-xl font-bold mr-4 tracking-wide">Configurar Evaluadores</div>
                 <div className="ml-auto hidden sm:block">
-                  <button type="button" onClick={() => setManageAccessSurveyId(null)} className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+                  <button type="button" onClick={closeManageAccess} className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
                     <span className="material-symbols-outlined text-[22px]">close</span>
                   </button>
                 </div>
@@ -2351,12 +2477,12 @@ export default function Surveys(): JSX.Element {
                     survey={s}
                     evaluatorUsers={evaluatorUsers}
                     dataClientNow={dataClientNow}
-                    onCancel={() => setManageAccessSurveyId(null)}
+                    onCancel={closeManageAccess}
                     onSave={(updatedSurvey: any) => {
                       setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updatedSurvey : x))
                       setToastMessage('Evaluadores guardados')
                       setTimeout(() => setToastMessage(null), 3000)
-                      setManageAccessSurveyId(null)
+                      closeManageAccess()
                     }}
                   />
                 )
@@ -2365,79 +2491,116 @@ export default function Surveys(): JSX.Element {
           </div>
         </div>, document.body
       )}
-      {/* Generate Link modal */}
       {generateLinkSurveyId && ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setGenerateLinkSurveyId(null)} />
-          <div className="relative w-full sm:max-w-md sm:mx-4 sm:mb-0">
-            <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl p-6 transform transition-all duration-300">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-indigo-500 text-[26px]">calendar_clock</span>
-                  Establecer Fecha Límite
-                </h3>
-                <button type="button" onClick={() => setGenerateLinkSurveyId(null)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                  <span className="material-symbols-outlined text-[20px]">close</span>
-                </button>
+        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center overscroll-none touch-none">
+          <div className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 pointer-events-auto ${isGenerateLinkVisible ? 'opacity-100' : 'opacity-0'}`} onClick={() => closeGenerateLinkModal()} style={{ touchAction: 'none' }} />
+            <div 
+              ref={generateLinkRef}
+              className={`relative w-full sm:max-w-md sm:mx-4 sm:mb-0 transform transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${isGenerateLinkVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 sm:translate-y-4 sm:scale-95'}`}
+            style={{ 
+              transform: pullDownY > 0 ? `translateY(${pullDownY}px)` : '',
+              overscrollBehaviorY: 'contain',
+              touchAction: 'pan-y'
+            }}
+            onTouchStart={(e) => {
+              touchStartRef.current = { y: e.touches[0].clientY, scrollY: generateLinkRef.current?.scrollTop || 0 }
+            }}
+            onTouchMove={(e) => {
+              const deltaY = e.touches[0].clientY - touchStartRef.current.y
+              if (deltaY > 0 && touchStartRef.current.scrollY <= 0) {
+                setPullDownY(deltaY)
+                if (e.cancelable) e.preventDefault()
+              }
+            }}
+            onTouchEnd={() => {
+              if (pullDownY > 150) {
+                closeGenerateLinkModal()
+              }
+              setPullDownY(0)
+            }}
+          >
+              <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 flex flex-col max-h-[85vh]">
+              {/* Drag handle for mobile */}
+              <div className="w-full flex justify-center pt-2 pb-1 sm:hidden cursor-pointer shrink-0" style={{ touchAction: 'none' }} onClick={() => closeGenerateLinkModal()}>
+                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
               </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">
-                Guarda la fecha máxima de inscripción para habilitar el enlace público.
-              </p>
-              <form onSubmit={async (e) => {
-                e.preventDefault()
-                const formData = new FormData(e.currentTarget)
-                const dateVal = formData.get('expiryDate') as string
-                if (!dateVal) return
-                const s = surveys.find(x => String(x.id) === String(generateLinkSurveyId))
-                if (!s) return
 
-                // Para que expire AL FINAL de ese día (23:59:59), de forma segura:
-                const parts = dateVal.split('-')
-                let expires = new Date().toISOString()
-                if (parts.length === 3) {
-                  const y = parseInt(parts[0], 10)
-                  const m = parseInt(parts[1], 10) - 1
-                  const d = parseInt(parts[2], 10)
-                  expires = new Date(y, m, d, 23, 59, 59).toISOString()
-                }
-
-                const token = Math.random().toString(36).substring(2, 12)
-
-                try {
-                  const updated = { ...s, linkToken: token, linkExpiresAt: expires }
-                  await (dataClientNow as any).setSurvey(String(s.id), updated)
-
-                  // Actualización Inmediata UI Local:
-                  setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updated : x))
-                  setToastMessage('Fecha guardada. El enlace ahora está activo para copiar.')
-                  setTimeout(() => setToastMessage(null), 3000)
-                  setGenerateLinkSurveyId(null)
-                } catch (err: any) {
-                  console.error("DEBUG Link Error:", err)
-                  setToastMessage(`Error: ${err?.message || err?.details || 'Error desconocido'}`)
-                  setTimeout(() => setToastMessage(null), 5000)
-                }
-              }}>
-                <div className="mb-6">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Fecha límite de inscripción</label>
-                  <input
-                    name="expiryDate"
-                    type="date"
-                    required
-                    min={new Date().toISOString().split('T')[0]}
-                    defaultValue={new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 appearance-none shadow-inner"
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <button type="button" onClick={() => setGenerateLinkSurveyId(null)} className="w-1/3 px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors">
-                    Cancelar
-                  </button>
-                  <button type="submit" className="w-2/3 flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all">
-                    <span className="material-symbols-outlined text-[20px]">save</span> Guardar Fecha
+              <div className="px-6 py-5 sm:p-8 overflow-y-auto overscroll-contain">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm">
+                      <span className="material-symbols-outlined text-[26px]">calendar_month</span>
+                    </div>
+                    <span>Establecer Fecha Límite</span>
+                  </h3>
+                  <button type="button" onClick={() => closeGenerateLinkModal()} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors hidden sm:flex">
+                    <span className="material-symbols-outlined text-[20px]">close</span>
                   </button>
                 </div>
-              </form>
+                
+                <p className="text-[15px] text-slate-500 dark:text-slate-400 mb-8 leading-relaxed font-medium pl-1">
+                  Guarda la fecha máxima de inscripción para habilitar el enlace público.
+                </p>
+
+                <form onSubmit={async (e) => {
+                  e.preventDefault()
+                  const formData = new FormData(e.currentTarget)
+                  const dateVal = formData.get('expiryDate') as string
+                  if (!dateVal) return
+                  const s = surveys.find(x => String(x.id) === String(generateLinkSurveyId))
+                  if (!s) return
+
+                  const parts = dateVal.split('-')
+                  let expires = new Date().toISOString()
+                  if (parts.length === 3) {
+                    const y = parseInt(parts[0], 10)
+                    const m = parseInt(parts[1], 10) - 1
+                    const d = parseInt(parts[2], 10)
+                    expires = new Date(y, m, d, 23, 59, 59).toISOString()
+                  }
+
+                  const token = Math.random().toString(36).substring(2, 12)
+
+                  try {
+                    const updated = { ...s, linkToken: token, linkExpiresAt: expires }
+                    await (dataClientNow as any).setSurvey(String(s.id), updated)
+                    setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updated : x))
+                    setToastMessage('Fecha guardada correctamente')
+                    setTimeout(() => setToastMessage(null), 3000)
+                    closeGenerateLinkModal()
+                  } catch (err: any) {
+                    console.error("DEBUG Link Error:", err)
+                    setToastMessage(`Error: ${err?.message || 'Error desconocido'}`)
+                    setTimeout(() => setToastMessage(null), 5000)
+                  }
+                }}>
+                  <div className="mb-8">
+                    <label className="block text-xs font-black uppercase tracking-[0.1em] text-slate-400 mb-3 ml-1">Fecha límite de inscripción</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                        <span className="material-symbols-outlined text-[22px]">event</span>
+                      </div>
+                      <input
+                        name="expiryDate"
+                        type="date"
+                        required
+                        min={new Date().toISOString().split('T')[0]}
+                        defaultValue={new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all appearance-none shadow-inner"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row justify-end gap-3">
+                    <button type="button" onClick={() => closeGenerateLinkModal()} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">
+                      Cancelar y Volver
+                    </button>
+                    <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/30 transition-all text-sm active:scale-[0.98]">
+                      <span className="material-symbols-outlined text-[20px]">save</span> Guardar Fecha
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>, document.body
