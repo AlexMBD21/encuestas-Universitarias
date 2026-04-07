@@ -312,6 +312,7 @@ export default function Surveys(): JSX.Element {
   const [viewReportsFor, setViewReportsFor] = useState<string | null>(null)
   const [isReportsVisible, setIsReportsVisible] = useState(false)
   const [highlightedReportId, setHighlightedReportId] = useState<string | null>(null)
+  const [isConfirmReportVisible, setIsConfirmReportVisible] = useState(false)
 
   useEffect(() => {
     if (viewReportsFor) setTimeout(() => setIsReportsVisible(true), 50)
@@ -463,10 +464,36 @@ export default function Surveys(): JSX.Element {
     }
   }, [generateLinkSurveyId]);
 
+  useEffect(() => {
+    if (confirmReportId) {
+      const prevOverflow = document.body.style.overflow
+      const prevTouchAction = document.body.style.touchAction
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+      const t = setTimeout(() => setIsConfirmReportVisible(true), 50);
+      return () => {
+        clearTimeout(t)
+        document.body.style.overflow = prevOverflow
+        document.body.style.touchAction = prevTouchAction
+      }
+    } else {
+      setIsConfirmReportVisible(false);
+    }
+  }, [confirmReportId]);
+
   const closeGenerateLinkModal = useCallback(() => {
     setIsGenerateLinkVisible(false)
     setTimeout(() => {
       setGenerateLinkSurveyId(null)
+      setPullDownY(0)
+    }, 300)
+  }, [])
+
+  const closeConfirmReportModal = useCallback(() => {
+    setIsConfirmReportVisible(false)
+    setTimeout(() => {
+      setConfirmReportId(null)
+      setReportComment('')
       setPullDownY(0)
     }, 300)
   }, [])
@@ -488,6 +515,7 @@ export default function Surveys(): JSX.Element {
   const manageCategoriesRef = useRef<HTMLDivElement | null>(null)
   const manageAccessRef = useRef<HTMLDivElement | null>(null)
   const generateLinkRef = useRef<HTMLDivElement | null>(null)
+  const confirmReportRef = useRef<HTMLDivElement | null>(null)
   const lastActiveElement = useRef<HTMLElement | null>(null)
   const [pullDownY, setPullDownY] = useState(0)
   const touchStartRef = useRef({ y: 0, scrollY: 0 })
@@ -2293,69 +2321,130 @@ export default function Surveys(): JSX.Element {
       )}
       {/* Report modal */}
       {confirmReportId && ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-0 sm:p-4 perspective-1000">
-          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => { if (!confirmReporting) setConfirmReportId(null) }} />
-          <div className={`relative w-full max-w-md bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl p-6 sm:p-8 shadow-2xl animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-200`} role="dialog" aria-modal="true">
-            <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-6 sm:hidden"></div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[22px]">warning</span>
+        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center overscroll-none touch-none">
+          <div className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 pointer-events-auto ${isConfirmReportVisible ? 'opacity-100' : 'opacity-0'}`} onClick={() => !confirmReporting && closeConfirmReportModal()} style={{ touchAction: 'none' }} />
+          <div 
+            ref={confirmReportRef}
+            className={`relative w-full sm:max-w-md sm:mx-4 sm:mb-0 transform transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${isConfirmReportVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 sm:translate-y-4 sm:scale-95'}`}
+            style={{ 
+              transform: pullDownY > 0 ? `translateY(${pullDownY}px)` : '',
+              overscrollBehaviorY: 'contain',
+              touchAction: 'pan-y'
+            }}
+            onTouchStart={(e) => {
+              touchStartRef.current = { y: e.touches[0].clientY, scrollY: confirmReportRef.current?.querySelector('.overflow-y-auto')?.scrollTop || 0 }
+            }}
+            onTouchMove={(e) => {
+              const deltaY = e.touches[0].clientY - touchStartRef.current.y
+              if (deltaY > 0 && touchStartRef.current.scrollY <= 0) {
+                setPullDownY(deltaY)
+                if (e.cancelable) e.preventDefault()
+              }
+            }}
+            onTouchEnd={() => {
+              if (pullDownY > 150) {
+                closeConfirmReportModal()
+              }
+              setPullDownY(0)
+            }}
+          >
+            <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 flex flex-col max-h-[85vh]">
+              {/* Drag handle for mobile */}
+              <div className="w-full flex justify-center pt-2 pb-1 sm:hidden cursor-pointer shrink-0" style={{ touchAction: 'none' }} onClick={() => !confirmReporting && closeConfirmReportModal()}>
+                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
               </div>
-              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Reportar encuesta</h3>
-            </div>
-            <div className="text-sm text-slate-500 dark:text-slate-400 mb-5 pl-[52px]">
-              Describe detalladamente el problema con esta encuesta para que la moderación evalúe el caso.
-            </div>
-            <textarea value={reportComment} onChange={e => setReportComment(e.target.value)} rows={5} className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-red-400 focus:ring-4 focus:ring-red-400/20 rounded-xl text-sm p-4 text-slate-700 dark:text-slate-200 outline-none resize-none transition-all placeholder:text-slate-400 mb-6" placeholder="¿Qué problema encontraste?" />
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
-              <button type="button" onClick={() => { setConfirmReportId(null); setReportComment('') }} disabled={confirmReporting} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">
-                Cancelar y Volver
-              </button>
-              <button type="button" onClick={async () => {
-                try {
-                  if (!reportComment || reportComment.trim().length < 3) {
-                    setToastMessage('Escribe un comentario válido para reportar')
-                    setTimeout(() => setToastMessage(null), 3000)
-                    return
-                  }
-                  setConfirmReporting(true)
-                  const _reportSurvey = (surveys || []).find((sv: any) => String(sv.id) === String(confirmReportId))
-                  const report = {
-                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                    surveyId: confirmReportId,
-                    reporterId: currentUserId,
-                    reporterEmail: currentUser && (currentUser.email || null),
-                    comment: reportComment.trim(),
-                    createdAt: new Date().toISOString(),
-                    payload: { surveyTitle: (_reportSurvey && (_reportSurvey.title || _reportSurvey.name)) || '' }
-                  }
-                  if (backendEnabled) {
-                    try {
-                      await (dataClientNow as any).pushSurveyReport(report)
-                    } catch (e: any) {
-                      console.error('[Surveys] pushSurveyReport failed:', e?.code, e?.message, e?.details, e?.hint)
-                      setToastMessage('Error al enviar el reporte: ' + (e?.message || 'Error desconocido'))
-                      setTimeout(() => setToastMessage(null), 5000)
-                      setConfirmReporting(false)
-                      return
-                    }
-                    // optimistic update until realtime notifies
-                    setSurveyReports(prev => [...prev, report])
-                    try { window.dispatchEvent(new CustomEvent('survey:reported', { detail: { report } })) } catch (e) { }
-                    setToastMessage('Reporte enviado. Gracias.')
-                    setTimeout(() => setToastMessage(null), 3000)
-                    setConfirmReportId(null)
-                    setReportComment('')
-                  } else {
-                    // Not allowed when no backend is configured
-                    setToastMessage('No se puede enviar reportes: no hay servicio de datos configurado.')
-                    setTimeout(() => setToastMessage(null), 3000)
-                    setConfirmReporting(false)
-                    return
-                  }
-                } catch (e) { console.error(e) }
-                finally { setConfirmReporting(false) }
-              }} disabled={confirmReporting} className={`w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 ${confirmReporting ? 'bg-red-200 text-red-500 cursor-not-allowed dark:bg-red-900/40 dark:text-red-400/50' : 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/20'}`}>{confirmReporting ? <><span className="material-symbols-outlined text-[18px] animate-spin">refresh</span> Procesando...</> : 'Enviar reporte'}</button>
+
+              <div className="px-6 py-5 sm:p-8 overflow-y-auto overscroll-contain">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 shadow-sm">
+                      <span className="material-symbols-outlined text-[26px]">warning</span>
+                    </div>
+                    <span>Reportar encuesta</span>
+                  </h3>
+                  <button type="button" onClick={() => closeConfirmReportModal()} disabled={confirmReporting} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors hidden sm:flex">
+                    <span className="material-symbols-outlined text-[20px]">close</span>
+                  </button>
+                </div>
+                
+                <p className="text-[15px] text-slate-500 dark:text-slate-400 mb-8 leading-relaxed font-medium pl-1">
+                  Describe detalladamente el problema con esta encuesta para que la moderación evalúe el caso.
+                </p>
+
+                <div className="mb-8">
+                  <textarea 
+                    value={reportComment} 
+                    onChange={e => setReportComment(e.target.value)} 
+                    rows={5} 
+                    className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-red-400 focus:ring-4 focus:ring-red-400/20 rounded-2xl text-sm p-4 text-slate-700 dark:text-slate-200 outline-none resize-none transition-all placeholder:text-slate-400 shadow-inner" 
+                    placeholder="¿Qué problema encontraste?" 
+                  />
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row justify-end gap-3">
+                  <button 
+                    type="button" 
+                    onClick={() => closeConfirmReportModal()} 
+                    disabled={confirmReporting} 
+                    className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
+                  >
+                    Cancelar y Volver
+                  </button>
+                  <button 
+                    type="button" 
+                    disabled={confirmReporting}
+                    onClick={async () => {
+                      try {
+                        if (!reportComment || reportComment.trim().length < 3) {
+                          setToastMessage('Escribe un comentario válido para reportar')
+                          setTimeout(() => setToastMessage(null), 3000)
+                          return
+                        }
+                        setConfirmReporting(true)
+                        const _reportSurvey = (surveys || []).find((sv: any) => String(sv.id) === String(confirmReportId))
+                        const report = {
+                          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                          surveyId: confirmReportId,
+                          reporterId: currentUserId,
+                          reporterEmail: currentUser && (currentUser.email || null),
+                          comment: reportComment.trim(),
+                          createdAt: new Date().toISOString(),
+                          payload: { surveyTitle: (_reportSurvey && (_reportSurvey.title || _reportSurvey.name)) || '' }
+                        }
+                        if (backendEnabled) {
+                          try {
+                            await (dataClientNow as any).pushSurveyReport(report)
+                          } catch (e: any) {
+                            console.error('[Surveys] pushSurveyReport failed:', e?.code, e?.message, e?.details, e?.hint)
+                            setToastMessage('Error al enviar el reporte: ' + (e?.message || 'Error desconocido'))
+                            setTimeout(() => setToastMessage(null), 5000)
+                            setConfirmReporting(false)
+                            return
+                          }
+                          setSurveyReports(prev => [...prev, report])
+                          try { window.dispatchEvent(new CustomEvent('survey:reported', { detail: { report } })) } catch (e) { }
+                          setToastMessage('Reporte enviado. Gracias.')
+                          setTimeout(() => setToastMessage(null), 3000)
+                          closeConfirmReportModal()
+                        } else {
+                          setToastMessage('No se puede enviar reportes: no hay servicio de datos configurado.')
+                          setTimeout(() => setToastMessage(null), 3000)
+                          setConfirmReporting(false)
+                          return
+                        }
+                      } catch (e) { console.error(e) }
+                      finally { setConfirmReporting(false) }
+                    }} 
+                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 sm:py-2 font-black rounded-2xl shadow-lg transition-all text-sm active:scale-[0.98] ${confirmReporting ? 'bg-red-200 text-red-500 cursor-not-allowed dark:bg-red-900/40 dark:text-red-400/50' : 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30'}`}
+                  >
+                    {confirmReporting ? (
+                      <><span className="material-symbols-outlined text-[18px] animate-spin">refresh</span> Procesando...</>
+                    ) : (
+                      <><span className="material-symbols-outlined text-[20px]">send</span> Enviar reporte</>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>, document.body
