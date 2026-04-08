@@ -7,431 +7,27 @@ import RateProject from './RateProject'
 import surveyHelpers from '../../services/surveyHelpers'
 import AuthAdapter from '../../services/AuthAdapter'
 import supabaseClient from '../../services/supabaseClient'
-import { useAuth } from '../../services/AuthContext'
 import ScrollFloatingButton from '../components/ScrollFloatingButton'
+import { useSurveysData } from '../hooks/useSurveysData'
 
 import { useNavigate } from 'react-router-dom';
 
-const FilterDropdown = ({ value, label, options, onChange, icon, color = 'blue' }: { value: string, label: string, options: Array<{id:string, label:string}>, onChange: (val: string) => void, icon: string, color?: 'blue' | 'indigo' }) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [rect, setRect] = useState<DOMRect | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const buttonRef = useRef<HTMLButtonElement>(null)
+import { Dropdown as FilterDropdown } from '../../components/ui/Dropdown';
 
-  const theme = {
-    blue: {
-      border: 'border-blue-500',
-      ring: 'ring-blue-500/10',
-      icon: 'text-blue-600',
-      bgSelected: 'bg-blue-50',
-      textSelected: 'text-blue-700',
-      hoverBg: 'hover:bg-blue-50/50',
-      hoverText: 'hover:text-blue-600'
-    },
-    indigo: {
-      border: 'border-indigo-500',
-      ring: 'ring-indigo-500/10',
-      icon: 'text-indigo-600',
-      bgSelected: 'bg-indigo-50',
-      textSelected: 'text-indigo-700',
-      hoverBg: 'hover:bg-indigo-50/50',
-      hoverText: 'hover:text-indigo-600'
-    }
-  }[color]
-
-  useEffect(() => {
-    if (!isOpen) return
-    const updatePosition = () => {
-      if (buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
-    }
-    updatePosition()
-    window.addEventListener('scroll', updatePosition, true)
-    window.addEventListener('resize', updatePosition)
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        const menus = document.querySelectorAll('.portal-dropdown-menu')
-        for (const m of Array.from(menus)) {
-          if (m.contains(event.target as Node)) return
-        }
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('touchstart', handleClickOutside)
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true)
-      window.removeEventListener('resize', updatePosition)
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('touchstart', handleClickOutside)
-    }
-  }, [isOpen])
-
-  const selectedOption = options.find(o => String(o.id) === String(value))
-  const displayLabel = selectedOption ? selectedOption.label : label
-
-  return (
-    <div ref={containerRef} className="relative shrink-0 w-full md:w-auto">
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={() => {
-          if (!isOpen && buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
-          setIsOpen(!isOpen)
-        }}
-        className={`w-full bg-slate-50 border ${isOpen ? `${theme.border} ring-4 ${theme.ring}` : 'border-slate-200'} text-slate-700 text-sm font-bold rounded-xl hover:border-slate-300 transition-all outline-none cursor-pointer active:scale-[0.98] shadow-sm`}
-        style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: '10px', padding: '10px 16px', textAlign: 'left' }}
-      >
-        <span className={`material-symbols-outlined text-[18px] ${theme.icon} shrink-0`}>{icon}</span>
-        <span className="truncate">{displayLabel}</span>
-        <span className={`material-symbols-outlined text-slate-400 text-[18px] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}>expand_more</span>
-      </button>
-
-      {isOpen && rect && ReactDOM.createPortal(
-        <div 
-          className="portal-dropdown-menu fixed py-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-[99999] animate-fade-in-down origin-top overflow-hidden"
-          style={{
-            top: rect.bottom + 8,
-            left: rect.left,
-            minWidth: Math.max(180, rect.width),
-            width: rect.width
-          }}
-        >
-          <div className="max-h-[280px] overflow-y-auto overscroll-contain custom-scrollbar-sm">
-            {options.map(o => (
-              <button
-                key={o.id}
-                type="button"
-                onClick={() => { onChange(o.id); setIsOpen(false) }}
-                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold transition-all cursor-pointer ${String(value) === String(o.id) ? `${theme.bgSelected} ${theme.textSelected}` : `text-slate-600 ${theme.hoverBg} ${theme.hoverText}`}`}
-              >
-                <span className="truncate">{o.label}</span>
-                {String(value) === String(o.id) && <span className="material-symbols-outlined text-[18px]">check</span>}
-              </button>
-            ))}
-          </div>
-        </div>,
-        document.body
-      )}
-    </div>
-  )
-}
-
-const EvaluatorAutocomplete = ({ value, evaluatorUsers, onChange, onSave }: any) => {
-  const [val, setVal] = React.useState(value || '');
-  const [focused, setFocused] = React.useState(false);
-  const [isBrowsing, setIsBrowsing] = React.useState(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [rect, setRect] = React.useState<any>(null);
-
-  React.useEffect(() => {
-    setVal(value || '');
-  }, [value]);
-
-  const openDropdown = (browsing = false) => {
-    if (inputRef.current) setRect(inputRef.current.getBoundingClientRect());
-    setFocused(true);
-    if (browsing) setIsBrowsing(true);
-  }
-
-  React.useEffect(() => {
-    if (!focused) return;
-
-    // Reposition on scroll or resize instead of closing
-    const updatePosition = () => {
-      if (inputRef.current) {
-        setRect(inputRef.current.getBoundingClientRect());
-      }
-    };
-
-    // Close when clicking outside the whole container
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        const dropdown = document.querySelector('.evaluator-dropdown');
-        if (dropdown && dropdown.contains(e.target as Node)) return;
-        setFocused(false);
-        onSave && onSave(val);
-      }
-    };
-
-    window.addEventListener('scroll', updatePosition, true);
-    window.addEventListener('resize', updatePosition);
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
-
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
-  }, [focused, val, onSave]);
-
-  // Si hacemos click en el input y val está vacío, muestra todos.
-  // En este caso siempre filtramos para que responda al tipeo.
-  const filtered = (evaluatorUsers || []).filter((u: any) => {
-    if (isBrowsing) return true;
-    if (!val.trim()) return true;
-    return (u.email || '').toLowerCase().includes(val.toLowerCase()) || 
-           (u.name || '').toLowerCase().includes(val.toLowerCase())
-  });
-
-  return (
-    <>
-      <div ref={containerRef} className="relative w-full group">
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
-          <span className="material-symbols-outlined text-[18px]">person</span>
-        </div>
-        <input
-          ref={inputRef}
-          type="text"
-          placeholder="Seleccionar profesor..."
-          value={val}
-          onFocus={() => openDropdown(true)}
-          onClick={() => openDropdown(true)}
-          onChange={(e) => {
-            setVal(e.target.value);
-            setIsBrowsing(false);
-            openDropdown();
-            onChange && onChange(e.target.value);
-          }}
-          className="w-full pl-9 pr-24 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
-        />
-        <div className="absolute inset-y-0 right-0 flex items-center pr-1.5 gap-1">
-          <button 
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              inputRef.current?.focus();
-              openDropdown(true);
-            }}
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
-            title="Buscar"
-          >
-            <span className="material-symbols-outlined text-[18px]">search</span>
-          </button>
-          <button 
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              if (focused) {
-                setFocused(false);
-                setIsBrowsing(false);
-              } else {
-                inputRef.current?.focus();
-                openDropdown(true);
-              }
-            }}
-            className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors outline-none cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[20px] transition-transform duration-200" style={{ transform: focused ? 'rotate(180deg)' : 'rotate(0)' }}>expand_more</span>
-          </button>
-        </div>
-      </div>
-      {focused && rect && ReactDOM.createPortal(
-        <div 
-          style={{
-            position: 'fixed',
-            top: rect.bottom + 6,
-            left: rect.left,
-            width: rect.width,
-            zIndex: 999999
-          }}
-          className="evaluator-dropdown bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 rounded-xl shadow-2xl overflow-hidden animate-fade-in-down origin-top"
-        >
-          <div className="max-h-[180px] overflow-y-auto overscroll-contain custom-scrollbar-sm">
-            {filtered.length > 0 ? filtered.map((u: any) => (
-              <div
-                key={u.id || u.email}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  setVal(u.email);
-                  onChange && onChange(u.email);
-                  onSave && onSave(u.email);
-                  setFocused(false);
-                }}
-                className="group px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0 flex items-center gap-3 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors shrink-0">
-                  <span className="material-symbols-outlined text-[16px]">account_circle</span>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="font-semibold text-slate-900 dark:text-slate-100 truncate">{u.name || (u.email ? u.email.split('@')[0] : 'Profesor')}</div>
-                  <div className="text-[12px] text-slate-500 dark:text-slate-400 truncate mt-0.5">{u.email}</div>
-                  {u.asignatura && <div className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 mt-1 truncate px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/40 rounded inline-block uppercase tracking-wider">{u.asignatura}</div>}
-                </div>
-              </div>
-            )) : (
-              <div className="px-4 py-8 text-center flex flex-col items-center gap-2">
-                <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-3xl">sentiment_dissatisfied</span>
-                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">No se encontraron profesores</span>
-              </div>
-            )}
-          </div>
-        </div>,
-        document.body
-      )}
-    </>
-  );
-}
-
-const EvaluatorModalContent = ({ survey, evaluatorUsers, dataClientNow, onSave, onCancel }: any) => {
-  const [draftProjects, setDraftProjects] = React.useState<any[]>(survey.projects || []);
-  const [saving, setSaving] = React.useState(false);
-
-  return (    <div className="flex flex-col h-full overflow-hidden">
-      {/* Fixed Instructions at the top */}
-      <div className="p-4 sm:px-6 sm:py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
-        <p className="text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
-          Asigna el correo de un profesor evaluador a cada proyecto individual. Cuando ese profesor inicie sesión, solo podrá revisar y calificar el proyecto que le fue asignado.
-        </p>
-      </div>
-
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto w-full bg-slate-50 dark:bg-slate-900 p-4 sm:p-6 pt-5 pb-32 sm:pb-10">
-        <div className="bg-transparent sm:bg-white dark:sm:bg-slate-800 rounded-xl sm:border sm:border-slate-200 dark:sm:border-slate-700 sm:shadow-sm overflow-visible min-h-[350px]">
-          {/* Desktop Table View */}
-          <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[500px]">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400">
-                  <th className="p-3">Proyecto</th>
-                  <th className="p-3 w-40">Categoría</th>
-                  <th className="p-3 w-72">Correo del Evaluador</th>
-                </tr>
-              </thead>
-              <tbody>
-                {draftProjects.map((p: any) => (
-                  <tr key={p.id} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
-                    <td className="p-3">
-                      <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{p.name || 'Sin nombre'}</div>
-                      <div className="text-xs text-slate-500 truncate max-w-[200px]">Asesor: {p.advisor || '-'}</div>
-                    </td>
-                    <td className="p-3">
-                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 text-xs font-bold dark:bg-indigo-900/30 dark:text-indigo-400">
-                        {p.category || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      <EvaluatorAutocomplete 
-                        value={p.evaluator || ''}
-                        evaluatorUsers={evaluatorUsers}
-                        onChange={(cleanVal: string) => {
-                           setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluator: cleanVal.trim().toLowerCase() } : x));
-                        }}
-                        onSave={() => {}}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile Card View */}
-          <div className="block sm:hidden space-y-3">
-            {draftProjects.map((p: any) => (
-              <div key={p.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm">
-                <div className="flex flex-col gap-2">
-                  <div className="flex flex-col gap-1">
-                    <span className="self-start inline-flex items-center px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-600 text-[8px] font-black uppercase tracking-wider dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-100/50 dark:border-indigo-500/20">
-                      {p.category || 'N/A'}
-                    </span>
-                    <h4 className="text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight">
-                      {p.name || 'Sin nombre'}
-                    </h4>
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[13px]">person</span>
-                      {p.advisor || '-'}
-                    </div>
-                  </div>
-
-                  {/* Evaluator Assignment Field */}
-                  <div className="mt-1 pt-2 border-t border-slate-100 dark:border-slate-700/50">
-                    <EvaluatorAutocomplete 
-                      value={p.evaluator || ''}
-                      evaluatorUsers={evaluatorUsers}
-                      onChange={(cleanVal: string) => {
-                         setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluator: cleanVal.trim().toLowerCase() } : x));
-                      }}
-                      onSave={() => {}}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Fixed Footer at the bottom */}
-      <div className="border-t border-slate-200 dark:border-slate-800 p-4 sm:px-6 bg-white dark:bg-slate-900 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 shrink-0 z-20 relative">
-        <button type="button" onClick={onCancel} disabled={saving} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">
-          Cancelar y Volver
-        </button>
-        <button type="button" disabled={saving} onClick={async () => {
-           setSaving(true);
-           try {
-             const updatedSurvey = { ...survey, projects: draftProjects };
-             await dataClientNow.setSurvey(String(survey.id), updatedSurvey);
-             onSave(updatedSurvey);
-           } catch(e) { console.error(e) }
-           finally { setSaving(false); }
-        }} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/30 transition-all text-sm active:scale-[0.98]">
-          {saving ? <span className="material-symbols-outlined text-[20px] animate-spin">refresh</span> : <span className="material-symbols-outlined text-[20px]">save</span>}
-          {saving ? 'Guardando...' : 'Guardar Cambios'}
-        </button>
-      </div>
-    </div>
-  )
-}
+import { EvaluatorAssignmentModal as EvaluatorModalContent } from '../components/surveys/EvaluatorAssignmentModal';
+import { ManageCategoriesModal } from '../components/surveys/ManageCategoriesModal';
+import { GenerateLinkModal } from '../components/surveys/GenerateLinkModal';
 
 export default function Surveys(): JSX.Element {
   const location = useLocation()
-  const [currentUser, setCurrentUser] = useState<any | null>(() => AuthAdapter.getUser())
-  const currentUserId = currentUser ? (currentUser.email || currentUser.id || null) : null
-  const { user: authUser, loading: authLoading } = useAuth()
-  // Computed once per render so all role checks are consistent
-  const isAdmin = !!(authUser && String((authUser as any).role || '').toLowerCase() === 'admin')
-  const userAsignatura = ((authUser as any)?.app_metadata?.asignatura || (currentUser as any)?.asignatura || '').trim().toLowerCase()
-
-  useEffect(() => {
-    const onAuth = () => {
-      try { setCurrentUser(AuthAdapter.getUser()) } catch (e) { }
-    }
-    try { window.addEventListener('auth:changed', onAuth as EventListener) } catch (e) { }
-    return () => { try { window.removeEventListener('auth:changed', onAuth as EventListener) } catch (e) { } }
-  }, [])
-  // Determines if the current user owns a survey (or is admin).
-  // ownerId stored in DB can be the user's email or their Supabase UUID.
-  const isOwnerOf = (sOrOwnerId: any) => {
-    try {
-      // Admin has full control over all surveys
-      if (isAdmin) return true
-      const cur = AuthAdapter.getUser() || currentUser
-      let ownerIdRaw = sOrOwnerId && typeof sOrOwnerId === 'object' ? sOrOwnerId.ownerId : sOrOwnerId
-      if (ownerIdRaw && typeof ownerIdRaw === 'object') {
-        ownerIdRaw = ownerIdRaw.ownerId || ownerIdRaw.id || ownerIdRaw.email || ownerIdRaw.userId || null
-      }
-      if (!ownerIdRaw) return false
-      const normalize = (v: any) => (v === null || v === undefined) ? null : String(v).trim().toLowerCase()
-      const ownerId = normalize(ownerIdRaw)
-      const curCandidates = new Set<string>()
-      const add = (v: any) => { const n = normalize(v); if (n) curCandidates.add(n) }
-      // Identifiers from AuthAdapter (email + Supabase UUID)
-      add(currentUserId)
-      if (cur) { add(cur.email); add(cur.id) }
-      // Identifiers from AuthContext (may differ during loading transitions)
-      if (authUser) { add(authUser.email); add(authUser.id) }
-      if (ownerId && Array.from(curCandidates).some(x => x === ownerId)) return true
-
-      // Legacy: surveys created before login had ownerId = 'local'
-      if (!currentUser && !authUser && ownerId === 'local') return true
-      return false
-    } catch (e) {
-      return false
-    }
-  }
+  const {
+    surveys, setSurveys, surveysLoaded,
+    surveyReports, setSurveyReports, reportsLoaded,
+    ratedMap, setRatedMap, globalRatedMap, setGlobalRatedMap,
+    toastMessage, setToastMessage, ownerEmailMap, evaluatorUsers,
+    currentUser, currentUserId, authUser, authLoading, isAdmin, userAsignatura,
+    isOwnerOf, getOwnerDisplay
+  } = useSurveysData()
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [editSurvey, setEditSurvey] = useState<any | null>(null)
   const [createInitialType, setCreateInitialType] = useState<'simple' | 'project' | undefined>(undefined)
@@ -442,13 +38,9 @@ export default function Surveys(): JSX.Element {
   const [confirmPublishing, setConfirmPublishing] = useState(false)
   const [manageCategoriesId, setManageCategoriesId] = useState<string | null>(null)
   const [manageCategoriesList, setManageCategoriesList] = useState<string[]>([])
-  const [manageCategoriesSaving, setManageCategoriesSaving] = useState(false)
-  const [newCategoryInput, setNewCategoryInput] = useState('')
   const [confirmReportId, setConfirmReportId] = useState<string | null>(null)
   const [reportComment, setReportComment] = useState<string>('')
   const [confirmReporting, setConfirmReporting] = useState(false)
-  const [surveyReports, setSurveyReports] = useState<any[]>([])
-  const [reportsLoaded, setReportsLoaded] = useState(false)
   const [viewReportsFor, setViewReportsFor] = useState<string | null>(null)
   const [isReportsVisible, setIsReportsVisible] = useState(false)
   const [highlightedReportId, setHighlightedReportId] = useState<string | null>(null)
@@ -479,25 +71,9 @@ export default function Surveys(): JSX.Element {
     setTimeout(() => setCreateModalOpen(false), 300)
   }
 
-  const [isManageCategoriesVisible, setIsManageCategoriesVisible] = useState(false)
-  useEffect(() => {
-    if (manageCategoriesId) setTimeout(() => setIsManageCategoriesVisible(true), 50)
-    else setIsManageCategoriesVisible(false)
-  }, [manageCategoriesId])
-
-  const closeManageCategoriesModal = () => {
-    setIsManageCategoriesVisible(false)
-    setTimeout(() => {
-      setManageCategoriesId(null)
-    }, 300)
-  }
-
-  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [titleSearch, setTitleSearch] = useState<string>('')
   const [publishedFilter, setPublishedFilter] = useState<'all' | 'published' | 'unpublished' | 'reported'>('all')
   const [ownerFilter, setOwnerFilter] = useState<string>('all')
-  const [titleSearch, setTitleSearch] = useState<string>('')
-  const [ownerEmailMap, setOwnerEmailMap] = useState<Record<string, string>>({})
-  const [evaluatorUsers, setEvaluatorUsers] = useState<any[]>([])
 
   // close menu when clicking outside
   React.useEffect(() => {
@@ -528,86 +104,14 @@ export default function Surveys(): JSX.Element {
     }
     try { history.pushState(null, '', '/profesor') } catch (e) { window.location.href = '/profesor' }
   }
-  const [surveys, setSurveys] = useState<any[]>([])
-  const [surveysLoaded, setSurveysLoaded] = useState(false)
 
-  // Resolve UUID → email for all survey owners
-  useEffect(() => {
-    let mounted = true
-    const load = async () => {
-      try {
-        const client: any = supabaseClient
-        if (!client || !client.isEnabled || !client.isEnabled()) return
-        if (client.getPublishedSurveyOwners) {
-          const map = await client.getPublishedSurveyOwners()
-          if (mounted && map && Object.keys(map).length > 0) setOwnerEmailMap(map)
-        } else if (client.resolveOwnerEmails) {
-          const uids = Array.from(new Set(
-            surveys.map((s: any) => String(s.ownerUid || s.ownerId || '')).filter((v: string) => v && !v.includes('@'))
-          ))
-          if (uids.length > 0) {
-            const map = await client.resolveOwnerEmails(uids)
-            if (mounted && map) setOwnerEmailMap(map)
-          }
-        }
-        
-        // Also fetch all users so we can populate the Evaluators dropdown
-        // Fetch for admins OR any authorized user on this page (professors who own surveys can also reassign)
-        if (client.getUsersOnce) {
-          const allUsers = await client.getUsersOnce();
-          if (mounted && allUsers) {
-            // Filter: show all potential evaluators (only professors/docentes)
-            // Admins are excluded because they can evaluate any project by default.
-            const profs = allUsers.filter((u: any) => {
-              const role = String(u.role || u.rol || '').toLowerCase();
-              return role === 'profesor' || role === 'docente';
-            });
-            setEvaluatorUsers(profs);
-          }
-        }
-      } catch (e) { }
-    }
-    load()
-    return () => { mounted = false }
-  }, [surveys])
-
-  // Returns the best human-readable owner label for a survey
-  const getOwnerDisplay = (s: any): string => {
-    try {
-      if (s.ownerEmail && String(s.ownerEmail).includes('@')) return String(s.ownerEmail)
-      if (s.owner_email && String(s.owner_email).includes('@')) return String(s.owner_email)
-      const uid = String(s.ownerUid || s.ownerId || '').trim()
-      if (ownerEmailMap[uid]) return ownerEmailMap[uid]
-      if (uid.includes('@')) return uid
-      return uid
-    } catch (e) { return '' }
-  }
   const [showOnlyPending, setShowOnlyPending] = useState(false)
   const [modalSurveyId, setModalSurveyId] = useState<string | null>(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
 
   // Control center states
   const [manageAccessSurveyId, setManageAccessSurveyId] = useState<string | null>(null)
-  const [isManageAccessVisible, setIsManageAccessVisible] = useState(false)
   const [generateLinkSurveyId, setGenerateLinkSurveyId] = useState<string | null>(null)
-  const [isGenerateLinkVisible, setIsGenerateLinkVisible] = useState(false)
-
-  useEffect(() => {
-    if (generateLinkSurveyId) {
-      const prevOverflow = document.body.style.overflow
-      const prevTouchAction = document.body.style.touchAction
-      document.body.style.overflow = 'hidden'
-      document.body.style.touchAction = 'none'
-      const t = setTimeout(() => setIsGenerateLinkVisible(true), 50);
-      return () => {
-        clearTimeout(t)
-        document.body.style.overflow = prevOverflow
-        document.body.style.touchAction = prevTouchAction
-      }
-    } else {
-      setIsGenerateLinkVisible(false);
-    }
-  }, [generateLinkSurveyId]);
 
   useEffect(() => {
     if (confirmReportId) {
@@ -626,13 +130,7 @@ export default function Surveys(): JSX.Element {
     }
   }, [confirmReportId]);
 
-  const closeGenerateLinkModal = useCallback(() => {
-    setIsGenerateLinkVisible(false)
-    setTimeout(() => {
-      setGenerateLinkSurveyId(null)
-      setPullDownY(0)
-    }, 300)
-  }, [])
+
 
   const closeConfirmReportModal = useCallback(() => {
     setIsConfirmReportVisible(false)
@@ -644,13 +142,26 @@ export default function Surveys(): JSX.Element {
   }, [])
 
   const [confirmDeactivateLinkSurveyId, setConfirmDeactivateLinkSurveyId] = useState<string | null>(null)
-  const [manageAccessTab, setManageAccessTab] = useState<'supervisors' | 'evaluators'>('supervisors')
 
   const [modalKind, setModalKind] = useState<'view' | 'projects' | null>(null)
   const [viewingProjectId, setViewingProjectId] = useState<string | null>(null)
   const [viewingReadOnly, setViewingReadOnly] = useState<boolean>(false)
-  const [ratedMap, setRatedMap] = useState<Record<string, string[]>>({})
-  const [globalRatedMap, setGlobalRatedMap] = useState<Record<string, string[]>>({})
+
+  useEffect(() => {
+    const onOpen = (ev: any) => {
+      try {
+        const d = ev && ev.detail
+        if (!d) return
+        const id = d.surveyId || d.id
+        const kind = d.kind || 'view'
+        if (!id) return
+        setModalSurveyId(String(id))
+        setModalKind(kind === 'projects' ? 'projects' : 'view')
+      } catch (e) { }
+    }
+    window.addEventListener('surveys:open', onOpen as EventListener)
+    return () => window.removeEventListener('surveys:open', onOpen as EventListener)
+  }, [])
   const [projectFilter, setProjectFilter] = useState<'all' | 'pending' | 'rated' | 'unassigned'>('all')
   const [projectSearch, setProjectSearch] = useState<string>('')
   const [projectCategory, setProjectCategory] = useState<string>('all')
@@ -658,8 +169,6 @@ export default function Surveys(): JSX.Element {
   const reportsModalRef = useRef<HTMLDivElement | null>(null)
   const createModalRef = useRef<HTMLDivElement | null>(null)
   const manageCategoriesRef = useRef<HTMLDivElement | null>(null)
-  const manageAccessRef = useRef<HTMLDivElement | null>(null)
-  const generateLinkRef = useRef<HTMLDivElement | null>(null)
   const confirmReportRef = useRef<HTMLDivElement | null>(null)
   const lastActiveElement = useRef<HTMLElement | null>(null)
   const [pullDownY, setPullDownY] = useState(0)
@@ -728,253 +237,9 @@ export default function Surveys(): JSX.Element {
     }, 210)
   }, [])
 
-  const closeManageAccess = useCallback(() => {
-    setIsManageAccessVisible(false)
-    setTimeout(() => { setManageAccessSurveyId(null); setPullDownY(0) }, 230)
-  }, [])
 
-  useEffect(() => {
-    if (manageAccessSurveyId !== null) {
-      setIsManageAccessVisible(false)
-      const prevOverflow = document.body.style.overflow
-      document.body.style.overflow = 'hidden'
-      const t = setTimeout(() => setIsManageAccessVisible(true), 50)
-      const onKey = (ev: KeyboardEvent) => { if (ev.key === 'Escape') closeManageAccess() }
-      window.addEventListener('keydown', onKey)
-      return () => {
-        clearTimeout(t)
-        window.removeEventListener('keydown', onKey)
-        document.body.style.overflow = prevOverflow
-      }
-    }
-  }, [manageAccessSurveyId, closeManageAccess])
 
-  useEffect(() => {
-    let unsubSurveys: (() => void) | null = null
-    let unsubReports: (() => void) | null = null
-    const supabaseEnabled = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
-    const dbEnabled = supabaseEnabled
-    const dataClient: any = supabaseClient
 
-    const attachFallback = () => {
-      // DB-only policy: do not use localStorage for survey data.
-      // When no backend is available, clear lists and show a brief message.
-      setSurveys([])
-      setSurveyReports([])
-      setReportsLoaded(true)
-      setToastMessage('No hay servicio de datos configurado. Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local')
-      setTimeout(() => setToastMessage(null), 5000)
-    }
-
-    const setupRealtime = () => {
-      try {
-        unsubSurveys = dataClient.listenSurveys(async (arr: any[]) => {
-          try {
-            const current = AuthAdapter.getUser()
-            const defaultOwner = (current && (current.email || (current.id as any))) || 'local'
-            const normalized = arr.map((item: any) => {
-              if (!item.ownerId) return { ...item, ownerId: defaultOwner }
-              try {
-                if (typeof item.ownerId === 'string' && current) {
-                  const raw = item.ownerId.trim()
-                  const lowerRaw = raw.toLowerCase()
-                  if (lowerRaw && !lowerRaw.includes('@') && lowerRaw !== 'local') {
-                    const curEmail = (current && (current.email || '')) as string
-                    const curPrefix = curEmail ? curEmail.split('@')[0].trim().toLowerCase() : null
-                    if (curPrefix && curPrefix === lowerRaw) {
-                      return { ...item, ownerId: curEmail || item.ownerId }
-                    }
-                  }
-                }
-              } catch (e) { }
-              return item
-            })
-            setSurveys(normalized)
-            setSurveysLoaded(true)
-            // populate ratedMap from server once for current user to avoid transient flips
-            try {
-              const authUser = (dataClient && dataClient.getAuthCurrentUser && dataClient.getAuthCurrentUser()) || null
-              const uid = authUser ? ((authUser as any).uid || (authUser as any).id) : null
-              if (uid) {
-                const all = await (dataClient.getUserResponsesByUser ? dataClient.getUserResponsesByUser(uid) : {})
-                const map: Record<string, string[]> = {}
-                for (const sid of Object.keys(all || {})) {
-                  const arrResponses = all[sid] || []
-                  if (arrResponses && arrResponses.length > 0) {
-                    // if any responses exist for this survey, mark simple as responded or collect project ids
-                    const sample = arrResponses[0]
-                    if (sample && (sample as any).projectId) {
-                      map[sid] = (arrResponses as any[]).map((r: any) => String(r.projectId)).filter(Boolean)
-                    } else {
-                      map[sid] = ['__simple']
-                    }
-                  }
-                }
-                setRatedMap(prev => ({ ...(prev || {}), ...(map || {}) }))
-              }
-            } catch (e) {
-              // non-fatal
-              console.warn('populate ratedMap failed', e)
-            }
-          } catch (e) { console.error(e) }
-        })
-
-        unsubReports = dataClient.listenSurveyReports((arr: any[]) => {
-          try {
-            // Filter out reports that were created as precomputed/public reports
-            // so they don't appear in the UI as user-submitted reports.
-            const filtered = Array.isArray(arr) ? arr.filter((r: any) => {
-              if (!r) return false
-              // skip entries explicitly marked as public
-              if (r.isPublicReport === true) return false
-              if (r.reportType && String(r.reportType).toLowerCase() === 'public') return false
-              return true
-            }) : []
-            setSurveyReports(filtered)
-          } catch (e) {
-            console.error('filtering surveyReports failed', e)
-            setSurveyReports(arr || [])
-          }
-          setReportsLoaded(true)
-        })
-      } catch (e) {
-        console.error('realtime attach error', e)
-        attachFallback()
-      }
-    }
-
-    // Attempt to attach realtime listeners to any available backend (Supabase or Firebase).
-    // setupRealtime contains internal error handling and will call attachFallback() on failure.
-    if (dbEnabled) {
-      setupRealtime()
-    } else {
-      // No backend configured: clear state and show brief message
-      setSurveys([])
-      setSurveysLoaded(true)
-      setSurveyReports([])
-      setReportsLoaded(true)
-      setToastMessage('No hay servicio de datos configurado. Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local')
-      setTimeout(() => setToastMessage(null), 6000)
-    }
-
-    // when firebase reconnects, re-attach realtime listeners (safe to call multiple times)
-    const onConnected = () => {
-      try {
-        // cleanup previous unsubscribes if any
-        try { if (unsubSurveys) unsubSurveys() } catch (e) { }
-        try { if (unsubReports) unsubReports() } catch (e) { }
-        const supabaseNow = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
-        if (supabaseNow) {
-          setupRealtime()
-        } else {
-          attachFallback()
-        }
-      } catch (e) { }
-    }
-    window.addEventListener('realtime:connected', onConnected as EventListener)
-
-    // keep existing window events for compatibility
-    const onUpdated = (ev: any) => {
-      // Optimistic: apply survey data from event immediately, before server re-fetch
-      try {
-        const detail = ev && ev.detail
-        if (detail && detail.survey) {
-          const sv = detail.survey
-          setSurveys(prev => {
-            const copy = Array.isArray(prev) ? [...prev] : []
-            const idx = copy.findIndex((s: any) => String(s.id) === String(sv.id))
-            return idx >= 0 ? copy.map((s: any) => String(s.id) === String(sv.id) ? sv : s) : [...copy, sv]
-          })
-        }
-      } catch (e) { }
-      if (dbEnabled) {
-        // Realtime may be slow or disabled in dev — force a fresh fetch immediately
-        dataClient.getSurveysOnce().then((arr: any[]) => {
-          try { setSurveys(arr) } catch (e) { }
-        }).catch(() => { })
-        return
-      }
-      attachFallback()
-    }
-    const onResponded = (ev: any) => {
-      try {
-        const d = ev && ev.detail
-        if (!d) {
-          if (dbEnabled) return
-          attachFallback()
-          return
-        }
-        const sid = d.surveyId || d.survey || null
-        const pid = d.projectId || null
-        // If using a DB backend, update local ratedMap so UI reflects the new response immediately
-        if (dbEnabled) {
-          try {
-            if (!sid) return
-            if (pid) {
-              setRatedMap(prev => {
-                const copy: Record<string, string[]> = { ...(prev || {}) }
-                const arr = Array.isArray(copy[String(sid)]) ? copy[String(sid)] : []
-                if (!arr.includes(String(pid))) arr.push(String(pid))
-                copy[String(sid)] = arr
-                return copy
-              })
-              // Also update global rated map so the badge 'Calificados X/Y' updates in real-time
-              setGlobalRatedMap(prev => {
-                const copy: Record<string, string[]> = { ...(prev || {}) }
-                const arr = Array.isArray(copy[String(sid)]) ? copy[String(sid)] : []
-                if (!arr.includes(String(pid))) arr.push(String(pid))
-                copy[String(sid)] = arr
-                return copy
-              })
-            } else {
-              // mark simple survey as responded using a special token
-              setRatedMap(prev => {
-                const copy: Record<string, string[]> = { ...(prev || {}) }
-                const arr = Array.isArray(copy[String(sid)]) ? copy[String(sid)] : []
-                if (!arr.includes('__simple')) arr.push('__simple')
-                copy[String(sid)] = arr
-                return copy
-              })
-            }
-          } catch (e) { }
-          return
-        }
-        // fallback for non-DB mode
-        attachFallback()
-      } catch (e) { }
-    }
-    const onReported = (ev: any) => {
-      if (dbEnabled) return
-      // DB-only: show empty reports if no DB backend available
-      setSurveyReports([])
-      setReportsLoaded(true)
-    }
-    window.addEventListener('surveys:updated', onUpdated as EventListener)
-    window.addEventListener('survey:responded', onResponded as EventListener)
-    window.addEventListener('survey:reported', onReported as EventListener)
-    const onOpen = (ev: any) => {
-      try {
-        const d = ev && ev.detail
-        if (!d) return
-        const id = d.surveyId || d.id
-        const kind = d.kind || 'view'
-        if (!id) return
-        setModalSurveyId(String(id))
-        setModalKind(kind === 'projects' ? 'projects' : 'view')
-      } catch (e) { }
-    }
-    window.addEventListener('surveys:open', onOpen as EventListener)
-
-    return () => {
-      try { if (unsubSurveys) unsubSurveys() } catch (e) { }
-      try { if (unsubReports) unsubReports() } catch (e) { }
-      window.removeEventListener('surveys:updated', onUpdated as EventListener)
-      window.removeEventListener('survey:responded', onResponded as EventListener)
-      window.removeEventListener('survey:reported', onReported as EventListener)
-      window.removeEventListener('surveys:open', onOpen as EventListener)
-      try { window.removeEventListener('realtime:connected', onConnected as EventListener) } catch (e) { }
-    }
-  }, [])
 
   const supabaseEnabledNow = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
   const backendEnabled = supabaseEnabledNow
@@ -1085,22 +350,19 @@ export default function Surveys(): JSX.Element {
     const r = reportsModalRef.current;
     const c = createModalRef.current;
     const g = manageCategoriesRef.current;
-    const a = manageAccessRef.current;
 
     if (m) m.addEventListener('touchmove', handleTouchMove, options);
     if (r) r.addEventListener('touchmove', handleTouchMove, options);
     if (c) c.addEventListener('touchmove', handleTouchMove, options);
     if (g) g.addEventListener('touchmove', handleTouchMove, options);
-    if (a) a.addEventListener('touchmove', handleTouchMove, options);
 
     return () => {
       if (m) m.removeEventListener('touchmove', handleTouchMove);
       if (r) r.removeEventListener('touchmove', handleTouchMove);
       if (c) c.removeEventListener('touchmove', handleTouchMove);
       if (g) g.removeEventListener('touchmove', handleTouchMove);
-      if (a) a.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [isModalVisible, isReportsVisible, isCreateVisible, isManageCategoriesVisible, isManageAccessVisible]);
+  }, [isModalVisible, isReportsVisible, isCreateVisible, manageCategoriesId]);
 
   const navigate = useNavigate();
   return (
@@ -1227,7 +489,7 @@ export default function Surveys(): JSX.Element {
                   }
 
                   setManageCategoriesList(Array.isArray(cats) && cats.length > 0 ? [...cats] : [...DEFAULT_CATS]);
-                  setNewCategoryInput('');
+
                   setManageCategoriesId('sys_settings_project_categories');
                 }}
                 className="shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 text-sm font-bold rounded-xl transition-all whitespace-nowrap shadow-sm active:scale-[0.98]"
@@ -1731,190 +993,17 @@ export default function Surveys(): JSX.Element {
       })()}
 
       {/* ── Categories Manager Modal ── */}
-      {(manageCategoriesId || isManageCategoriesVisible) && ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
-          <div className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity ${isManageCategoriesVisible ? 'opacity-100' : 'opacity-0'}`} onClick={() => !manageCategoriesSaving && closeManageCategoriesModal()} />
-          <div className="relative w-full sm:max-w-md sm:mx-4">
-            <div
-              ref={manageCategoriesRef}
-              role="dialog"
-              aria-modal="true"
-              tabIndex={-1}
-              className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[90dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isManageCategoriesVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-              style={{
-                overscrollBehaviorY: 'contain',
-                ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
-              }}
-              onTouchStart={(e) => {
-                const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
-                touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
-              }}
-              onTouchMove={(e) => {
-                const touchY = e.touches[0].clientY;
-                const diff = touchY - touchStartRef.current.y;
-                if (diff > 0 && touchStartRef.current.scrollY <= 0) {
-                  setPullDownY(diff);
-                }
-              }}
-              onTouchEnd={() => {
-                if (pullDownY > 80) closeManageCategoriesModal();
-                setPullDownY(0);
-              }}
-            >
-              {/* Drag handle for mobile */}
-              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={() => closeManageCategoriesModal()}>
-                <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
-              </div>
-
-              {/* Header — teal sólido */}
-              <div className="flex items-center justify-between px-5 py-4 shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)' }}>
-                <h3 className="text-lg sm:text-xl font-bold text-white tracking-wide">Categorías del Proyecto</h3>
-                <div className="hidden sm:block">
-                  <button
-                    type="button"
-                    onClick={() => closeManageCategoriesModal()}
-                    disabled={manageCategoriesSaving}
-                    className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[22px]">close</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Subtitle bar — Contador posicionado arriba del texto */}
-              <div className="px-5 py-2.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 flex flex-col gap-1.5 items-start">
-                <span className="text-[10px] font-black px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full">
-                  {manageCategoriesList.length} REGISTRADAS
-                </span>
-                <p className="text-[11px] text-slate-500 font-semibold dark:text-slate-400 flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[14px]">info</span>
-                  Opciones visibles para los alumnos al inscribir su proyecto
-                </p>
-              </div>
-
-              {/* List */}
-              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-white dark:bg-slate-900">
-                {manageCategoriesList.length === 0 && (
-                  <div className="py-10 text-center">
-                    <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 block mb-2">category</span>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">No hay categorías aún.<br />Añade la primera usando el campo de abajo.</p>
-                  </div>
-                )}
-                {manageCategoriesList.map((cat, idx) => (
-                  <div key={idx} className="flex items-center gap-3 px-4 py-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl shadow-sm">
-                    <span className="w-7 h-7 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 text-xs font-black shrink-0 shadow-sm">{idx + 1}</span>
-                    <div className="flex-1">
-                      <input
-                        className="min-w-0 w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                        value={cat}
-                        onChange={e => setManageCategoriesList(prev => prev.map((c, i) => i === idx ? e.target.value : c))}
-                        placeholder="Nombre de categoría"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setManageCategoriesList(prev => prev.filter((_, i) => i !== idx))}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors shrink-0"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">delete</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              {/* Add new input */}
-              <div className="px-4 sm:px-5 py-4 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 shrink-0 shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)]">
-                <div className="flex gap-1.5 sm:gap-2">
-                  <input
-                    className="min-w-0 flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl px-3.5 sm:px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 shadow-sm"
-                    placeholder="Nueva categoría..."
-                    value={newCategoryInput}
-                    onChange={e => setNewCategoryInput(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && newCategoryInput.trim()) {
-                        e.preventDefault();
-                        setManageCategoriesList(prev => [...prev, newCategoryInput.trim()]);
-                        setNewCategoryInput('');
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (newCategoryInput.trim()) {
-                        setManageCategoriesList(prev => [...prev, newCategoryInput.trim()]);
-                        setNewCategoryInput('');
-                      }
-                    }}
-                    disabled={!newCategoryInput.trim()}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all text-sm flex items-center gap-1.5 shrink-0 disabled:opacity-50 disabled:bg-blue-400 shadow-md shadow-blue-500/20 whitespace-nowrap active:scale-95"
-                  >
-                    <span className="material-symbols-outlined text-[20px]">add</span> Añadir
-                  </button>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 px-5 py-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => closeManageCategoriesModal()}
-                  disabled={manageCategoriesSaving}
-                  className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl transition-all text-sm shadow-sm border border-slate-100 dark:border-slate-700"
-                >
-                  Cancelar y Volver
-                </button>
-                <button
-                  type="button"
-                  disabled={manageCategoriesSaving}
-                  onClick={async () => {
-                    try {
-                      setManageCategoriesSaving(true);
-                      const finalCategories = manageCategoriesList.filter(Boolean);
-                      
-                      // Fetch existing or create minimal record for global settings
-                      let existing: any = null;
-                      try {
-                        existing = await (dataClientNow as any).getSurveyById('sys_settings_project_categories');
-                      } catch (e) {}
-
-                      const updated = { 
-                        ...(existing || {}), 
-                        id: 'sys_settings_project_categories',
-                        type: 'system', // Use 'system' so it is excluded from main lists by default
-                        title: 'Configuración Global de Categorías de Proyecto',
-                        rubric: finalCategories, // for CreateSurvey.tsx compatibility
-                        allowed_categories: finalCategories // for legacy compatibility
-                      };
-
-                      await (dataClientNow as any).setSurvey('sys_settings_project_categories', updated);
-
-                      // Also optimistically update any local project surveys so their local allowedCategories match
-                      setSurveys(prev => prev.map(x => (x.type === 'project') ? { ...x, allowedCategories: finalCategories, allowed_categories: finalCategories } : x));
-                      
-                      setToastMessage('Categorías guardadas globalmente');
-                      setTimeout(() => setToastMessage(null), 3000);
-                      closeManageCategoriesModal();
-                    } catch (e) {
-                      setToastMessage('Error al guardar categorías');
-                      setTimeout(() => setToastMessage(null), 3000);
-                    } finally {
-                      setManageCategoriesSaving(false);
-                    }
-                  }}
-                  className="w-full sm:w-auto px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-black rounded-2xl transition-all text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 active:scale-95"
-                >
-                  {manageCategoriesSaving ? (
-                    <span className="animate-spin material-symbols-outlined">refresh</span>
-                  ) : (
-                    <><span className="material-symbols-outlined text-[20px]">save</span> Guardar Categorías</>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>, document.body
-      )}
+      {/* ── Categories Manager Modal ── */}
+      <ManageCategoriesModal 
+        isOpen={manageCategoriesId !== null}
+        onClose={() => setManageCategoriesId(null)}
+        initialCategories={manageCategoriesList}
+        onSaveSuccess={(cats) => {
+          setSurveys(prev => prev.map(x => (x.type === 'project') ? { ...x, allowedCategories: cats, allowed_categories: cats } : x));
+          setToastMessage('Categorías guardadas globalmente');
+          setTimeout(() => setToastMessage(null), 3000);
+        }}
+      />
 
 
       {/* Modal for viewing a survey */}
@@ -2682,182 +1771,43 @@ export default function Surveys(): JSX.Element {
         </div>, document.body
       )}
       {/* Manage Access (Evaluators) modal */}
-      {(manageAccessSurveyId || isManageAccessVisible) && ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
-          <div className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 ${isManageAccessVisible ? 'opacity-100' : 'opacity-0'}`} onClick={closeManageAccess} />
-          <div className="relative w-full sm:max-w-3xl sm:mx-4 sm:mb-0">
-            <div
-              ref={manageAccessRef}
-              role="dialog"
-              aria-modal="true"
-              tabIndex={-1}
-              className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[90dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isManageAccessVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-              style={{
-                overscrollBehaviorY: 'contain',
-                ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
-              }}
-              onTouchStart={(e) => {
-                const sc = e.currentTarget.querySelector('.overflow-y-auto')
-                touchStartRef.current = { y: e.touches[0].clientY, scrollY: sc ? sc.scrollTop : 0 }
-              }}
-              onTouchEnd={() => {
-                if (pullDownY > 80) closeManageAccess()
-                else setPullDownY(0)
-              }}
-            >
-              {/* Drag handle – mobile only */}
-              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={closeManageAccess}>
-                <div className="w-12 h-1.5 rounded-full bg-white/40" />
-              </div>
-
-              {/* Header (sticky) */}
-              <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
-                <div className="text-lg sm:text-xl font-bold mr-4 tracking-wide">Configurar Evaluadores</div>
-                <div className="ml-auto hidden sm:block">
-                  <button type="button" onClick={closeManageAccess} className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
-                    <span className="material-symbols-outlined text-[22px]">close</span>
-                  </button>
-                </div>
-              </div>
-              {/* Content */}
-              {(() => {
-                const s = surveys.find(x => String(x.id) === String(manageAccessSurveyId))
-                if (!s) return <div className="p-6 text-slate-600">Encuesta no encontrada.</div>
-                if (!s.projects || s.projects.length === 0) return <div className="p-6 text-slate-600">No hay proyectos inscritos.</div>
-
-                return (
-                  <EvaluatorModalContent 
-                    survey={s}
-                    evaluatorUsers={evaluatorUsers}
-                    dataClientNow={dataClientNow}
-                    onCancel={closeManageAccess}
-                    onSave={(updatedSurvey: any) => {
-                      setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updatedSurvey : x))
-                      setToastMessage('Evaluadores guardados')
-                      setTimeout(() => setToastMessage(null), 3000)
-                      closeManageAccess()
-                    }}
-                  />
-                )
-              })()}
-            </div>
-          </div>
-        </div>, document.body
-      )}
-      {generateLinkSurveyId && ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center overscroll-none touch-none">
-          <div className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 pointer-events-auto ${isGenerateLinkVisible ? 'opacity-100' : 'opacity-0'}`} onClick={() => closeGenerateLinkModal()} style={{ touchAction: 'none' }} />
-            <div 
-              ref={generateLinkRef}
-              className={`relative w-full sm:max-w-md sm:mx-4 sm:mb-0 transform transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${isGenerateLinkVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 sm:translate-y-4 sm:scale-95'}`}
-            style={{ 
-              transform: pullDownY > 0 ? `translateY(${pullDownY}px)` : '',
-              overscrollBehaviorY: 'contain',
-              touchAction: 'pan-y'
+      {manageAccessSurveyId && (() => {
+        const s = surveys.find(x => String(x.id) === String(manageAccessSurveyId))
+        if (!s) return null;
+        return (
+          <EvaluatorModalContent 
+            isOpen={manageAccessSurveyId !== null}
+            onClose={() => setManageAccessSurveyId(null)}
+            survey={s}
+            evaluatorUsers={evaluatorUsers}
+            dataClientNow={dataClientNow}
+            onSave={(updatedSurvey: any) => {
+              setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updatedSurvey : x))
+              setToastMessage('Evaluadores guardados')
+              setTimeout(() => setToastMessage(null), 3000)
+              setManageAccessSurveyId(null)
             }}
-            onTouchStart={(e) => {
-              touchStartRef.current = { y: e.touches[0].clientY, scrollY: generateLinkRef.current?.scrollTop || 0 }
+          />
+        );
+      })()}
+      {generateLinkSurveyId && (() => {
+        const s = surveys.find(x => String(x.id) === String(generateLinkSurveyId))
+        if (!s) return null;
+        return (
+          <GenerateLinkModal 
+            isOpen={generateLinkSurveyId !== null}
+            onClose={() => setGenerateLinkSurveyId(null)}
+            survey={s}
+            dataClientNow={dataClientNow}
+            onSave={(updatedSurvey: any) => {
+              setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updatedSurvey : x))
+              setToastMessage('Fecha guardada correctamente')
+              setTimeout(() => setToastMessage(null), 3000)
+              setGenerateLinkSurveyId(null)
             }}
-            onTouchMove={(e) => {
-              const deltaY = e.touches[0].clientY - touchStartRef.current.y
-              if (deltaY > 0 && touchStartRef.current.scrollY <= 0) {
-                setPullDownY(deltaY)
-                if (e.cancelable) e.preventDefault()
-              }
-            }}
-            onTouchEnd={() => {
-              if (pullDownY > 150) {
-                closeGenerateLinkModal()
-              }
-              setPullDownY(0)
-            }}
-          >
-              <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 flex flex-col max-h-[85vh]">
-              {/* Drag handle for mobile */}
-              <div className="w-full flex justify-center pt-2 pb-1 sm:hidden cursor-pointer shrink-0" style={{ touchAction: 'none' }} onClick={() => closeGenerateLinkModal()}>
-                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
-              </div>
-
-              <div className="px-6 py-5 sm:p-8 overflow-y-auto overscroll-contain">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm">
-                      <span className="material-symbols-outlined text-[26px]">calendar_month</span>
-                    </div>
-                    <span>Establecer Fecha Límite</span>
-                  </h3>
-                  <button type="button" onClick={() => closeGenerateLinkModal()} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors hidden sm:flex">
-                    <span className="material-symbols-outlined text-[20px]">close</span>
-                  </button>
-                </div>
-                
-                <p className="text-[15px] text-slate-500 dark:text-slate-400 mb-8 leading-relaxed font-medium pl-1">
-                  Guarda la fecha máxima de inscripción para habilitar el enlace público.
-                </p>
-
-                <form onSubmit={async (e) => {
-                  e.preventDefault()
-                  const formData = new FormData(e.currentTarget)
-                  const dateVal = formData.get('expiryDate') as string
-                  if (!dateVal) return
-                  const s = surveys.find(x => String(x.id) === String(generateLinkSurveyId))
-                  if (!s) return
-
-                  const parts = dateVal.split('-')
-                  let expires = new Date().toISOString()
-                  if (parts.length === 3) {
-                    const y = parseInt(parts[0], 10)
-                    const m = parseInt(parts[1], 10) - 1
-                    const d = parseInt(parts[2], 10)
-                    expires = new Date(y, m, d, 23, 59, 59).toISOString()
-                  }
-
-                  const token = Math.random().toString(36).substring(2, 12)
-
-                  try {
-                    const updated = { ...s, linkToken: token, linkExpiresAt: expires }
-                    await (dataClientNow as any).setSurvey(String(s.id), updated)
-                    setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updated : x))
-                    setToastMessage('Fecha guardada correctamente')
-                    setTimeout(() => setToastMessage(null), 3000)
-                    closeGenerateLinkModal()
-                  } catch (err: any) {
-                    console.error("DEBUG Link Error:", err)
-                    setToastMessage(`Error: ${err?.message || 'Error desconocido'}`)
-                    setTimeout(() => setToastMessage(null), 5000)
-                  }
-                }}>
-                  <div className="mb-8">
-                    <label className="block text-xs font-black uppercase tracking-[0.1em] text-slate-400 mb-3 ml-1">Fecha límite de inscripción</label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                        <span className="material-symbols-outlined text-[22px]">event</span>
-                      </div>
-                      <input
-                        name="expiryDate"
-                        type="date"
-                        required
-                        min={new Date().toISOString().split('T')[0]}
-                        defaultValue={new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all appearance-none shadow-inner"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row justify-end gap-3">
-                    <button type="button" onClick={() => closeGenerateLinkModal()} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">
-                      Cancelar y Volver
-                    </button>
-                    <button type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/30 transition-all text-sm active:scale-[0.98]">
-                      <span className="material-symbols-outlined text-[20px]">save</span> Guardar Fecha
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>, document.body
-      )}
+          />
+        );
+      })()}
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

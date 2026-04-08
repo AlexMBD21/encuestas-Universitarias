@@ -5,6 +5,7 @@ import supabaseClient from '../../services/supabaseClient'
 import AuthAdapter from '../../services/AuthAdapter'
 import { useAuth } from '../../services/AuthContext'
 import Toast from '../../components/Toast'
+import { Modal } from '../../components/ui/Modal';
 
 export default function Configuracion() {
   const navigate = useNavigate();
@@ -26,9 +27,6 @@ export default function Configuracion() {
 
   // users list for admin
   const [usersList, setUsersList] = useState<any[]>([])
-  const [editingUser, setEditingUser] = useState<any | null>(null)
-  const [newUserEmail, setNewUserEmail] = useState('')
-  const [newUserRole, setNewUserRole] = useState<'profesor' | 'admin'>('profesor')
   const [usersLoading, setUsersLoading] = useState(false)
   const [userMsg, setUserMsg] = useState<string | null>(null)
   const [userMsgType, setUserMsgType] = useState<'success' | 'error'>('success')
@@ -48,14 +46,6 @@ export default function Configuracion() {
   const [modalMsgType, setModalMsgType] = useState<'success' | 'error'>('success')
   // confirm password-change modal
   const [confirmPwdOpen, setConfirmPwdOpen] = useState(false)
-  // modal animation state (bottom-sheet)
-  const [isModalVisible, setIsModalVisible] = useState(false)
-  const [isPwdModalVisible, setIsPwdModalVisible] = useState(false)
-  const [pullDownY, setPullDownY] = useState(0)
-  const [pullDownPwdY, setPullDownPwdY] = useState(0)
-  const touchStartRef = useRef({ y: 0, scrollY: 0 })
-  const userModalRef = useRef<HTMLDivElement | null>(null)
-  const pwdModalRef = useRef<HTMLDivElement | null>(null)
   // toast state
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [toastKind, setToastKind] = useState<'create' | 'edit' | 'delete' | 'info'>('info')
@@ -133,12 +123,10 @@ export default function Configuracion() {
     }
     // Show confirmation modal before executing
     setConfirmPwdOpen(true)
-    setTimeout(() => setIsPwdModalVisible(true), 50)
   }
 
   const doChangePassword = async () => {
     setConfirmPwdOpen(false)
-    setIsPwdModalVisible(false)
     setLoading(true)
     setMessage(null)
     try {
@@ -173,7 +161,6 @@ export default function Configuracion() {
     setModalMsg(null)
     setModalMsgType('success')
     setModalOpen(true)
-    setTimeout(() => setIsModalVisible(true), 50)
   }
 
   const openEditModal = (u: any) => {
@@ -183,7 +170,6 @@ export default function Configuracion() {
     setModalMsg(null)
     setModalMsgType('success')
     setModalOpen(true)
-    setTimeout(() => setIsModalVisible(true), 50)
   }
 
   const openDeleteModal = (u: any) => {
@@ -192,56 +178,15 @@ export default function Configuracion() {
     setModalMsg(null)
     setModalMsgType('success')
     setModalOpen(true)
-    setTimeout(() => setIsModalVisible(true), 50)
   }
 
   const closeModal = () => {
-    setIsModalVisible(false)
-    setPullDownY(0)
-    setTimeout(() => {
-      setModalOpen(false)
-      setModalType(null)
-      setModalData({ email: '', role: 'profesor', password: '' })
-      setModalLoading(false)
-      setModalShowPassword(false)
-    }, 300)
+    setModalOpen(false)
+    setModalType(null)
+    setModalData({ email: '', role: 'profesor', password: '' })
+    setModalLoading(false)
+    setModalShowPassword(false)
   }
-
-  // Handle non-passive touchmove for pull-to-dismiss without browser pull-to-refresh
-  useEffect(() => {
-    const handleTouchMove = (e: TouchEvent) => {
-      // For Admin User Modal
-      if (modalOpen && isModalVisible && !confirmPwdOpen) {
-        if (touchStartRef.current.scrollY <= 0) {
-          const delta = e.touches[0].clientY - touchStartRef.current.y;
-          if (delta > 0) {
-            if (e.cancelable) e.preventDefault();
-            setPullDownY(delta);
-          }
-        }
-      }
-      // For Password confirmation modal
-      if (confirmPwdOpen && isPwdModalVisible) {
-        const delta = e.touches[0].clientY - touchStartRef.current.y;
-        if (delta > 0) {
-          if (e.cancelable) e.preventDefault();
-          setPullDownPwdY(delta);
-        }
-      }
-    };
-
-    const opt: AddEventListenerOptions = { passive: false };
-    const u = userModalRef.current;
-    const p = pwdModalRef.current;
-
-    if (u) u.addEventListener('touchmove', handleTouchMove, opt);
-    if (p) p.addEventListener('touchmove', handleTouchMove, opt);
-
-    return () => {
-      if (u) u.removeEventListener('touchmove', handleTouchMove);
-      if (p) p.removeEventListener('touchmove', handleTouchMove);
-    };
-  }, [modalOpen, isModalVisible, confirmPwdOpen, isPwdModalVisible]);
 
   const confirmModalSave = async () => {
     if (!isAdmin) return
@@ -401,10 +346,6 @@ export default function Configuracion() {
       showToast(msg, modalType || 'edit', false)
       setModalLoading(false)
     }
-  }
-
-  const handleEdit = (u: any) => {
-    setEditingUser({ ...u })
   }
 
   const handleDelete = async (id: string) => {
@@ -719,137 +660,119 @@ export default function Configuracion() {
         </div>
       </div>
       {/* Modal overlay — bottom-sheet en mobile, centrado en desktop */}
-      {isAdmin && modalOpen && (
-        <div className="fixed inset-0 flex items-end sm:items-center justify-center z-50 bg-slate-900/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) closeModal() }}>
-          <div className="relative w-full sm:max-w-lg sm:mx-4 sm:mb-0">
-            <div
-              className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90dvh] sm:max-h-[80vh] transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-              ref={userModalRef}
-              style={{
-                overscrollBehaviorY: 'contain',
-                ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
-              }}
-              onTouchStart={(e) => { const sc = e.currentTarget.querySelector('.overflow-y-auto'); touchStartRef.current = { y: e.touches[0].clientY, scrollY: sc ? sc.scrollTop : 0 } }}
-              onTouchEnd={() => { if (pullDownY > 80) closeModal(); setPullDownY(0) }}
-              role="dialog" aria-modal="true" aria-labelledby="modal-title"
-            >
-              {/* Drag handle — absolute inside modal, only mobile */}
-              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={closeModal}>
-                <div className="w-12 h-1.5 rounded-full bg-white/40" />
+      {isAdmin && (
+        <Modal isOpen={modalOpen} onClose={closeModal} maxWidth="max-w-lg" hideMobileIndicator={true} scrollableBody={false}>
+          <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl">
+            {/* Drag handle for mobile */}
+            <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={closeModal}>
+              <div className="w-12 h-1.5 rounded-full bg-white/40" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-3xl sm:rounded-[1.5rem] sm:rounded-b-none pt-7 sm:pt-4 z-10 shadow-[0_4px_20px_rgba(0,0,0,0.1)] border-b border-white/10" style={{ backgroundColor: 'var(--color-primary)' }}>
+              <div className="text-lg sm:text-xl font-bold text-white truncate tracking-wide">
+                {modalType === 'edit' ? 'Editar usuario' : (modalType === 'delete' ? 'Confirmar eliminación' : 'Crear usuario')}
               </div>
-
-              {/* Header — pt-7 mobile to clear the handle, pt-4 desktop */}
-              <div id="modal-header" className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 flex items-center text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
-                <div id="modal-title" className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{modalType === 'edit' ? 'Editar usuario' : (modalType === 'delete' ? 'Confirmar eliminación' : 'Crear usuario')}</div>
-                {/* X button: hidden on mobile, visible on desktop */}
-                <div className="ml-auto hidden sm:block">
-                  <button type="button" onClick={closeModal} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
-                    <span className="material-symbols-outlined text-[22px]">close</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-6 flex-1 overflow-y-auto">
-                {modalType === 'delete' ? (
-                  <div>
-                    <p>¿Eliminar usuario <strong>{modalData.email}</strong>?</p>
-                    <div className="mt-4 flex justify-end gap-2">
-                      <button className="btn btn-ghost" onClick={closeModal} disabled={modalLoading}>Cancelar</button>
-                      <button className="btn btn-danger" onClick={confirmModalSave} disabled={modalLoading}>{modalLoading ? 'Eliminando...' : 'Eliminar'}</button>
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={async (e) => { e.preventDefault(); await confirmModalSave(); }} className="space-y-3">
-                    <input type="text" name="username" autoComplete="username" value={modalData.email || ''} readOnly aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }} />
-                    <div>
-                      <label className="block text-sm">Correo</label>
-                      <input name="newUserEmail" autoComplete="email" className="w-full border px-3 py-2 rounded" value={modalData.email} onChange={e => setModalData({...modalData, email: e.target.value})} />
-                    </div>
-                    {modalType === 'create' && (
-                      <div>
-                        <label className="block text-sm">Contraseña</label>
-                        <div className="relative">
-                          <input name="newUserPassword" autoComplete="new-password" className="w-full border px-3 py-2 rounded" type={modalShowPassword ? 'text' : 'password'} value={modalData.password || ''} onChange={e => setModalData({...modalData, password: e.target.value})} />
-                          <button type="button" className={`password-toggle ${modalShowPassword ? 'active' : ''}`} onClick={() => setModalShowPassword(s => !s)} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }} aria-pressed={modalShowPassword} aria-label={modalShowPassword ? 'Ocultar' : 'Mostrar'}>
-                            <i className={`fas ${modalShowPassword ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true"></i>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    {modalType === 'edit' && (
-                      <div>
-                        <label className="block text-sm">Cambiar contraseña (opcional)</label>
-                        <div className="relative">
-                          <input name="editUserPassword" autoComplete="new-password" className="w-full border px-3 py-2 rounded" type={modalShowPassword ? 'text' : 'password'} value={modalData.password || ''} onChange={e => setModalData({...modalData, password: e.target.value})} />
-                          <button type="button" className={`password-toggle ${modalShowPassword ? 'active' : ''}`} onClick={() => setModalShowPassword(s => !s)} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }} aria-pressed={modalShowPassword} aria-label={modalShowPassword ? 'Ocultar' : 'Mostrar'}>
-                            <i className={`fas ${modalShowPassword ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true"></i>
-                          </button>
-                        </div>
-                        <div className="text-xs text-slate-500 mt-1">La nueva contraseña se aplica desde un proceso seguro del servidor.</div>
-                      </div>
-                    )}
-                    <div>
-                      <label className="block text-sm">Rol</label>
-                      <select className="border px-2 py-2 rounded w-full" value={modalData.role} onChange={e => setModalData({...modalData, role: e.target.value})}>
-                        <option value="profesor">Profesor</option>
-                        <option value="admin">Administrador</option>
-                      </select>
-                    </div>
-
-                    <div className="mt-4 flex justify-end gap-2">
-                      <button type="button" className="btn btn-ghost" onClick={closeModal} disabled={modalLoading}>Cancelar</button>
-                      <button type="submit" className="btn btn-primary" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar' : 'Crear')}</button>
-                    </div>
-                  </form>
-                )}
-                {modalMsg && (
-                  <div className={`mt-4 p-3 rounded text-sm ${modalMsgType === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{modalMsg}</div>
-                )}
+              <div className="hidden sm:block">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors outline-none"
+                >
+                  <span className="material-symbols-outlined text-[22px]">close</span>
+                </button>
               </div>
             </div>
+
+            {/* Content */}
+            <div className="modal-scrollable-content p-6 flex-1 overflow-y-auto">
+              {modalType === 'delete' ? (
+                <div>
+                  <p>¿Eliminar usuario <strong>{modalData.email}</strong>?</p>
+                  <div className="mt-4 flex justify-end gap-2">
+                    <button className="btn btn-ghost" onClick={closeModal} disabled={modalLoading}>Cancelar</button>
+                    <button className="btn btn-danger" onClick={confirmModalSave} disabled={modalLoading}>{modalLoading ? 'Eliminando...' : 'Eliminar'}</button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={async (e) => { e.preventDefault(); await confirmModalSave(); }} className="space-y-3">
+                  <input type="text" name="username" autoComplete="username" value={modalData.email || ''} readOnly aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }} />
+                  <div>
+                    <label className="block text-sm">Correo</label>
+                    <input name="newUserEmail" autoComplete="email" className="w-full border px-3 py-2 rounded" value={modalData.email} onChange={e => setModalData({...modalData, email: e.target.value})} />
+                  </div>
+                  {modalType === 'create' && (
+                    <div>
+                      <label className="block text-sm">Contraseña</label>
+                      <div className="relative">
+                        <input name="newUserPassword" autoComplete="new-password" className="w-full border px-3 py-2 rounded" type={modalShowPassword ? 'text' : 'password'} value={modalData.password || ''} onChange={e => setModalData({...modalData, password: e.target.value})} />
+                        <button type="button" className={`password-toggle ${modalShowPassword ? 'active' : ''}`} onClick={() => setModalShowPassword(s => !s)} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }} aria-pressed={modalShowPassword} aria-label={modalShowPassword ? 'Ocultar' : 'Mostrar'}>
+                          <i className={`fas ${modalShowPassword ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true"></i>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {modalType === 'edit' && (
+                    <div>
+                      <label className="block text-sm">Cambiar contraseña (opcional)</label>
+                      <div className="relative">
+                        <input name="editUserPassword" autoComplete="new-password" className="w-full border px-3 py-2 rounded" type={modalShowPassword ? 'text' : 'password'} value={modalData.password || ''} onChange={e => setModalData({...modalData, password: e.target.value})} />
+                        <button type="button" className={`password-toggle ${modalShowPassword ? 'active' : ''}`} onClick={() => setModalShowPassword(s => !s)} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }} aria-pressed={modalShowPassword} aria-label={modalShowPassword ? 'Ocultar' : 'Mostrar'}>
+                          <i className={`fas ${modalShowPassword ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true"></i>
+                        </button>
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">La nueva contraseña se aplica desde un proceso seguro del servidor.</div>
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm">Rol</label>
+                    <select className="border px-2 py-2 rounded w-full" value={modalData.role} onChange={e => setModalData({...modalData, role: e.target.value})}>
+                      <option value="profesor">Profesor</option>
+                      <option value="admin">Administrador</option>
+                    </select>
+                  </div>
+
+                  <div className="mt-4 flex justify-end gap-2">
+                    <button type="button" className="btn btn-ghost" onClick={closeModal} disabled={modalLoading}>Cancelar</button>
+                    <button type="submit" className="btn btn-primary" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar' : 'Crear')}</button>
+                  </div>
+                </form>
+              )}
+              {modalMsg && (
+                <div className={`mt-4 p-3 rounded text-sm ${modalMsgType === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{modalMsg}</div>
+              )}
+            </div>
           </div>
-        </div>
+        </Modal>
       )} 
       {/* Confirm password change modal — bottom-sheet pattern */}
-      {confirmPwdOpen && (
-        <div className="fixed inset-0 z-[10001] flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setIsPwdModalVisible(false); setPullDownPwdY(0); setTimeout(() => setConfirmPwdOpen(false), 300) } }}>
-          <div className="relative w-full sm:max-w-sm sm:mx-4 sm:mb-0">
-            <div
-              className={`bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 ${isPwdModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-              ref={pwdModalRef}
-              style={{
-                overscrollBehaviorY: 'contain',
-                ...(pullDownPwdY > 0 ? { transform: `translateY(${pullDownPwdY}px)`, transition: 'none' } : undefined)
-              }}
-              onTouchStart={(e) => { touchStartRef.current = { y: e.touches[0].clientY, scrollY: 0 } }}
-              onTouchEnd={() => { if (pullDownPwdY > 80) { setIsPwdModalVisible(false); setPullDownPwdY(0); setTimeout(() => setConfirmPwdOpen(false), 300) } else setPullDownPwdY(0) }}
-              role="dialog" aria-modal="true"
-            >
-              {/* Drag handle — absolute inside, only mobile */}
-              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={() => { setIsPwdModalVisible(false); setPullDownPwdY(0); setTimeout(() => setConfirmPwdOpen(false), 300) }}>
-                <div className="w-12 h-1.5 rounded-full bg-white/40" />
-              </div>
-              {/* Header */}
-              <div className="px-4 sm:px-6 py-4 flex items-center text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', touchAction: 'none' }}>
-                <span className="text-base sm:text-lg font-bold tracking-wide">Confirmar cambio de contraseña</span>
-                <div className="ml-auto hidden sm:block">
-                  <button type="button" onClick={() => { setIsPwdModalVisible(false); setPullDownPwdY(0); setTimeout(() => setConfirmPwdOpen(false), 300) }} aria-label="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
-                    <span className="material-symbols-outlined text-[22px]">close</span>
-                  </button>
-                </div>
-              </div>
-              <div className="p-5">
-                <p className="text-sm text-slate-600 dark:text-slate-300 mb-5">¿Confirmas que deseas cambiar tu contraseña? Esta acción no se puede deshacer.</p>
-                <div className="flex gap-3 justify-end">
-                  <button type="button" onClick={() => { setIsPwdModalVisible(false); setPullDownPwdY(0); setTimeout(() => setConfirmPwdOpen(false), 300) }} className="btn btn-ghost">Cancelar</button>
-                  <button type="button" onClick={doChangePassword} className="btn btn-primary">Sí, cambiar</button>
-                </div>
-              </div>
+      <Modal isOpen={confirmPwdOpen} onClose={() => setConfirmPwdOpen(false)} maxWidth="max-w-sm" hideMobileIndicator={true} scrollableBody={false}>
+        <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl">
+          {/* Drag handle */}
+          <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => setConfirmPwdOpen(false)}>
+            <div className="w-12 h-1.5 rounded-full bg-white/40" />
+          </div>
+
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-3xl sm:rounded-[1.5rem] sm:rounded-b-none pt-7 sm:pt-4 z-10" style={{ backgroundColor: 'var(--color-primary)' }}>
+            <span className="text-base sm:text-lg font-bold text-white tracking-wide">Confirmar cambio</span>
+            <div className="hidden sm:block">
+              <button type="button" onClick={() => setConfirmPwdOpen(false)} className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+                <span className="material-symbols-outlined text-[22px]">close</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="modal-scrollable-content p-5 overflow-y-auto">
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-5">¿Confirmas que deseas cambiar tu contraseña? Esta acción no se puede deshacer.</p>
+            <div className="flex gap-3 justify-end">
+              <button type="button" onClick={() => setConfirmPwdOpen(false)} className="btn btn-ghost border-slate-300">Cancelar</button>
+              <button type="button" onClick={doChangePassword} className="btn btn-primary">Sí, cambiar</button>
             </div>
           </div>
         </div>
-      )}
+      </Modal>
       <Toast visible={toastVisible} message={toastMsg} kind={toastKind} onClose={() => { setToastVisible(false); if (toastTimerRef.current) { try { window.clearTimeout(toastTimerRef.current) } catch (e) {} toastTimerRef.current = null } }} />
       
       <style>{`
