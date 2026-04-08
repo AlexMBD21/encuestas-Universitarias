@@ -443,142 +443,281 @@ export default function Configuracion() {
   return (
     <div id="configuration-root" className="min-h-screen bg-slate-50/50 pb-20" aria-hidden={modalOpen}>
       {/* Header Splash Premium */}
-      <div className="bg-white border-b border-slate-200 shadow-md">
-        <div id="config-header-inner" className="px-5 sm:px-8 py-8 md:py-12 max-w-7xl mx-auto">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        <div id="config-header-inner" className="px-5 sm:px-8 py-10 md:py-16 max-w-7xl mx-auto">
           <div id="config-header-title-row" className="flex items-center gap-3 mb-2 animate-fade-in-up">
             <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20 text-white shrink-0">
               <span className="material-symbols-outlined text-xl">settings</span>
             </div>
             <h1 className="text-slate-900 dark:text-slate-50 text-2xl md:text-3xl font-black leading-tight tracking-[-0.033em]" style={{ margin: 0 }}>Configuración</h1>
           </div>
-          <p className="text-slate-500 text-sm md:text-base max-w-2xl animate-fade-in-up" style={{ animationDelay: '50ms' }}>
+          <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base max-w-2xl animate-fade-in-up" style={{ animationDelay: '50ms' }}>
             Gestiona las preferencias de tu cuenta, actualiza tu seguridad y administra los usuarios del sistema.
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-        {/* Account configuration (visible to professors) and Admin users management */}
-        <div className={isAdmin ? 'max-w-full mx-auto' : 'max-w-3xl mx-auto'}>
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Left: account config */}
-          <div className={isAdmin ? 'w-full md:w-2/5' : 'w-full'}>
-              <h3 className="text-lg font-semibold mb-3">Configuración de cuenta</h3>
-              <div className="mb-4 text-sm text-slate-600">Usuario: <strong>{email || 'Invitado'}</strong></div>
-              <form onSubmit={handleSubmit} className="space-y-3">
-                {/* Removed current-password input per UI request */}
-                <div>
-                  <label className="block text-sm">Nueva contraseña</label>
-                  <div className="relative">
-                    <input autoComplete="new-password" type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full border px-3 py-2 rounded" />
-                    <button type="button" className={`password-toggle ${showNewPassword ? 'active' : ''}`} onClick={() => setShowNewPassword(s => !s)} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }} aria-pressed={showNewPassword} aria-label={showNewPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                      <i className={`fas ${showNewPassword ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true"></i>
-                    </button>
-                  </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 relative z-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Tarjeta de Seguridad y Cuenta */}
+          <div className={`${isAdmin ? 'lg:col-span-4' : 'lg:col-span-6 lg:col-start-4'} w-full animate-fade-in-up`} style={{ animationDelay: '100ms' }}>
+            <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-xl shadow-slate-300/50 rounded-3xl overflow-hidden flex flex-col h-full">
+              {/* Header de la Tarjeta */}
+              <div className="px-6 py-5 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm shrink-0">
+                  <span className="material-symbols-outlined text-[24px]">verified_user</span>
                 </div>
                 <div>
-                  <label className="block text-sm">Confirmar nueva contraseña</label>
-                  <div className="relative">
-                    <input autoComplete="new-password" type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full border px-3 py-2 rounded" />
-                    <button type="button" className={`password-toggle ${showConfirmPassword ? 'active' : ''}`} onClick={() => setShowConfirmPassword(s => !s)} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }} aria-pressed={showConfirmPassword} aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                      <i className={`fas ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true"></i>
-                    </button>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">Seguridad</h3>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Gestiona tu contraseña</p>
+                </div>
+              </div>
+
+              <div className="p-6 sm:p-8">
+                <div className="flex items-center gap-3 mb-8 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-inner">
+                  <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
+                    {email ? email.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Usuario Activo</p>
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{email || 'Invitado'}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <button type="submit" disabled={loading} className={`btn btn-primary ${loading ? 'btn-disabled' : ''}`}>
-                    {loading ? 'Guardando...' : 'Cambiar contraseña'}
-                  </button>
-                </div>
-              </form>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Nueva contraseña</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                        <span className="material-symbols-outlined text-[20px]">lock_open</span>
+                      </div>
+                      <input 
+                        autoComplete="new-password" 
+                        type={showNewPassword ? 'text' : 'password'} 
+                        value={newPassword} 
+                        onChange={(e) => setNewPassword(e.target.value)} 
+                        className="w-full bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl pl-11 pr-12 py-3.5 text-sm font-semibold transition-all outline-none text-slate-700 dark:text-slate-200"
+                        placeholder="••••••••"
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => setShowNewPassword(s => !s)} 
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-blue-500 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">{showNewPassword ? 'visibility_off' : 'visibility'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Confirmar contraseña</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                        <span className="material-symbols-outlined text-[20px]">enhanced_encryption</span>
+                      </div>
+                      <input 
+                        autoComplete="new-password" 
+                        type={showConfirmPassword ? 'text' : 'password'} 
+                        value={confirmPassword} 
+                        onChange={(e) => setConfirmPassword(e.target.value)} 
+                        className="w-full bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl pl-11 pr-12 py-3.5 text-sm font-semibold transition-all outline-none text-slate-700 dark:text-slate-200"
+                        placeholder="••••••••"
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => setShowConfirmPassword(s => !s)} 
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-blue-500 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">{showConfirmPassword ? 'visibility_off' : 'visibility'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {message && (
+                    <div className={`p-4 rounded-xl flex items-center gap-3 text-xs font-bold animate-in fade-in slide-in-from-top-2 ${msgType === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                      <span className="material-symbols-outlined text-base">{msgType === 'success' ? 'check_circle' : 'error'}</span>
+                      {message}
+                    </div>
+                  )}
+
+                  <div className="pt-2">
+                    <button 
+                      type="submit" 
+                      disabled={loading || !newPassword || !confirmPassword} 
+                      className={`w-full flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-black text-sm transition-all shadow-lg active:scale-[0.98] ${loading || !newPassword || !confirmPassword ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/30'}`}
+                    >
+                      {loading ? (
+                        <><span className="material-symbols-outlined text-[18px] animate-spin">refresh</span> Actualizando...</>
+                      ) : (
+                        <><span className="material-symbols-outlined text-[20px]">save_as</span> Actualizar contraseña</>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
+          </div>
 
-          {/* Right: users management (solo administradores). Keep visible if usersList already loaded to avoid flicker when admin flag briefly disappears. */}
+          {/* Right: Gestión de Usuarios (Admin) */}
           {(adminVisible || isAdmin || (usersList && usersList.length > 0)) && (
-            <div className="w-full md:w-3/5 md:pl-6">
-              <h3 className="text-lg font-semibold mb-3">Gestión de usuarios</h3>
-                <div className="mb-3">
-                <div className="flex items-center gap-2 action-buttons">
-                  <button className="btn btn-primary" onClick={openCreateModal}>Crear usuario</button>
+            <div className="col-span-1 lg:col-span-8 w-full animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+              <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-xl shadow-slate-300/50 rounded-3xl overflow-hidden flex flex-col h-full">
+                
+                {/* Header de la Tarjeta con Buscador Integrado */}
+                <div className="px-6 py-5 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm shrink-0">
+                        <span className="material-symbols-outlined text-[24px]">manage_accounts</span>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">Gestión de Usuarios</h3>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Administra accesos y roles</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1 sm:w-64">
+                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                         <input 
+                           placeholder="Buscar por email..." 
+                           value={searchQ} 
+                           onChange={e => { setSearchQ(e.target.value); setPage(1) }} 
+                           className="w-full pl-9 pr-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700 rounded-xl text-xs font-semibold outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/10 transition-all text-slate-700 dark:text-slate-200" 
+                         />
+                      </div>
+                      <button 
+                        onClick={openCreateModal}
+                        className="p-2 sm:px-4 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98] flex items-center gap-2 font-bold text-xs shrink-0"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">person_add</span>
+                        <span className="hidden sm:inline">Crear Usuario</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="mb-2">
-                <input placeholder="Buscar por email" value={searchQ} onChange={e => { setSearchQ(e.target.value); setPage(1) }} className="w-full border px-3 py-2 rounded" />
-              </div>
+                <div className="flex-1 overflow-hidden flex flex-col">
+                  {usersLoading ? (
+                    <div className="p-12 flex flex-col items-center justify-center text-slate-400 gap-3">
+                      <span className="material-symbols-outlined text-[40px] animate-spin">progress_activity</span>
+                      <p className="text-sm font-bold">Cargando usuarios...</p>
+                    </div>
+                  ) : (
+                    (() => {
+                      const filtered = usersList.filter(u => String(u.email || '').toLowerCase().includes(searchQ.toLowerCase()))
+                      const total = filtered.length
+                      const pages = Math.max(1, Math.ceil(total / pageSize))
+                      const current = Math.min(page, pages)
+                      const start = (current - 1) * pageSize
+                      const pageItems = filtered.slice(start, start + pageSize)
 
-              <div>
-                {usersLoading ? <div>Cargando usuarios...</div> : (
-                  (() => {
-                    const filtered = usersList.filter(u => String(u.email || '').toLowerCase().includes(searchQ.toLowerCase()))
-                    const total = filtered.length
-                    const pages = Math.max(1, Math.ceil(total / pageSize))
-                    const current = Math.min(page, pages)
-                    const start = (current - 1) * pageSize
-                    const pageItems = filtered.slice(start, start + pageSize)
-                    return (
-                      <>
-                        {/* Desktop table */}
-                        <table className="hidden sm:table w-full text-left border-collapse">
-                          <thead>
-                            <tr className="border-b"><th className="p-2">Email</th><th className="p-2">Rol</th><th className="p-2">Asignatura</th><th className="p-2">Acciones</th></tr>
-                          </thead>
-                          <tbody>
-                            {pageItems.map(u => (
-                              <tr key={u.id} className="border-b">
-                                <td className="p-2 text-sm">{u.email}</td>
-                                <td className="p-2 text-sm">{u.role || 'profesor'}</td>
-                                <td className="p-2 text-sm text-slate-500">{u.asignatura || '-'}</td>
-                                <td className="p-2 text-sm">
-                                  <button className="px-2 py-1 mr-2 rounded btn btn-outline" onClick={() => openEditModal(u)}>Editar</button>
-                                  <button className="px-2 py-1 rounded btn btn-danger" onClick={() => openDeleteModal(u)}>Eliminar</button>
-                                </td>
-                              </tr>
+                      if (total === 0) {
+                        return (
+                          <div className="p-12 flex flex-col items-center justify-center text-center">
+                            <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-4">
+                              <span className="material-symbols-outlined text-[32px] text-slate-300">person_search</span>
+                            </div>
+                            <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">No se encontraron usuarios</h4>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[200px]">Intenta con otro término de búsqueda o crea uno nuevo.</p>
+                          </div>
+                        )
+                      }
+
+                      return (
+                        <div className="flex flex-col h-full">
+                          {/* Listado Header (Desktop) */}
+                          <div className="hidden sm:grid grid-cols-12 gap-4 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            <div className="col-span-8">Información de Usuario</div>
+                            <div className="col-span-2">Rol</div>
+                            <div className="col-span-2 text-right">Acciones</div>
+                          </div>
+
+                          <div className="flex-1 overflow-y-auto">
+                            {pageItems.map((u, i) => (
+                              <div 
+                                key={u.id} 
+                                className="group px-6 py-4 border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/80 dark:hover:bg-indigo-900/10 transition-all grid grid-cols-1 sm:grid-cols-12 items-center gap-4"
+                                style={{ animationDelay: `${150 + (i * 50)}ms` }}
+                              >
+                                {/* Mobile/Desktop Email & Avatar */}
+                                <div className="col-span-1 border-blue-600 sm:col-span-8 flex items-center gap-3">
+                                  <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-bold text-xs shrink-0 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                    {(u.email || 'U').charAt(0).toUpperCase()}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{u.email}</p>
+                                    <p className="text-[10px] text-slate-400 font-semibold sm:hidden mt-0.5 uppercase tracking-wide">{u.role || 'profesor'}</p>
+                                  </div>
+                                </div>
+
+                                {/* Desktop Role */}
+                                <div className="hidden sm:block col-span-2">
+                                  <span className={`inline-flex px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${u.role === 'admin' ? 'bg-purple-50 text-purple-700 border border-purple-100' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>
+                                    {u.role || 'profesor'}
+                                  </span>
+                                </div>
+
+
+                                {/* Acciones */}
+                                <div className="col-span-1 sm:col-span-2 flex items-center justify-end gap-1.5">
+                                  <button 
+                                    onClick={() => openEditModal(u)}
+                                    className="w-10 h-10 flex items-center justify-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-xl transition-all active:scale-[0.9] shadow-sm shadow-blue-600/5"
+                                    title="Editar"
+                                  >
+                                    <span className="material-symbols-outlined text-[20px]">edit_square</span>
+                                  </button>
+                                  <button 
+                                    onClick={() => openDeleteModal(u)}
+                                    className="w-10 h-10 flex items-center justify-center bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl transition-all active:scale-[0.9] shadow-sm shadow-red-600/5"
+                                    title="Eliminar"
+                                  >
+                                    <span className="material-symbols-outlined text-[20px]">delete</span>
+                                  </button>
+                                </div>
+                              </div>
                             ))}
-                          </tbody>
-                        </table>
+                          </div>
 
-                        {/* Mobile cards */}
-                        <div className="sm:hidden space-y-2">
-                          {pageItems.map(u => (
-                            <div key={u.id} className="border rounded-xl p-3 bg-slate-50 dark:bg-slate-800 flex flex-col gap-2">
-                              <div className="flex items-start justify-between gap-2">
-                                <span className="text-sm font-medium break-all">{u.email}</span>
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 whitespace-nowrap shrink-0">{u.role || 'profesor'}</span>
+                          {/* Pagination Footer */}
+                          <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              Mostrando <span className="text-slate-700 dark:text-slate-200">{start + 1}-{Math.min(start + pageSize, total)}</span> de <span className="text-slate-700 dark:text-slate-200">{total}</span> usuarios
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="flex gap-1">
+                                <button 
+                                  disabled={current <= 1} 
+                                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${current <= 1 ? 'text-slate-300 cursor-not-allowed' : 'bg-white dark:bg-slate-800 text-slate-600 border border-slate-200 dark:border-slate-700 hover:border-blue-300 hover:text-blue-600 shadow-sm'}`}
+                                >
+                                  <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+                                </button>
+                                <button 
+                                  disabled={current >= pages} 
+                                  onClick={() => setPage(p => Math.min(pages, p + 1))}
+                                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${current >= pages ? 'text-slate-300 cursor-not-allowed' : 'bg-white dark:bg-slate-800 text-slate-600 border border-slate-200 dark:border-slate-700 hover:border-blue-300 hover:text-blue-600 shadow-sm'}`}
+                                >
+                                  <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                                </button>
                               </div>
-                              {u.asignatura && (
-                                <div className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">Asignatura: {u.asignatura}</div>
-                              )}
-                              <div className="flex gap-2">
-                                <button className="flex-1 py-1.5 text-sm rounded-lg btn btn-outline" onClick={() => openEditModal(u)}>Editar</button>
-                                <button className="flex-1 py-1.5 text-sm rounded-lg btn btn-danger" onClick={() => openDeleteModal(u)}>Eliminar</button>
+                              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                                Página <span className="text-slate-700 dark:text-slate-200">{current}</span> de <span className="text-slate-700 dark:text-slate-200">{pages}</span>
                               </div>
                             </div>
-                          ))}
-                        </div>
-                        <div className="flex items-center justify-between mt-2 text-sm pagination-row">
-                          <div className="pagination-summary">{total === 0 ? 'Sin usuarios' : `Mostrando ${start + 1}-${Math.min(start + pageSize, total)} de ${total}`}</div>
-                          <div className="flex items-center gap-2 pagination-controls">
-                            <div className="pagination-buttons flex gap-2">
-                              <button disabled={current <= 1} onClick={() => setPage(p => Math.max(1, p - 1))} className={`btn btn-pagination ${current <= 1 ? 'btn-disabled' : ''}`} aria-disabled={current <= 1}>Anterior</button>
-                              <button disabled={current >= pages} onClick={() => setPage(p => Math.min(pages, p + 1))} className={`btn btn-pagination ${current >= pages ? 'btn-disabled' : ''}`} aria-disabled={current >= pages}>Siguiente</button>
-                            </div>
-                            <div className="page-label">Página {current} / {pages}</div>
                           </div>
                         </div>
-                      </>
-                    )
-                  })()
-                )}
+                      )
+                    })()
+                  )}
+                </div>
               </div>
-
-
-
             </div>
           )}
         </div>
       </div>
-    </div>
       {/* Modal overlay — bottom-sheet en mobile, centrado en desktop */}
       {isAdmin && modalOpen && (
         <div className="fixed inset-0 flex items-end sm:items-center justify-center z-50 bg-slate-900/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) closeModal() }}>
