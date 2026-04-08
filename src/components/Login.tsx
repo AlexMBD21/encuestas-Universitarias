@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthAdapter from '../services/AuthAdapter'
 import { useAuth } from '../services/AuthContext'
-import '../styles/login.css'
+// Import removed to avoid legacy style conflicts
 import initLegacyLogin from '../legacy/loginLegacy'
 
 export default function Login() {
@@ -19,22 +19,23 @@ export default function Login() {
   const [isValidating, setIsValidating] = useState(false)
   const validateTimerRef = useRef<number | null>(null)
   const [isLoggingIn, setIsLoggingIn] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   useEffect(() => {
-    // Si hay usuario autenticado, redirigir automáticamente
-    if (!loading && user) {
+    // Si hay usuario autenticado, redirigir automáticamente (a menos que estemos en la animación de éxito)
+    if (!loading && user && !isSuccess) {
       if (user.role === 'profesor') navigate('/profesor', { replace: true })
       else if (user.role === 'estudiante') navigate('/estudiante', { replace: true })
-      return
     }
-    // Initialize legacy login script (noop if not present)
+
     try {
       initLegacyLogin()
     } catch (e) {
       // fail silently
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, loading])
+  }, [loading, user, navigate])
 
   // On mount, clear any leftover demo autofill values
   useEffect(() => {
@@ -74,15 +75,15 @@ export default function Login() {
     try {
       const userResult: any = await AuthAdapter.login(email, password, role === 'profesor' ? 'profesor' : 'estudiante')
       setIsValidating(false)
-      setIsLoggingIn(true)
+      setIsSuccess(true)
       setMessageType('success')
       setMessage('Inicio exitoso')
 
       timerRef.current = window.setTimeout(() => {
-        setIsLoggingIn(false)
+        setIsSuccess(false)
         if (userResult.role === 'profesor') navigate('/profesor', { replace: true })
         else navigate('/', { replace: true })
-      }, 700)
+      }, 2500)
     } catch (err) {
       setIsValidating(false)
       try {
@@ -120,6 +121,13 @@ export default function Login() {
   }
 
   useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(''), 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [message])
+
+  useEffect(() => {
     return () => {
       if (timerRef.current) window.clearTimeout(timerRef.current)
       if (validateTimerRef.current) window.clearTimeout(validateTimerRef.current)
@@ -127,81 +135,187 @@ export default function Login() {
   }, [])
 
   if (loading) return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f0f4f8', gap: '20px' }}>
-      <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 0.9s linear infinite' }}>
-        <circle cx="26" cy="26" r="22" stroke="#e2e8f0" strokeWidth="5" />
-        <path d="M26 4a22 22 0 0 1 22 22" stroke="#00628d" strokeWidth="5" strokeLinecap="round" />
-      </svg>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <div style={{ fontSize: '1rem', fontWeight: 600, color: '#475569', letterSpacing: '0.03em' }}>Cargando sesión...</div>
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 gap-6 overflow-hidden">
+      <div className="relative">
+        <div className="w-16 h-16 border-4 border-slate-200 dark:border-slate-800 rounded-full"></div>
+        <div className="w-16 h-16 border-4 border-transparent border-t-blue-600 rounded-full animate-spin absolute inset-0"></div>
+      </div>
+      <div className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest animate-pulse">Cargando sesión...</div>
     </div>
   )
 
   return (
-    <div className="login-root">
-      <div className="login-container">
-        <div className="login-header">
-          <div className="logo">
-            <i className="fas fa-graduation-cap"></i>
-            <h1>EduSurvey</h1>
+    <div className="login-root fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-[#00628d] to-[#004a6b] overflow-hidden font-outfit">
+      {/* Toast Notification */}
+      {message && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] animate-fade-in-down">
+          <div className={`flex items-center gap-4 px-6 py-4 rounded-[24px] border backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] min-w-[320px] ${
+            messageType === 'success' 
+              ? 'bg-emerald-600 border-emerald-500 text-white' 
+              : 'bg-red-500/20 border-red-500/30 text-red-50'
+          }`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${
+              messageType === 'success' ? 'bg-white' : 'bg-red-500'
+            }`}>
+              <span className={`material-symbols-outlined text-[24px] font-bold ${
+                messageType === 'success' ? 'text-emerald-600' : 'text-white'
+              }`}>
+                {messageType === 'success' ? 'check' : 'priority_high'}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-60">
+                {messageType === 'success' ? 'Éxito' : 'Atención'}
+              </span>
+              <span className="text-sm font-bold tracking-tight">{message}</span>
+            </div>
           </div>
-          <p>Sistema de Encuestas Académicas</p>
         </div>
+      )}
 
-        <div className="role-selection">
-          <div className="toggle-container">
-            <div
-              id="roleToggle"
-              className={`toggle-switch ${role === 'profesor' ? 'active' : ''}`}
-              onClick={onRoleToggle}
-              role="button"
-              tabIndex={0}
-            >
-              <div className="toggle-slider" />
-              <div className="toggle-labels">
-                <span className="student">Estudiante</span>
-                <span className="teacher">Profesor</span>
+      {/* Decorative Blobs - Optimized for Primary Blue Background */}
+      <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-white/10 rounded-full blur-[120px] animate-pulse"></div>
+      <div className="absolute bottom-[-10%] left-[-5%] w-[700px] h-[700px] bg-blue-400/10 rounded-full blur-[140px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-[20%] left-[10%] w-[400px] h-[400px] bg-sky-200/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+
+      <div className="w-full max-w-[400px] relative z-10 animate-fade-in-up p-4">
+        <div className="bg-white/10 backdrop-blur-3xl border border-white/20 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] rounded-[48px] p-6 md:p-8 overflow-hidden relative">
+          
+          <div className="text-center mb-6">
+            <div className="relative inline-flex items-center justify-center w-24 h-24 mb-6 animate-bounce-slow">
+              {/* Outer Glow Layer */}
+              <div className="absolute inset-0 bg-white/10 rounded-full blur-2xl"></div>
+              
+              {/* Glass Ring */}
+              <div className="absolute inset-2 border-2 border-white/30 rounded-full backdrop-blur-sm"></div>
+              
+              {/* The Icon */}
+              <span 
+                className="material-symbols-outlined text-[56px] text-white relative z-10 drop-shadow-lg"
+                style={{ fontVariationSettings: "'FILL' 1, 'wght' 900, 'GRAD' 0, 'opsz' 48" }}
+              >
+                fact_check
+              </span>
+            </div>
+            <h1 className="text-5xl font-black bg-gradient-to-b from-white to-blue-200 bg-clip-text text-transparent leading-none mb-3">
+              Encuestas
+            </h1>
+            <p className="text-[10px] font-bold text-sky-200 uppercase tracking-[0.3em] opacity-100">
+              Gestión Universitaria
+            </p>
+          </div>
+
+          <div className="mb-6">
+            <div className="bg-white p-1.5 rounded-[24px] flex items-center relative gap-1 border border-white/10 shadow-inner">
+              <button 
+                onClick={() => setRole('student')}
+                className={`flex-1 py-3 px-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative z-10 ${role === 'student' ? 'text-white' : 'text-slate-500 hover:text-[#00628d]'}`}
+              >
+                Estudiante
+              </button>
+              <button 
+                onClick={() => setRole('profesor')}
+                className={`flex-1 py-3 px-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative z-10 ${role === 'profesor' ? 'text-white' : 'text-slate-500 hover:text-[#00628d]'}`}
+              >
+                Profesor
+              </button>
+              <div 
+                className={`absolute inset-y-1.5 bg-[#00628d] shadow-sm rounded-[18px] transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${role === 'student' ? 'left-1.5 w-[calc(50%-8px)]' : 'left-[calc(50%+2px)] w-[calc(50%-8px)]'}`}
+              ></div>
+            </div>
+          </div>
+
+          <form onSubmit={onSubmit} className="space-y-3">
+            <div className="space-y-2 group">
+              <label className="text-[10px] font-black text-blue-100 uppercase tracking-[0.2em] ml-2">Correo Electrónico</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-[#00628d]/40 group-focus-within:text-[#00628d] transition-colors">
+                  <span className="material-symbols-outlined text-[22px]">alternate_email</span>
+                </div>
+                <input 
+                  required 
+                  type="email" 
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full bg-white border-2 border-white/50 focus:border-[#00628d]/30 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-[#00628d] placeholder:text-slate-400 shadow-sm"
+                  placeholder="nombre@ejemplo.com"
+                />
               </div>
             </div>
-          </div>
+
+            <div className="space-y-2 group">
+              <label className="text-[10px] font-black text-blue-100 uppercase tracking-[0.2em] ml-2">Contraseña</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-[#00628d]/40 group-focus-within:text-[#00628d] transition-colors">
+                  <span className="material-symbols-outlined text-[22px]">lock</span>
+                </div>
+                <input 
+                  required 
+                  type={showPassword ? "text" : "password"} 
+                  value={password} 
+                  onChange={e => setPassword(e.target.value)}
+                  className="w-full bg-white border-2 border-white/50 focus:border-[#00628d]/30 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-[#00628d] placeholder:text-slate-400 shadow-sm"
+                  placeholder="••••••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-400 hover:text-[#00628d] transition-colors"
+                >
+                  <span className="material-symbols-outlined text-xl">
+                    {showPassword ? 'visibility_off' : 'visibility'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2">
+                <button 
+                  type="submit" 
+                  disabled={isValidating || isLoggingIn || isSuccess}
+                  className="w-full bg-gradient-to-r from-[#007cb2] to-[#00628d] text-white font-black py-4 rounded-[22px] shadow-lg hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-widest text-xs border border-white/30"
+                >
+                  {isValidating || isLoggingIn || isSuccess? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>{isSuccess ? 'Entrando...' : 'Validando...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-xl font-bold">login</span>
+                      <span>Iniciar Sesión</span>
+                    </>
+                  )}
+                </button>
+            </div>
+
+            {/* Forgot password link removed per user request */}
+          </form>
         </div>
-
-        <form id="loginForm" onSubmit={onSubmit}>
-          <div className="form-group">
-            <div className={`input-container align-down-2`}>
-              <i className="fas fa-envelope"></i>
-              <input required type="email" id="email" placeholder=" " aria-label="Correo Electrónico" value={email} onChange={e => setEmail(e.target.value)} autoComplete="off" />
-              <label htmlFor="email" className="floating">Correo Electrónico</label>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <div className={`input-container align-down-2`}>
-              <i className="fas fa-lock"></i>
-              <input required type={showPassword ? 'text' : 'password'} id="password" placeholder=" " aria-label="Contraseña" value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" />
-              <label htmlFor="password" className="floating">Contraseña</label>
-              <button type="button" className={`password-toggle ${showPassword ? 'active' : ''}`} id="passwordToggle" onClick={() => setShowPassword(s => !s)} aria-pressed={showPassword} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true"></i>
-              </button>
-            </div>
-          </div>
-
-          <button type="submit" className="login-btn" id="loginBtn" disabled={isValidating || isLoggingIn} aria-busy={isValidating || isLoggingIn}>
-            <i className="fas fa-sign-in-alt"></i>
-            {isValidating ? ' Validando...' : isLoggingIn ? ' Iniciando sesión...' : ' Iniciar Sesión'}
-          </button>
-
-          <div className="forgot-container">
-            <a href="#" className="forgot-password"><i className="fas fa-key"></i> ¿Olvidaste tu contraseña?</a>
-          </div>
-        </form>
-
-        {message && (
-          <div className={`message ${messageType} ${message ? 'show' : ''}`} role="status">
-            {message}
-          </div>
-        )}
       </div>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+        .font-outfit { font-family: 'Outfit', sans-serif; }
+        
+        @keyframes fadeInDown {
+          from { opacity: 0; transform: translate(-50%, -20px); }
+          to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        .animate-fade-in-down { animation: fadeInDown 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        
+        @keyframes bounceSlow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        .animate-bounce-slow { animation: bounceSlow 3s ease-in-out infinite; }
+      `}</style>
     </div>
   )
 }
