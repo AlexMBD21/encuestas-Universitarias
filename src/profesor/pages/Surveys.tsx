@@ -15,44 +15,66 @@ import { useNavigate } from 'react-router-dom';
 const EvaluatorAutocomplete = ({ value, evaluatorUsers, onChange, onSave }: any) => {
   const [val, setVal] = React.useState(value || '');
   const [focused, setFocused] = React.useState(false);
+  const [isBrowsing, setIsBrowsing] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const [rect, setRect] = React.useState<any>(null);
 
   React.useEffect(() => {
     setVal(value || '');
   }, [value]);
 
-  const openDropdown = () => {
+  const openDropdown = (browsing = false) => {
     if (inputRef.current) setRect(inputRef.current.getBoundingClientRect());
     setFocused(true);
+    if (browsing) setIsBrowsing(true);
   }
 
   React.useEffect(() => {
-    if (focused && inputRef.current) {
-      setRect(inputRef.current.getBoundingClientRect());
-      const handleScroll = (e: any) => {
-        if (e.target && (e.target as HTMLElement).closest && (e.target as HTMLElement).closest('.evaluator-dropdown')) return;
+    if (!focused) return;
+
+    // Reposition on scroll or resize instead of closing
+    const updatePosition = () => {
+      if (inputRef.current) {
+        setRect(inputRef.current.getBoundingClientRect());
+      }
+    };
+
+    // Close when clicking outside the whole container
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        const dropdown = document.querySelector('.evaluator-dropdown');
+        if (dropdown && dropdown.contains(e.target as Node)) return;
         setFocused(false);
+        onSave && onSave(val);
       }
-      window.addEventListener('scroll', handleScroll, true);
-      window.addEventListener('resize', handleScroll);
-      return () => {
-        window.removeEventListener('scroll', handleScroll, true);
-        window.removeEventListener('resize', handleScroll);
-      }
-    }
-  }, [focused]);
+    };
+
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [focused, val, onSave]);
 
   // Si hacemos click en el input y val está vacío, muestra todos.
   // En este caso siempre filtramos para que responda al tipeo.
-  const filtered = (evaluatorUsers || []).filter((u: any) => 
-    (u.email || '').toLowerCase().includes(val.toLowerCase()) || 
-    (u.name || '').toLowerCase().includes(val.toLowerCase())
-  );
+  const filtered = (evaluatorUsers || []).filter((u: any) => {
+    if (isBrowsing) return true;
+    if (!val.trim()) return true;
+    return (u.email || '').toLowerCase().includes(val.toLowerCase()) || 
+           (u.name || '').toLowerCase().includes(val.toLowerCase())
+  });
 
   return (
     <>
-      <div className="relative w-full group">
+      <div ref={containerRef} className="relative w-full group">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
           <span className="material-symbols-outlined text-[18px]">person</span>
         </div>
@@ -61,32 +83,46 @@ const EvaluatorAutocomplete = ({ value, evaluatorUsers, onChange, onSave }: any)
           type="text"
           placeholder="Seleccionar profesor..."
           value={val}
-          onFocus={openDropdown}
-          onClick={openDropdown}
+          onFocus={() => openDropdown(true)}
+          onClick={() => openDropdown(true)}
           onChange={(e) => {
             setVal(e.target.value);
+            setIsBrowsing(false);
             openDropdown();
             onChange && onChange(e.target.value);
           }}
-          onBlur={() => {
-            setTimeout(() => {
-              setFocused(false);
-              onSave && onSave(val);
-            }, 200);
-          }}
-          className="w-full pl-9 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
+          className="w-full pl-9 pr-24 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
         />
-        <button 
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            if (focused) setFocused(false);
-            else { inputRef.current?.focus(); openDropdown(); }
-          }}
-          className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-indigo-500 transition-colors outline-none cursor-pointer"
-        >
-           <span className="material-symbols-outlined text-[20px] transition-transform duration-200" style={{ transform: focused ? 'rotate(180deg)' : 'rotate(0)' }}>expand_more</span>
-        </button>
+        <div className="absolute inset-y-0 right-0 flex items-center pr-1.5 gap-1">
+          <button 
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              inputRef.current?.focus();
+              openDropdown(true);
+            }}
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
+            title="Buscar"
+          >
+            <span className="material-symbols-outlined text-[18px]">search</span>
+          </button>
+          <button 
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              if (focused) {
+                setFocused(false);
+                setIsBrowsing(false);
+              } else {
+                inputRef.current?.focus();
+                openDropdown(true);
+              }
+            }}
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors outline-none cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[20px] transition-transform duration-200" style={{ transform: focused ? 'rotate(180deg)' : 'rotate(0)' }}>expand_more</span>
+          </button>
+        </div>
       </div>
       {focused && rect && ReactDOM.createPortal(
         <div 
@@ -412,11 +448,16 @@ export default function Surveys(): JSX.Element {
         }
         
         // Also fetch all users so we can populate the Evaluators dropdown
-        if (isAdmin && client.getUsersOnce) {
+        // Fetch for admins OR any authorized user on this page (professors who own surveys can also reassign)
+        if (client.getUsersOnce) {
           const allUsers = await client.getUsersOnce();
           if (mounted && allUsers) {
-            // filter out non-professors if desired, or keep all
-            const profs = allUsers.filter((u: any) => u.role !== 'admin');
+            // Filter: show all potential evaluators (only professors/docentes)
+            // Admins are excluded because they can evaluate any project by default.
+            const profs = allUsers.filter((u: any) => {
+              const role = String(u.role || u.rol || '').toLowerCase();
+              return role === 'profesor' || role === 'docente';
+            });
             setEvaluatorUsers(profs);
           }
         }
