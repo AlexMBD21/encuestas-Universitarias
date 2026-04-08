@@ -1,10 +1,104 @@
-import React, { useEffect, useState, useLayoutEffect } from 'react'
+import React, { useEffect, useState, useLayoutEffect, useRef } from 'react'
+import ReactDOM from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import reportHelpers from '../services/reportHelpers'
 import supabaseClient from '../../services/supabaseClient'
 import QuestionStatCard from '../components/QuestionStatCard'
 import SurveyDetailPanel from '../components/SurveyDetailPanel'
 import ProjectDetailModal from '../components/ProjectDetailModal'
+
+const CategoryDropdown = ({ value, options, onChange }: { value: string, options: string[], onChange: (val: string) => void }) => {
+  const [isOpen, setIsOpen] = React.useState(false)
+  const [rect, setRect] = React.useState<DOMRect | null>(null)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const buttonRef = React.useRef<HTMLButtonElement>(null)
+
+  React.useEffect(() => {
+    if (!isOpen) return
+
+    const updatePosition = () => {
+      if (buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
+    }
+
+    updatePosition()
+    window.addEventListener('scroll', updatePosition, true)
+    window.addEventListener('resize', updatePosition)
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        const menus = document.querySelectorAll('.portal-dropdown-menu')
+        for (const m of Array.from(menus)) {
+          if (m.contains(event.target as Node)) return
+        }
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true)
+      window.removeEventListener('resize', updatePosition)
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
+  }, [isOpen])
+
+  return (
+    <div ref={containerRef} className="relative flex-1 w-full max-w-[340px]">
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={() => {
+          if (!isOpen && buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
+          setIsOpen(!isOpen)
+        }}
+        className={`w-full bg-white border ${isOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200'} text-slate-700 font-bold text-sm rounded-xl outline-none cursor-pointer shadow-sm transition-all hover:border-slate-300 active:scale-[0.98]`}
+        style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: '12px', padding: '12px 16px', textAlign: 'left' }}
+      >
+        <span className="material-symbols-outlined text-indigo-500 text-[20px] shrink-0">category</span>
+        <span className="truncate">{value === 'Todas' ? 'Todas las Categorías' : value}</span>
+        <span className={`material-symbols-outlined text-slate-400 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}>expand_more</span>
+      </button>
+
+      {isOpen && rect && ReactDOM.createPortal(
+        <div 
+          className="portal-dropdown-menu fixed py-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-[99999] animate-fade-in-down origin-top overflow-hidden"
+          style={{
+            top: rect.bottom + 8,
+            left: rect.left,
+            minWidth: Math.max(200, rect.width),
+            width: rect.width
+          }}
+        >
+          <div className="max-h-[280px] overflow-y-auto overscroll-contain">
+            <button
+              type="button"
+              onClick={() => { onChange('Todas'); setIsOpen(false) }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold transition-all cursor-pointer ${value === 'Todas' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-600'}`}
+            >
+              <span>Mostrar Todas</span>
+              {value === 'Todas' && <span className="material-symbols-outlined text-[18px]">check</span>}
+            </button>
+            <div className="h-px bg-slate-100 mx-3 my-1" />
+            {options.map(cat => (
+              <button
+                type="button"
+                key={cat}
+                onClick={() => { onChange(cat); setIsOpen(false) }}
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold transition-all cursor-pointer ${value === cat ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-600'}`}
+              >
+                <span className="truncate">{cat}</span>
+                {value === cat && <span className="material-symbols-outlined text-[18px]">check</span>}
+              </button>
+            ))}
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
 
 export default function ReportDetail(): JSX.Element {
   const navigate = useNavigate()
@@ -314,21 +408,15 @@ export default function ReportDetail(): JSX.Element {
                           <div className="flex flex-col">
                             {uniqueCats.length > 1 && (
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/50 p-3 rounded-2xl border border-slate-100 mb-8 mt-[-10px]">
-                                <div className="flex flex-1 items-center gap-2 overflow-hidden w-full">
+                                <div className="flex flex-1 items-center gap-2 w-full">
                                   <span className="text-sm font-bold text-slate-500 flex items-center gap-1.5 ml-1 shrink-0 hidden md:flex">
                                     <span className="material-symbols-outlined text-[18px]">filter_list</span> Filtrar
                                   </span>
-                                  <div className="relative flex-1 w-full max-w-[320px]">
-                                    <select
-                                      value={selectedCategory}
-                                      onChange={(e) => setSelectedCategory(e.target.value)}
-                                      className="w-full appearance-none bg-white border border-slate-200 text-slate-700 font-bold text-sm rounded-xl pl-4 pr-10 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm transition-shadow hover:border-slate-300 truncate"
-                                    >
-                                      <option value="Todas">Mostrar Todas las Categorías</option>
-                                      {uniqueCats.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                                    </select>
-                                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">expand_more</span>
-                                  </div>
+                                  <CategoryDropdown 
+                                    value={selectedCategory} 
+                                    options={uniqueCats} 
+                                    onChange={setSelectedCategory} 
+                                  />
                                 </div>
                                 
                                   <button
@@ -506,9 +594,16 @@ export default function ReportDetail(): JSX.Element {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes fadeInDown {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
         .animate-fade-in-up {
           animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           opacity: 0;
+        }
+        .animate-fade-in-down {
+          animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
     </div>

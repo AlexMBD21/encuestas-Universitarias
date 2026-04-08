@@ -1,7 +1,96 @@
 import React, { useEffect, useState, useRef } from 'react'
+import ReactDOM from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import reportHelpers from '../services/reportHelpers'
 import supabaseClient from '../../services/supabaseClient'
+
+const FilterDropdown = ({ value, label, options, onChange, icon }: { value: string, label: string, options: Array<{id:string, label:string}>, onChange: (val: string) => void, icon: string }) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const [rect, setRect] = useState<DOMRect | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const updatePosition = () => {
+      if (buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
+    }
+
+    updatePosition()
+    window.addEventListener('scroll', updatePosition, true)
+    window.addEventListener('resize', updatePosition)
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        // Safe check: if the click is on the portal menu itself, ignore
+        const menus = document.querySelectorAll('.portal-dropdown-menu')
+        for (const m of Array.from(menus)) {
+          if (m.contains(event.target as Node)) return
+        }
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true)
+      window.removeEventListener('resize', updatePosition)
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
+  }, [isOpen])
+
+  const selectedOption = options.find(o => String(o.id) === String(value))
+  const displayLabel = selectedOption ? selectedOption.label : label
+
+  return (
+    <div ref={containerRef} className="relative shrink-0 w-full sm:w-auto">
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={() => {
+          if (!isOpen && buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
+          setIsOpen(!isOpen)
+        }}
+        className={`w-full bg-slate-50 border ${isOpen ? 'border-blue-500 ring-4 ring-blue-500/10' : 'border-slate-200'} text-slate-700 text-xs sm:text-sm font-bold rounded-xl hover:border-slate-300 transition-all outline-none cursor-pointer active:scale-[0.98] shadow-sm`}
+        style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: '10px', padding: '12px 16px', textAlign: 'left' }}
+      >
+        <span className="material-symbols-outlined text-[18px] text-blue-600 shrink-0">{icon}</span>
+        <span className="truncate">{displayLabel}</span>
+        <span className={`material-symbols-outlined text-slate-400 text-[18px] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}>expand_more</span>
+      </button>
+
+      {isOpen && rect && ReactDOM.createPortal(
+        <div 
+          className="portal-dropdown-menu fixed py-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-[99999] animate-fade-in-down origin-top overflow-hidden"
+          style={{
+            top: rect.bottom + 8,
+            left: rect.left,
+            minWidth: Math.max(180, rect.width),
+            width: rect.width
+          }}
+        >
+          <div className="max-h-[280px] overflow-y-auto overscroll-contain custom-scrollbar-sm">
+            {options.map(o => (
+              <button
+                key={o.id}
+                type="button"
+                onClick={() => { onChange(o.id); setIsOpen(false) }}
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold transition-all cursor-pointer ${String(value) === String(o.id) ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-blue-50/50 hover:text-blue-600'}`}
+              >
+                <span className="truncate">{o.label}</span>
+                {String(value) === String(o.id) && <span className="material-symbols-outlined text-[18px]">check</span>}
+              </button>
+            ))}
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
 
 
 export default function Reports(): JSX.Element {
@@ -267,37 +356,31 @@ export default function Reports(): JSX.Element {
 
           <div className="h-px md:h-10 w-full md:w-px bg-slate-200/60 hidden md:block" />
 
-          {/* Filtros Dropdown */}
-          <div id="reports-filter-chips" className="flex flex-row items-center gap-2 overflow-x-auto md:overflow-x-visible pb-0 hide-scrollbar">
-            <div id="reports-filter-type" className="relative shrink-0">
-              <select 
-                value={view} 
-                onChange={e => setView(e.target.value as any)} 
-                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-4 pr-10 py-2.5 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors w-full cursor-pointer"
-              >
-                <option value="auto">Todos los tipos</option>
-                <option value="simple">Simples</option>
-                <option value="projects">Proyectos</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-              </div>
-            </div>
+          {/* Filtros Dropdown Modernos - Ahora apilados en móvil */}
+          <div id="reports-filter-chips" className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 w-full md:w-auto pb-0">
+            <FilterDropdown 
+              value={view} 
+              label="Todos los tipos"
+              icon="filter_list"
+              options={[
+                { id: 'auto', label: 'Todos los tipos' },
+                { id: 'simple', label: 'Simples' },
+                { id: 'projects', label: 'Proyectos' }
+              ]}
+              onChange={val => setView(val as any)} 
+            />
 
             {(availableOwners || []).length > 0 && (
-              <div id="reports-filter-owner" className="relative shrink-0">
-                <select 
-                  value={filterOwner ?? ''} 
-                  onChange={e => setFilterOwner(e.target.value || null)} 
-                  className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-4 pr-10 py-2.5 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors w-full truncate cursor-pointer"
-                >
-                  <option value="">Cualquier propietario</option>
-                  {(availableOwners || []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                </div>
-              </div>
+              <FilterDropdown 
+                value={filterOwner ?? ''} 
+                label="Cualquier propietario"
+                icon="person"
+                options={[
+                  { id: '', label: 'Cualquier propietario' },
+                  ...(availableOwners || []).map(o => ({ id: o.id, label: o.label }))
+                ]}
+                onChange={val => setFilterOwner(val || null)} 
+              />
             )}
 
             {(titleSearch.trim() || view !== 'auto' || filterOwner) && (
@@ -427,7 +510,7 @@ export default function Reports(): JSX.Element {
                             window.scrollTo(0, 0)
                             navigate('/profesor/encuestas/reports/' + String(su.id))
                           }}
-                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl group-hover:bg-black group-hover:text-white group-hover:border-black transition-all shadow-sm active:scale-[0.98]"
+                          className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl ${isProject ? 'group-hover:bg-indigo-600 group-hover:border-indigo-600' : 'group-hover:bg-emerald-600 group-hover:border-emerald-600'} group-hover:text-white transition-all shadow-sm active:scale-[0.98]`}
                         >
                           Ver informe detallado
                           <span className="material-symbols-outlined text-[18px]">arrow_right_alt</span>
@@ -456,9 +539,16 @@ export default function Reports(): JSX.Element {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes fadeInDown {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
         .animate-fade-in-up {
           animation: fadeInUp 0.4s ease-out forwards;
           opacity: 0;
+        }
+        .animate-fade-in-down {
+          animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         /* Mobile-only: header y filtros de Reportes */
         @media (max-width: 767px) {
@@ -468,27 +558,6 @@ export default function Reports(): JSX.Element {
           }
           #reports-header-inner {
             text-align: left !important;
-          }
-          /* Filtros en grid 2 columnas */
-          #reports-filter-chips {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            overflow-x: visible !important;
-            width: 100% !important;
-            padding-bottom: 0 !important;
-          }
-          #reports-filter-type {
-            grid-column: 1 !important;
-            min-width: 0 !important;
-          }
-          #reports-filter-owner {
-            grid-column: 2 !important;
-            min-width: 0 !important;
-          }
-          #reports-filter-type select,
-          #reports-filter-owner select {
-            width: 100% !important;
-            min-width: 0 !important;
           }
         }
       `}</style>
