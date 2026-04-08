@@ -1922,7 +1922,11 @@ export default function Surveys(): JSX.Element {
       {(modalSurveyId !== null || isModalVisible) && ReactDOM.createPortal(
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => closeModal()} />
-          <div className="relative w-full sm:max-w-4xl sm:mx-4 sm:mb-0">
+          <div className={`relative w-full sm:mx-4 sm:mb-0 transition-all duration-300 ${
+            modalKind === 'view' ? 'sm:max-w-2xl' : 
+            (modalKind === 'projects' && viewingProjectId) ? 'sm:max-w-3xl' : 
+            'sm:max-w-4xl'
+          }`}>
             <div
               ref={modalRef}
               role="dialog"

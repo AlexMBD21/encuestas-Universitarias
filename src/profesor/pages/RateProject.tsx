@@ -160,14 +160,19 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
     <div className="animate-in fade-in zoom-in-95 duration-200">
       <div className="mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
         <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-2">{project.name || 'Proyecto sin nombre'}</h3>
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          {project.category && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-sm font-bold" style={{ backgroundColor: 'var(--color-primary-100, #e0f2fe)', color: 'var(--color-primary)' }}>
-              <span className="material-symbols-outlined text-[16px]">category</span> {project.category}
-            </span>
-          )}
+        <div className="flex flex-col gap-3 mb-6">
           {project.description && (
-             <span className="text-sm text-slate-500 dark:text-slate-400 italic flex-1 min-w-[200px]">{project.description}</span>
+             <p className="text-[15px] sm:text-base text-slate-500 dark:text-slate-400 italic leading-relaxed">
+               {project.description}
+             </p>
+          )}
+          {project.category && (
+            <div className="flex">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm border" style={{ backgroundColor: 'var(--color-primary-100, #e0f2fe)', color: 'var(--color-primary)', borderColor: 'var(--color-primary-200, rgba(0,98,141,0.15))' }}>
+                <span className="material-symbols-outlined text-[16px]">category</span>
+                {project.category}
+              </span>
+            </div>
           )}
         </div>
         
