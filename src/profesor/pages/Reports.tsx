@@ -372,18 +372,17 @@ export default function Reports(): JSX.Element {
               onChange={val => setView(val as any)} 
             />
 
-            {(availableOwners || []).length > 0 && (
-              <FilterDropdown 
-                value={filterOwner ?? ''} 
-                label="Cualquier propietario"
-                icon="person"
-                options={[
-                  { id: '', label: 'Cualquier propietario' },
-                  ...(availableOwners || []).map(o => ({ id: o.id, label: o.label }))
-                ]}
-                onChange={val => setFilterOwner(val || null)} 
-              />
-            )}
+            {/* Always render owner filter to prevent layout jump, unless we are absolutely sure there are no other owners */}
+            <FilterDropdown 
+              value={filterOwner ?? ''} 
+              label="Cualquier propietario"
+              icon="person"
+              options={[
+                { id: '', label: 'Cualquier propietario' },
+                ...(availableOwners || []).map(o => ({ id: o.id, label: o.label }))
+              ]}
+              onChange={val => setFilterOwner(val || null)} 
+            />
 
             {(titleSearch.trim() || view !== 'auto' || filterOwner) && (
               <button
@@ -398,25 +397,25 @@ export default function Reports(): JSX.Element {
           </div>
         </div>
 
-        {/* Contenido Principal */}
-        {loading && <ReportCardsSkeleton count={6} />}
+        {/* Cabecera de resultados — Siempre visible para evitar saltos de layout */}
+        <div className="flex items-center justify-between mt-8 mb-4 px-1">
+          <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
+            {(loading || allSurveysSummary === null) ? 'Tus reportes listos' : (filterOwner ? `Reportes de ${((availableOwners||[]).find(o=>o.id===filterOwner)||{label:filterOwner}).label}` : 'Tus reportes listos')}
+          </h3>
+          {!loading && allSurveysSummary !== null && allSurveysSummary.length > 0 && (
+            <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full border border-blue-200">
+              {(() => { const c = allSurveysSummary.filter(su => !titleSearch.trim() || su.title.toLowerCase().includes(titleSearch.trim().toLowerCase())).length; return `${c} EN TOTAL` })()}
+            </span>
+          )}
+          {(loading || allSurveysSummary === null) && (
+            <div className="h-6 w-24 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-800/30 animate-pulse" />
+          )}
+        </div>
 
-        {!loading && (
+        {(loading || allSurveysSummary === null) && <ReportCardsSkeleton count={6} />}
+
+        {!loading && allSurveysSummary !== null && (
           <div className="animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-            
-            {/* Cabecera de resultados */}
-            <div className="flex items-center justify-between mb-4 px-1">
-              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
-                {filterOwner ? `Reportes de ${((availableOwners||[]).find(o=>o.id===filterOwner)||{label:filterOwner}).label}` : 'Tus reportes listos'}
-              </h3>
-              {allSurveysSummary && allSurveysSummary.length > 0 && (
-                <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full border border-blue-200">
-                  {(() => { const c = allSurveysSummary.filter(su => !titleSearch.trim() || su.title.toLowerCase().includes(titleSearch.trim().toLowerCase())).length; return `${c} EN TOTAL` })()}
-                </span>
-              )}
-            </div>
-
-            {allSurveysSummary === null && <ReportCardsSkeleton count={6} />}
 
             {/* Empty state */}
             {allSurveysSummary && allSurveysSummary.length === 0 && (
