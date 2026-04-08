@@ -12,6 +12,110 @@ import ScrollFloatingButton from '../components/ScrollFloatingButton'
 
 import { useNavigate } from 'react-router-dom';
 
+const FilterDropdown = ({ value, label, options, onChange, icon, color = 'blue' }: { value: string, label: string, options: Array<{id:string, label:string}>, onChange: (val: string) => void, icon: string, color?: 'blue' | 'indigo' }) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const [rect, setRect] = useState<DOMRect | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  const theme = {
+    blue: {
+      border: 'border-blue-500',
+      ring: 'ring-blue-500/10',
+      icon: 'text-blue-600',
+      bgSelected: 'bg-blue-50',
+      textSelected: 'text-blue-700',
+      hoverBg: 'hover:bg-blue-50/50',
+      hoverText: 'hover:text-blue-600'
+    },
+    indigo: {
+      border: 'border-indigo-500',
+      ring: 'ring-indigo-500/10',
+      icon: 'text-indigo-600',
+      bgSelected: 'bg-indigo-50',
+      textSelected: 'text-indigo-700',
+      hoverBg: 'hover:bg-indigo-50/50',
+      hoverText: 'hover:text-indigo-600'
+    }
+  }[color]
+
+  useEffect(() => {
+    if (!isOpen) return
+    const updatePosition = () => {
+      if (buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
+    }
+    updatePosition()
+    window.addEventListener('scroll', updatePosition, true)
+    window.addEventListener('resize', updatePosition)
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        const menus = document.querySelectorAll('.portal-dropdown-menu')
+        for (const m of Array.from(menus)) {
+          if (m.contains(event.target as Node)) return
+        }
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true)
+      window.removeEventListener('resize', updatePosition)
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
+  }, [isOpen])
+
+  const selectedOption = options.find(o => String(o.id) === String(value))
+  const displayLabel = selectedOption ? selectedOption.label : label
+
+  return (
+    <div ref={containerRef} className="relative shrink-0 w-full md:w-auto">
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={() => {
+          if (!isOpen && buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
+          setIsOpen(!isOpen)
+        }}
+        className={`w-full bg-slate-50 border ${isOpen ? `${theme.border} ring-4 ${theme.ring}` : 'border-slate-200'} text-slate-700 text-sm font-bold rounded-xl hover:border-slate-300 transition-all outline-none cursor-pointer active:scale-[0.98] shadow-sm`}
+        style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: '10px', padding: '10px 16px', textAlign: 'left' }}
+      >
+        <span className={`material-symbols-outlined text-[18px] ${theme.icon} shrink-0`}>{icon}</span>
+        <span className="truncate">{displayLabel}</span>
+        <span className={`material-symbols-outlined text-slate-400 text-[18px] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}>expand_more</span>
+      </button>
+
+      {isOpen && rect && ReactDOM.createPortal(
+        <div 
+          className="portal-dropdown-menu fixed py-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-[99999] animate-fade-in-down origin-top overflow-hidden"
+          style={{
+            top: rect.bottom + 8,
+            left: rect.left,
+            minWidth: Math.max(180, rect.width),
+            width: rect.width
+          }}
+        >
+          <div className="max-h-[280px] overflow-y-auto overscroll-contain custom-scrollbar-sm">
+            {options.map(o => (
+              <button
+                key={o.id}
+                type="button"
+                onClick={() => { onChange(o.id); setIsOpen(false) }}
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold transition-all cursor-pointer ${String(value) === String(o.id) ? `${theme.bgSelected} ${theme.textSelected}` : `text-slate-600 ${theme.hoverBg} ${theme.hoverText}`}`}
+              >
+                <span className="truncate">{o.label}</span>
+                {String(value) === String(o.id) && <span className="material-symbols-outlined text-[18px]">check</span>}
+              </button>
+            ))}
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
+
 const EvaluatorAutocomplete = ({ value, evaluatorUsers, onChange, onSave }: any) => {
   const [val, setVal] = React.useState(value || '');
   const [focused, setFocused] = React.useState(false);
@@ -1059,31 +1163,28 @@ export default function Surveys(): JSX.Element {
 
           <div className="h-px md:h-10 w-full md:w-px bg-slate-200/60 hidden md:block" />
 
-          {/* Filtros Auxiliares */}
-          <div id="surveys-filter-chips" className="flex flex-row items-center gap-2 overflow-x-auto md:overflow-x-visible pb-0 hide-scrollbar shrink-0">
+          {/* Filtros Auxiliares - Ahora apilados en móvil */}
+          <div id="surveys-filter-chips" className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 w-full md:w-auto pb-0">
 
             {/* Checkbox Sin calificar */}
-            <label id="surveys-filter-pending" className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl px-4 py-2.5 cursor-pointer transition-colors whitespace-nowrap">
-              <input type="checkbox" checked={showOnlyPending} onChange={e => setShowOnlyPending(e.target.checked)} className="rounded text-blue-500 focus:ring-blue-500 w-4 h-4" />
+            <label id="surveys-filter-pending" className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2.5 cursor-pointer transition-colors whitespace-nowrap shadow-sm">
+              <input type="checkbox" checked={showOnlyPending} onChange={e => setShowOnlyPending(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-600 w-4 h-4 cursor-pointer" />
               Sin calificar
             </label>
 
             {/* Select: Estado */}
-            <div id="surveys-filter-status" className="relative shrink-0">
-              <select
-                value={publishedFilter}
-                onChange={e => setPublishedFilter(e.target.value as any)}
-                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-4 pr-10 py-2.5 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer w-full"
-              >
-                <option value="all">Estado: Todas</option>
-                <option value="published">Publicadas</option>
-                <option value="unpublished">No publicadas</option>
-                <option value="reported">Reportadas</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-              </div>
-            </div>
+            <FilterDropdown 
+              value={publishedFilter} 
+              label="Estado: Todas" 
+              icon="filter_list"
+              options={[
+                { id: 'all', label: 'Estado: Todas' },
+                { id: 'published', label: 'Publicadas' },
+                { id: 'unpublished', label: 'No publicadas' },
+                { id: 'reported', label: 'Reportadas' }
+              ]} 
+              onChange={(val) => setPublishedFilter(val as any)} 
+            />
 
             {/* Select: Propietario */}
             {(() => {
@@ -1092,22 +1193,18 @@ export default function Surveys(): JSX.Element {
               ).sort()
               if (uniqueOwners.length === 0) return null
               return (
-                <div id="surveys-filter-owner" className="relative shrink-0">
-                  <select
-                    value={ownerFilter}
-                    onChange={e => setOwnerFilter(e.target.value)}
-                    className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl pl-4 pr-10 py-2.5 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors md:max-w-[170px] truncate cursor-pointer w-full"
-                  >
-                    <option value="all">Cualquier propietario</option>
-                    {uniqueOwners.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                  </div>
-                </div>
+                <FilterDropdown 
+                  value={ownerFilter} 
+                  label="Cualquier propietario" 
+                  icon="person"
+                  options={[
+                    { id: 'all', label: 'Cualquier propietario' },
+                    ...uniqueOwners.map(o => ({ id: o, label: o }))
+                  ]} 
+                  onChange={(val) => setOwnerFilter(val)} 
+                />
               )
             })()}
-
 
             {/* Gestionar Categorías (solo admin o profesor owner) */}
             {isAdmin && (
@@ -1133,7 +1230,7 @@ export default function Surveys(): JSX.Element {
                   setNewCategoryInput('');
                   setManageCategoriesId('sys_settings_project_categories');
                 }}
-                className="shrink-0 flex items-center gap-2 px-3.5 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 text-sm font-semibold rounded-xl transition-colors whitespace-nowrap"
+                className="shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 text-sm font-bold rounded-xl transition-all whitespace-nowrap shadow-sm active:scale-[0.98]"
                 title="Gestionar categorías de proyectos"
               >
                 <span className="material-symbols-outlined text-[18px]">category</span>
@@ -1146,10 +1243,10 @@ export default function Surveys(): JSX.Element {
               <button
                 type="button"
                 onClick={() => { setShowOnlyPending(false); setPublishedFilter('all'); setOwnerFilter('all'); setTitleSearch('') }}
-                className="shrink-0 p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-colors border border-transparent hover:border-red-100"
+                className="shrink-0 flex items-center justify-center p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100 active:scale-90"
                 title="Limpiar filtros"
               >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z" /><path d="M18 9l-6 6" /><path d="M12 9l6 6" /></svg>
+                <span className="material-symbols-outlined text-[22px]">backspace</span>
               </button>
             )}
           </div>
@@ -1947,16 +2044,30 @@ export default function Surveys(): JSX.Element {
 
                           {/* Filters */}
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <select value={projectFilter} onChange={e => setProjectFilter(e.target.value as any)} className="w-full p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm font-medium text-slate-700 dark:text-slate-300">
-                              <option value="all">Todos los proyectos</option>
-                              <option value="pending">Mis pendientes</option>
-                              <option value="rated">Mis calificados</option>
-                              <option value="unassigned">No asignados a mí</option>
-                            </select>
-                            <select value={projectCategory} onChange={e => setProjectCategory(e.target.value)} className="w-full p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm font-medium text-slate-700 dark:text-slate-300">
-                              <option value="all">Todas las categorías</option>
-                              {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
+                            <FilterDropdown 
+                              value={projectFilter} 
+                              label="Todos los proyectos" 
+                              icon="filter_list"
+                              color="indigo"
+                              options={[
+                                { id: 'all', label: 'Todos los proyectos' },
+                                { id: 'pending', label: 'Mis pendientes' },
+                                { id: 'rated', label: 'Mis calificados' },
+                                { id: 'unassigned', label: 'No asignados a mí' }
+                              ]} 
+                              onChange={(val) => setProjectFilter(val as any)} 
+                            />
+                            <FilterDropdown 
+                              value={projectCategory} 
+                              label="Todas las categorías" 
+                              icon="category"
+                              color="indigo"
+                              options={[
+                                { id: 'all', label: 'Todas las categorías' },
+                                ...categories.map(c => ({ id: c, label: c }))
+                              ]} 
+                              onChange={(val) => setProjectCategory(val)} 
+                            />
                             <div className="relative w-full">
                               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
                               <input placeholder="Buscar proyecto..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400" />
@@ -2765,36 +2876,6 @@ export default function Surveys(): JSX.Element {
           }
           #surveys-header-buttons button {
             flex: 1 1 0 !important;
-          }
-          /* Filtros en grid 2 columnas en mobile */
-          #surveys-filter-chips {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            overflow-x: visible !important;
-            width: 100% !important;
-            padding-bottom: 0 !important;
-          }
-          #surveys-filter-pending {
-            grid-column: 1 !important;
-            min-width: 0 !important;
-          }
-          #surveys-filter-status {
-            grid-column: 2 !important;
-            min-width: 0 !important;
-          }
-          #surveys-filter-owner {
-            grid-column: 1 / -1 !important;
-            width: 100% !important;
-            min-width: 0 !important;
-          }
-          #surveys-filter-status select,
-          #surveys-filter-owner select {
-            width: 100% !important;
-            min-width: 0 !important;
-          }
-          #surveys-filter-pending {
-            display: flex !important;
-            align-items: center !important;
           }
         }
       `}</style>
