@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import supabaseClient from '../../services/supabaseClient'
 import AuthAdapter from '../../services/AuthAdapter'
 import { useAuth } from '../../services/AuthContext'
-import Toast from '../../components/Toast'
+import { toast } from '../../components/ui/Toast'
 import { Modal } from '../../components/ui/Modal';
 
 export default function Configuracion() {
@@ -46,29 +46,13 @@ export default function Configuracion() {
   const [modalMsgType, setModalMsgType] = useState<'success' | 'error'>('success')
   // confirm password-change modal
   const [confirmPwdOpen, setConfirmPwdOpen] = useState(false)
-  // toast state
-  const [toastMsg, setToastMsg] = useState<string | null>(null)
-  const [toastKind, setToastKind] = useState<'create' | 'edit' | 'delete' | 'info'>('info')
-  const [toastVisible, setToastVisible] = useState(false)
-  const toastTimerRef = useRef<number | null>(null)
-
-  const showToast = (msg: string | null, kind: 'create' | 'edit' | 'delete' | 'info' = 'info', autoHide: boolean = true) => {
-    try {
-      if (!msg) return
-      setToastMsg(msg)
-      setToastKind(kind)
-      setToastVisible(true)
-      if (toastTimerRef.current) {
-        try { window.clearTimeout(toastTimerRef.current) } catch (e) {}
-        toastTimerRef.current = null
-      }
-      if (autoHide) {
-        toastTimerRef.current = window.setTimeout(() => {
-          setToastVisible(false)
-          toastTimerRef.current = null
-        }, 3500)
-      }
-    } catch (e) {}
+  /** Reemplaza el viejo showToast: mapea 'kind' al tipo del sistema global */
+  const showToast = (msg: string | null, kind: 'create' | 'edit' | 'delete' | 'info' = 'info', _autoHide?: boolean) => {
+    if (!msg) return
+    const typeMap: Record<string, 'success' | 'error' | 'warning' | 'info'> = {
+      create: 'success', edit: 'success', delete: 'warning', info: 'info'
+    }
+    toast({ message: msg, type: typeMap[kind] ?? 'info' })
   }
 
   const translateErrorForToast = (msg: string | null) => {
@@ -773,7 +757,7 @@ export default function Configuracion() {
           </div>
         </div>
       </Modal>
-      <Toast visible={toastVisible} message={toastMsg} kind={toastKind} onClose={() => { setToastVisible(false); if (toastTimerRef.current) { try { window.clearTimeout(toastTimerRef.current) } catch (e) {} toastTimerRef.current = null } }} />
+      {/* Toast global — renderizado por ToastProvider en App.tsx */}
       
       <style>{`
         @keyframes fadeInUp {

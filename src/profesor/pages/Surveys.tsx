@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import ReactDOM from 'react-dom'
 import { useLocation } from 'react-router-dom'
-import CreateSurvey from './CreateSurvey'
-import ViewSurvey from './ViewSurvey'
-import RateProject from './RateProject'
+const CreateSurvey = React.lazy(() => import('./CreateSurvey'))
+const ViewSurvey   = React.lazy(() => import('./ViewSurvey'))
+const RateProject  = React.lazy(() => import('./RateProject'))
 import surveyHelpers from '../../services/surveyHelpers'
 import AuthAdapter from '../../services/AuthAdapter'
 import supabaseClient from '../../services/supabaseClient'
@@ -17,6 +17,8 @@ import { Dropdown as FilterDropdown } from '../../components/ui/Dropdown';
 import { EvaluatorAssignmentModal as EvaluatorModalContent } from '../components/surveys/EvaluatorAssignmentModal';
 import { ManageCategoriesModal } from '../components/surveys/ManageCategoriesModal';
 import { GenerateLinkModal } from '../components/surveys/GenerateLinkModal';
+import { SurveyGridSkeleton } from '../../components/ui/SurveyCardSkeleton';
+import { toast } from '../../components/ui/Toast';
 
 export default function Surveys(): JSX.Element {
   const location = useLocation()
@@ -518,43 +520,15 @@ export default function Surveys(): JSX.Element {
         {/* If the query param view=create, show inline CreateSurvey panel; if view=details show ViewSurvey */}
         {(() => {
           const view = new URLSearchParams(location.search).get('view')
-          if (view === 'create') return <CreateSurvey />
-          if (view === 'details') return <ViewSurvey />
+          if (view === 'create') return <React.Suspense fallback={<SurveyGridSkeleton count={4} />}><CreateSurvey /></React.Suspense>
+          if (view === 'details') return <React.Suspense fallback={<SurveyGridSkeleton count={4} />}><ViewSurvey /></React.Suspense>
           return null
         })()}
 
         <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           {/* Ocultamos el título "Encuestas guardadas" porque ya está explícito en la página y limpiamos el contenedor principal de la cuadrícula */}
           {!surveysLoaded ? (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 animate-pulse">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                <div key={i} className="relative p-5 border border-slate-100 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 flex flex-col justify-between h-[280px] overflow-hidden">
-                  {/* Acento superior placeholder */}
-                  <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-200 dark:bg-slate-800"></div>
-                  <div className="flex-1 mt-1">
-                    {/* Badges placeholder */}
-                    <div className="flex gap-1.5 mb-3">
-                      <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-full w-20"></div>
-                      <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-full w-16"></div>
-                    </div>
-                    {/* Título placeholder */}
-                    <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-lg w-11/12 mb-2.5"></div>
-                    {/* Propietario placeholder */}
-                    <div className="h-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg w-1/2 mb-6"></div>
-
-                    {/* Detalles placeholder */}
-                    <div className="border-t border-slate-100 dark:border-slate-800 pt-4 flex flex-col gap-3">
-                      <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-2/3"></div>
-                      <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/3"></div>
-                    </div>
-                  </div>
-                  {/* Botonera placeholder */}
-                  <div className="mt-5 flex justify-end gap-2">
-                    <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded-lg w-24"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <SurveyGridSkeleton count={8} />
           ) : surveys.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/20 border-2 border-dashed border-slate-300 dark:border-slate-700">
               <div className="w-20 h-20 mb-6 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shadow-inner">
@@ -891,14 +865,6 @@ export default function Surveys(): JSX.Element {
         </div> {/* Cierra animacion grid */}
       </div> {/* Cierra max-w-7xl */}
 
-      {/* toast premium */}
-      {toastMessage && (
-        <div className="fixed right-4 bottom-4 z-[10000] bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in-up">
-          <span className="material-symbols-outlined text-emerald-400">info</span>
-          <span className="text-sm font-medium">{toastMessage}</span>
-        </div>
-      )}
-
       {/* floating scroll button (solo scroll) */}
       <ScrollFloatingButton />
       {/* Portal-rendered survey menu (anchored to the three-dots button) */}
@@ -1068,7 +1034,7 @@ export default function Surveys(): JSX.Element {
                       console.debug('[Surveys] rendering RateProject for surveyId=', s.id, 'viewingProjectId=', viewingProjectId)
                       const proj = (s.projects || []).find((p: any) => String(p.id) === String(viewingProjectId))
                       if (!proj) return <div className="text-slate-600">Proyecto no encontrado.</div>
-                      return <RateProject survey={s} project={proj} readOnly={viewingReadOnly} onClose={() => setViewingProjectId(null)} onSaved={(opts) => {
+                      return <React.Suspense fallback={<div className="flex items-center justify-center py-16"><svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#6366f1" strokeWidth="4" strokeLinecap="round" /></svg></div>}><RateProject survey={s} project={proj} readOnly={viewingReadOnly} onClose={() => setViewingProjectId(null)} onSaved={(opts) => {
                         // After saving a project's rating, return to the projects list view
                         // Update local ratedMap so the UI shows 'Calificado' immediately for this project
                         try {
@@ -1084,7 +1050,7 @@ export default function Surveys(): JSX.Element {
                           }
                         } catch (e) { }
                         setViewingProjectId(null)
-                      }} />
+                      }} /></React.Suspense>
                     }
 
                     // otherwise render list of projects with Calificar buttons
@@ -1238,7 +1204,7 @@ export default function Surveys(): JSX.Element {
                     )
                   }
                   // default for non-project surveys
-                  return <ViewSurvey surveyId={modalSurveyId ?? undefined} onClose={() => closeModal()} hideCloseButton={true} />
+                  return <React.Suspense fallback={<div className="flex items-center justify-center py-16"><svg width="40" height="40" viewBox="0 0 36 36" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round" /></svg></div>}><ViewSurvey surveyId={modalSurveyId ?? undefined} onClose={() => closeModal()} hideCloseButton={true} /></React.Suspense>
                 })()}
               </div>
             </div>
@@ -1735,36 +1701,38 @@ export default function Surveys(): JSX.Element {
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto px-0 sm:px-4 pb-0 sm:pb-4 w-full">
-                <CreateSurvey
-                  hideTypeSelector={true}
-                  initialType={createInitialType}
-                  editSurvey={editSurvey}
-                  onSaved={(key: any, surveyData?: any) => {
-                    const wasEditing = !!editSurvey
-                    closeCreateModal()
-                    setEditSurvey(null)
-                    setCreateInitialType(undefined)
-                    setToastMessage(wasEditing ? 'Encuesta actualizada' : 'Encuesta creada')
-                    setTimeout(() => setToastMessage(null), 3000)
-                    // Optimistic: add/update survey in local state immediately
-                    if (surveyData) {
-                      setSurveys(prev => {
-                        const copy = Array.isArray(prev) ? [...prev] : []
-                        const idx = copy.findIndex((s: any) => String(s.id) === String(key))
-                        return idx >= 0
-                          ? copy.map((s: any) => String(s.id) === String(key) ? surveyData : s)
-                          : [...copy, surveyData]
-                      })
-                    }
-                    // Then sync from server in case optimistic data differs
-                    try {
-                      dataClientNow.getSurveysOnce().then((arr: any[]) => {
-                        try { setSurveys(arr) } catch (e) { }
-                      }).catch(() => { })
-                    } catch (e) { }
-                  }}
-                  onClose={() => { setCreateModalOpen(false); setEditSurvey(null); setCreateInitialType(undefined); }}
-                />
+                <React.Suspense fallback={<div className="flex items-center justify-center py-16"><svg width="40" height="40" viewBox="0 0 36 36" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#6366f1" strokeWidth="4" strokeLinecap="round" /></svg></div>}>
+                  <CreateSurvey
+                    hideTypeSelector={true}
+                    initialType={createInitialType}
+                    editSurvey={editSurvey}
+                    onSaved={(key: any, surveyData?: any) => {
+                      const wasEditing = !!editSurvey
+                      closeCreateModal()
+                      setEditSurvey(null)
+                      setCreateInitialType(undefined)
+                      setToastMessage(wasEditing ? 'Encuesta actualizada' : 'Encuesta creada')
+                      setTimeout(() => setToastMessage(null), 3000)
+                      // Optimistic: add/update survey in local state immediately
+                      if (surveyData) {
+                        setSurveys(prev => {
+                          const copy = Array.isArray(prev) ? [...prev] : []
+                          const idx = copy.findIndex((s: any) => String(s.id) === String(key))
+                          return idx >= 0
+                            ? copy.map((s: any) => String(s.id) === String(key) ? surveyData : s)
+                            : [...copy, surveyData]
+                        })
+                      }
+                      // Then sync from server in case optimistic data differs
+                      try {
+                        dataClientNow.getSurveysOnce().then((arr: any[]) => {
+                          try { setSurveys(arr) } catch (e) { }
+                        }).catch(() => { })
+                      } catch (e) { }
+                    }}
+                    onClose={() => { setCreateModalOpen(false); setEditSurvey(null); setCreateInitialType(undefined); }}
+                  />
+                </React.Suspense>
               </div>
             </div>
           </div>

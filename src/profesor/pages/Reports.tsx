@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import reportHelpers from '../services/reportHelpers'
 import supabaseClient from '../../services/supabaseClient'
+import { ReportCardsSkeleton } from '../../components/ui/ReportCardsSkeleton'
+import { toast } from '../../components/ui/Toast'
 
 const FilterDropdown = ({ value, label, options, onChange, icon }: { value: string, label: string, options: Array<{id:string, label:string}>, onChange: (val: string) => void, icon: string }) => {
   const [isOpen, setIsOpen] = useState(false)
@@ -98,7 +100,7 @@ export default function Reports(): JSX.Element {
   const [searchParams, setSearchParams] = useSearchParams();
   const dataClientNow: any = supabaseClient
   const [surveys, setSurveys] = useState<any[]>([])
-  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  // toast handled by the global Toast system
   const [view, setViewRaw] = useState<'auto'|'simple'|'projects'>((searchParams.get('view') as any) || 'auto')
   const [filterOwner, setFilterOwnerRaw] = useState<string | null>(searchParams.get('owner') || null)
 
@@ -285,7 +287,7 @@ export default function Reports(): JSX.Element {
         timeoutId = setTimeout(() => {
           timedOut = true
           try { if (loadIdRef.current === myLoadId) setAllSurveysSummary([]) } catch (e) {}
-          try { if (loadIdRef.current === myLoadId) { setToastMessage('Tiempo de espera al cargar resúmenes'); setTimeout(() => setToastMessage(null), 4000) } } catch (e) {}
+          try { if (loadIdRef.current === myLoadId) { toast({ message: 'Tiempo de espera al cargar resúmenes', type: 'warning', duration: 4000 }) } } catch (e) {}
         }, 8000)
         const sums = await Promise.all((filteredSurveys || []).map(async (s: any) => {
           try {
@@ -397,24 +399,7 @@ export default function Reports(): JSX.Element {
         </div>
 
         {/* Contenido Principal */}
-        {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="bg-white rounded-2xl border border-slate-200 h-[220px] p-5 md:p-6 flex flex-col relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-slate-100" />
-                <div className="flex items-start justify-between gap-3 mb-4 mt-1">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 shrink-0" />
-                  <div className="h-5 bg-slate-100 rounded-full w-16" />
-                </div>
-                <div className="h-6 bg-slate-100 rounded-lg w-11/12 mb-2" />
-                <div className="h-6 bg-slate-100 rounded-lg w-2/3 mb-4" />
-                <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
-                  <div className="h-4 bg-slate-50 rounded w-24" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {loading && <ReportCardsSkeleton count={6} />}
 
         {!loading && (
           <div className="animate-fade-in-up" style={{ animationDelay: '150ms' }}>
@@ -431,25 +416,7 @@ export default function Reports(): JSX.Element {
               )}
             </div>
 
-            {/* Skeleton Loading State */}
-            {allSurveysSummary === null && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <div key={i} className="bg-white rounded-2xl border border-slate-200 h-[220px] p-5 md:p-6 flex flex-col relative overflow-hidden">
-                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-slate-100" />
-                    <div className="flex items-start justify-between gap-3 mb-4 mt-1">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 shrink-0" />
-                      <div className="h-5 bg-slate-100 rounded-full w-16" />
-                    </div>
-                    <div className="h-6 bg-slate-100 rounded-lg w-11/12 mb-2" />
-                    <div className="h-6 bg-slate-100 rounded-lg w-2/3 mb-4" />
-                    <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
-                      <div className="h-4 bg-slate-50 rounded w-24" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            {allSurveysSummary === null && <ReportCardsSkeleton count={6} />}
 
             {/* Empty state */}
             {allSurveysSummary && allSurveysSummary.length === 0 && (
@@ -525,12 +492,7 @@ export default function Reports(): JSX.Element {
         )}
       </div>
 
-      {toastMessage && (
-        <div className="fixed right-4 bottom-4 z-[10000] bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in-up">
-          <span className="material-symbols-outlined text-blue-400">info</span>
-          <span className="text-sm font-medium">{toastMessage}</span>
-        </div>
-      )}
+
 
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }

@@ -12,6 +12,7 @@ import ReportDetail from './profesor/pages/ReportDetail'
 import Configuracion from './profesor/pages/Configuracion'
 import RequireAuth from './components/RequireAuth'
 import Inscripcion from './public/pages/Inscripcion'
+import { ToastProvider, ToastImperativeMount } from './components/ui/Toast'
 
 function ScrollToTop(): null {
   const { pathname } = useLocation()
@@ -49,8 +50,10 @@ function ScrollToTop(): null {
 
 export default function App() {
   return (
-    <div style={{fontFamily: 'Inter, Arial, sans-serif'}}>
-      <ScrollToTop />
+    <ToastProvider>
+      <ToastImperativeMount />
+      <div style={{fontFamily: 'Inter, Arial, sans-serif'}}>
+        <ScrollToTop />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/inscripcion/:token" element={<Inscripcion />} />
@@ -68,6 +71,7 @@ export default function App() {
           {/* Notificaciones route removed */}
         </Route>
       </Routes>
-    </div>
+      </div>
+    </ToastProvider>
   )
 }

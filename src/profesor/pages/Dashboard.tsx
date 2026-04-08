@@ -8,6 +8,7 @@ import { useAuth } from '../../services/AuthContext'
 import { loadProfile, loadProfileAsync } from '../components/ProfileModal'
 import { CalendarWidget, CalendarEvent } from '../components/CalendarWidget'
 import '../styles/dashboard-profesor.css'
+import { DashboardStatCardsSkeleton, DashboardNoticesSkeleton } from '../../components/ui/DashboardSkeleton'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -868,21 +869,7 @@ export default function Dashboard() {
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Resumen rápido</h2>
           </div>
           {summaryLoading ? (
-            <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full">
-              {[0,1,2].map(i => (
-                <li key={i} className="stat-card" style={{minHeight: 110}}>
-                  <div className="stat-left" style={{background:'#f1f5f9'}}></div>
-                  <div className="stat-body" style={{flex:1, gap:8, justifyContent:'center', alignItems:'center', display:'flex', flexDirection:'column'}}>
-                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{animation:'spin 0.9s linear infinite'}}>
-                      <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4"/>
-                      <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round"/>
-                    </svg>
-                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                    <div style={{fontSize:'0.8rem', color:'#94a3b8', fontWeight:500}}>Cargando...</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <DashboardStatCardsSkeleton />
           ) : (
           <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full">
             <li className="stat-card">
@@ -937,14 +924,7 @@ export default function Dashboard() {
 
           <div ref={noticesRef} className="flex flex-col gap-2 mb-4 notices-scroll custom-scrollbar">
               {!surveysLoaded ? (
-                <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'32px 0',gap:10}}>
-                  <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{animation:'spin 0.9s linear infinite'}}>
-                    <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4"/>
-                    <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round"/>
-                  </svg>
-                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                  <div style={{fontSize:'0.8rem', color:'#94a3b8', fontWeight:500}}>Cargando...</div>
-                </div>
+                <DashboardNoticesSkeleton count={3} />
               ) : noticesToShow && noticesToShow.length > 0 ? (
               noticesToShow.map((n: any, idx: number) => {
                 const type = (n.type || '').toLowerCase()

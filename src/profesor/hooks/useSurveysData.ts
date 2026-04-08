@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import AuthAdapter from '../../services/AuthAdapter'
 import supabaseClient from '../../services/supabaseClient'
 import { useAuth } from '../../services/AuthContext'
+import { toast } from '../../components/ui/Toast'
 
 export function useSurveysData() {
   const [currentUser, setCurrentUser] = useState<any | null>(() => AuthAdapter.getUser())
@@ -18,7 +19,12 @@ export function useSurveysData() {
   const [reportsLoaded, setReportsLoaded] = useState(false)
   const [ratedMap, setRatedMap] = useState<Record<string, string[]>>({})
   const [globalRatedMap, setGlobalRatedMap] = useState<Record<string, string[]>>({})
-  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [toastMessage, _setToastMessageLegacy] = useState<string | null>(null)
+  /** @deprecated Use import { toast } from '../../components/ui/Toast' directly */
+  const setToastMessage = useCallback((msg: string | null) => {
+    if (msg) toast(msg)
+    _setToastMessageLegacy(msg)
+  }, [])
   const [ownerEmailMap, setOwnerEmailMap] = useState<Record<string, string>>({})
   const [evaluatorUsers, setEvaluatorUsers] = useState<any[]>([])
 
@@ -113,8 +119,8 @@ export function useSurveysData() {
       setSurveys([])
       setSurveyReports([])
       setReportsLoaded(true)
-      setToastMessage('No hay servicio de datos configurado. Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local')
-      setTimeout(() => setToastMessage(null), 5000)
+      toast({ message: 'No hay servicio de datos configurado. Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local', type: 'warning', duration: 6000 })
+      setToastMessage(null)
     }
 
     const setupRealtime = () => {
@@ -193,8 +199,8 @@ export function useSurveysData() {
       setSurveysLoaded(true)
       setSurveyReports([])
       setReportsLoaded(true)
-      setToastMessage('No hay servicio de datos configurado. Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local')
-      setTimeout(() => setToastMessage(null), 6000)
+      toast({ message: 'No hay servicio de datos configurado. Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local', type: 'warning', duration: 6000 })
+      setToastMessage(null)
     }
 
     const onConnected = () => {
