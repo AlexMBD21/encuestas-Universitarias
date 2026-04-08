@@ -2413,12 +2413,20 @@ export default function Surveys(): JSX.Element {
               <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
             </div>
             {/* Header */}
-            <div className="px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10" style={{ touchAction: 'none' }}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[22px]">flag</span>
+            <div className="px-5 py-3.5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10" style={{ touchAction: 'none' }}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-red-100 text-red-600 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[24px]">flag</span>
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Buzón de Reportes</h3>
+                <div className="flex flex-col min-w-0">
+                  <h3 className="text-[17px] font-bold text-slate-800 dark:text-slate-100 leading-tight">Buzón de Reportes</h3>
+                  <div className="text-xs font-bold text-slate-500 dark:text-slate-400 truncate mt-0.5 tracking-tight">
+                    {(() => {
+                      const reportsSurvey = surveys.find(x => String(x.id) === String(viewReportsFor))
+                      return reportsSurvey ? (reportsSurvey.title || reportsSurvey.name) : 'Cargando información...'
+                    })()}
+                  </div>
+                </div>
               </div>
               <div className="ml-auto hidden sm:block">
                 <button
