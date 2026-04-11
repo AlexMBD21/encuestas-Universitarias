@@ -2,17 +2,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Modal } from '../../../components/ui/Modal';
 
-const EvaluatorAutocomplete = ({ value, evaluatorUsers, onChange, onSave }: any) => {
-  const [val, setVal] = React.useState(value || '');
+const MultiEvaluatorSelector = ({ values, evaluatorUsers, onChange, onSave }: any) => {
+  const emails = Array.isArray(values) ? values : (values ? [String(values)] : []);
+  const [val, setVal] = React.useState('');
   const [focused, setFocused] = React.useState(false);
   const [isBrowsing, setIsBrowsing] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [rect, setRect] = React.useState<any>(null);
-
-  React.useEffect(() => {
-    setVal(value || '');
-  }, [value]);
 
   const openDropdown = (browsing = false) => {
     if (inputRef.current) setRect(inputRef.current.getBoundingClientRect());
@@ -22,54 +19,79 @@ const EvaluatorAutocomplete = ({ value, evaluatorUsers, onChange, onSave }: any)
 
   React.useEffect(() => {
     if (!focused) return;
-
-    // Reposition on scroll or resize instead of closing
-    const updatePosition = () => {
-      if (inputRef.current) {
-        setRect(inputRef.current.getBoundingClientRect());
-      }
-    };
-
-    // Close when clicking outside the whole container
+    const updatePosition = () => { if (inputRef.current) setRect(inputRef.current.getBoundingClientRect()); };
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         const dropdown = document.querySelector('.evaluator-dropdown');
         if (dropdown && dropdown.contains(e.target as Node)) return;
         setFocused(false);
-        onSave && onSave(val);
+        onSave && onSave(emails);
       }
     };
-
     window.addEventListener('scroll', updatePosition, true);
     window.addEventListener('resize', updatePosition);
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('touchstart', handleClickOutside);
-
     return () => {
       window.removeEventListener('scroll', updatePosition, true);
       window.removeEventListener('resize', updatePosition);
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
-  }, [focused, val, onSave]);
+  }, [focused, emails, onSave]);
+
+  const addEmail = (email: string) => {
+    const clean = email.trim().toLowerCase();
+    if (!clean || emails.includes(clean)) { setVal(''); setFocused(false); return; }
+    const newEmails = [...emails, clean];
+    onChange && onChange(newEmails);
+    setVal('');
+    setFocused(false);
+  }
+
+  const removeEmail = (email: string) => {
+    const newEmails = emails.filter(e => e !== email);
+    onChange && onChange(newEmails);
+  }
 
   const filtered = (evaluatorUsers || []).filter((u: any) => {
+    const email = (u.email || '').toLowerCase();
+    if (emails.includes(email)) return false;
     if (isBrowsing) return true;
     if (!val.trim()) return true;
-    return (u.email || '').toLowerCase().includes(val.toLowerCase()) || 
-           (u.name || '').toLowerCase().includes(val.toLowerCase())
+    return email.includes(val.toLowerCase()) || (u.name || '').toLowerCase().includes(val.toLowerCase())
   });
 
   return (
-    <>
-      <div ref={containerRef} className="relative w-full group">
+    <div ref={containerRef} className="w-full space-y-2">
+      {/* Selected Evaluators Chips */}
+      {emails.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {emails.map(email => (
+            <div key={email} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 rounded-lg group transition-all hover:border-indigo-300">
+              <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 truncate max-w-[150px]">{email}</span>
+              <button 
+                type="button" 
+                onClick={() => removeEmail(email)}
+                className="w-4 h-4 flex items-center justify-center rounded-full bg-indigo-200/50 text-indigo-600 hover:bg-indigo-500 hover:text-white transition-colors"
+                title="Eliminar"
+              >
+                <span className="material-symbols-outlined text-[12px] font-bold">close</span>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Input Field */}
+      <div className="relative group">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
-          <span className="material-symbols-outlined text-[18px]">person</span>
+          <span className="material-symbols-outlined text-[18px]">person_add</span>
         </div>
         <input
           ref={inputRef}
           type="text"
-          placeholder="Seleccionar profesor..."
+          placeholder={emails.length === 0 ? "Añadir evaluador..." : "Añadir otro..."}
           value={val}
           onFocus={() => openDropdown(true)}
           onClick={() => openDropdown(true)}
@@ -77,11 +99,10 @@ const EvaluatorAutocomplete = ({ value, evaluatorUsers, onChange, onSave }: any)
             setVal(e.target.value);
             setIsBrowsing(false);
             openDropdown();
-            onChange && onChange(e.target.value);
           }}
-          className="w-full pl-9 pr-24 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
+          className="w-full pl-9 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
         />
-        <div className="absolute inset-y-0 right-0 flex items-center pr-1.5 gap-1">
+        <div className="absolute inset-y-0 right-0 flex items-center pr-1.5">
           <button 
             type="button"
             onMouseDown={(e) => {
@@ -89,29 +110,13 @@ const EvaluatorAutocomplete = ({ value, evaluatorUsers, onChange, onSave }: any)
               inputRef.current?.focus();
               openDropdown(true);
             }}
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
-            title="Buscar"
-          >
-            <span className="material-symbols-outlined text-[18px]">search</span>
-          </button>
-          <button 
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              if (focused) {
-                setFocused(false);
-                setIsBrowsing(false);
-              } else {
-                inputRef.current?.focus();
-                openDropdown(true);
-              }
-            }}
             className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors outline-none cursor-pointer"
           >
             <span className="material-symbols-outlined text-[20px] transition-transform duration-200" style={{ transform: focused ? 'rotate(180deg)' : 'rotate(0)' }}>expand_more</span>
           </button>
         </div>
       </div>
+
       {focused && rect && ReactDOM.createPortal(
         <div 
           style={{
@@ -129,10 +134,7 @@ const EvaluatorAutocomplete = ({ value, evaluatorUsers, onChange, onSave }: any)
                 key={u.id || u.email}
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  setVal(u.email);
-                  onChange && onChange(u.email);
-                  onSave && onSave(u.email);
-                  setFocused(false);
+                  addEmail(u.email);
                 }}
                 className="group px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0 flex items-center gap-3 transition-colors"
               >
@@ -148,14 +150,14 @@ const EvaluatorAutocomplete = ({ value, evaluatorUsers, onChange, onSave }: any)
             )) : (
               <div className="px-4 py-8 text-center flex flex-col items-center gap-2">
                 <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-3xl">sentiment_dissatisfied</span>
-                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">No se encontraron profesores</span>
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">No hay más profesores disponibles</span>
               </div>
             )}
           </div>
         </div>,
         document.body
       )}
-    </>
+    </div>
   );
 }
 
@@ -192,7 +194,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
       {/* Fixed Instructions at the top */}
       <div className="p-4 sm:px-6 sm:py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
         <p className="text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
-          Asigna el correo de un profesor evaluador a cada proyecto individual. Cuando ese profesor inicie sesión, solo podrá revisar y calificar el proyecto que le fue asignado.
+          Asigna uno o más profesores evaluadores a cada proyecto. Los profesores asignados podrán revisar y calificar el proyecto de forma independiente desde su cuenta.
         </p>
       </div>
 
@@ -215,7 +217,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
                 <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400">
                   <th className="p-3">Proyecto</th>
                   <th className="p-3 w-40">Categoría</th>
-                  <th className="p-3 w-72">Correo del Evaluador</th>
+                  <th className="p-3 w-80">Evaluadores Asignados</th>
                 </tr>
               </thead>
               <tbody>
@@ -226,16 +228,17 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
                       <div className="text-xs text-slate-500 truncate max-w-[200px]">Asesor: {p.advisor || '-'}</div>
                     </td>
                     <td className="p-3">
-                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-indigo-600 text-xs font-bold dark:bg-indigo-900/30 dark:text-indigo-400">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-bold dark:bg-slate-800 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50">
+                        <span className="material-symbols-outlined text-[14px]">category</span>
                         {p.category || 'N/A'}
                       </span>
                     </td>
-                    <td className="p-3">
-                      <EvaluatorAutocomplete 
-                        value={p.evaluator || ''}
+                    <td className="p-3 align-top pt-5">
+                      <MultiEvaluatorSelector 
+                        values={p.evaluators || (p.evaluator ? [p.evaluator] : [])}
                         evaluatorUsers={evaluatorUsers}
-                        onChange={(cleanVal: string) => {
-                           setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluator: cleanVal.trim().toLowerCase() } : x));
+                        onChange={(newEmails: string[]) => {
+                           setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluators: newEmails, evaluator: newEmails[0] || '' } : x));
                         }}
                         onSave={() => {}}
                       />
@@ -252,7 +255,8 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
               <div key={p.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm">
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-col gap-1">
-                    <span className="self-start inline-flex items-center px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-600 text-[8px] font-black uppercase tracking-wider dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-100/50 dark:border-indigo-500/20">
+                    <span className="self-start inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[9px] font-black uppercase tracking-wider dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700/50">
+                      <span className="material-symbols-outlined text-[11px]">category</span>
                       {p.category || 'N/A'}
                     </span>
                     <h4 className="text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight">
@@ -265,12 +269,12 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
                   </div>
 
                   {/* Evaluator Assignment Field */}
-                  <div className="mt-1 pt-2 border-t border-slate-100 dark:border-slate-700/50">
-                    <EvaluatorAutocomplete 
-                      value={p.evaluator || ''}
+                  <div className="mt-1 pt-3 border-t border-slate-100 dark:border-slate-700/50">
+                    <MultiEvaluatorSelector 
+                      values={p.evaluators || (p.evaluator ? [p.evaluator] : [])}
                       evaluatorUsers={evaluatorUsers}
-                      onChange={(cleanVal: string) => {
-                         setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluator: cleanVal.trim().toLowerCase() } : x));
+                      onChange={(newEmails: string[]) => {
+                         setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluators: newEmails, evaluator: newEmails[0] || '' } : x));
                       }}
                       onSave={() => {}}
                     />

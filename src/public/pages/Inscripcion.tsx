@@ -258,10 +258,16 @@ export default function Inscripcion() {
 
                 {/* Nombre */}
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Nombre del Proyecto <span className="text-red-500">*</span></label>
+                  <div className="flex items-center justify-between mb-2.5 ml-1">
+                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">Nombre del Proyecto <span className="text-red-500">*</span></label>
+                    <span className={`text-[10px] font-bold ${projectName.length >= 110 ? 'text-red-500' : 'text-slate-400'}`}>
+                      {projectName.length}/120
+                    </span>
+                  </div>
                   <input 
                     type="text" 
                     required
+                    maxLength={120}
                     value={projectName}
                     onChange={e => setProjectName(e.target.value)}
                     placeholder="Ej. Sistema de Monitoreo IoT..."

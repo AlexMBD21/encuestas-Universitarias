@@ -647,8 +647,9 @@ export default function Surveys(): JSX.Element {
                       if (!isOwnerOrAdmin) {
                         const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase();
                         filteredTotal = (allProjects || []).filter((p: any) => {
-                          const assignedEvaluator = String(p.evaluator || '').trim().toLowerCase();
-                          return assignedEvaluator === currentUserEmail;
+                          if (!p) return false;
+                          const evs = Array.isArray(p.evaluators) ? p.evaluators : (p.evaluator ? [p.evaluator] : []);
+                          return evs.some((e: any) => e && String(e).trim().toLowerCase() === currentUserEmail);
                         }).length;
                       }
                       progress = { rated: userRatedArr.length, total: filteredTotal }
@@ -1077,9 +1078,9 @@ export default function Surveys(): JSX.Element {
                         if ((p.category || '').trim() !== projectCategory) return false
                       }
                       const isRated = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id));
-                      const assignedEvaluator = String(p.evaluator || '').trim().toLowerCase()
-                      const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase()
-                      const canEvaluate = isSurveyOwnerOrAdmin || (assignedEvaluator && assignedEvaluator === currentUserEmail)
+                      const evs = Array.isArray(p.evaluators) ? p.evaluators : (p.evaluator ? [p.evaluator] : []);
+                      const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase();
+                      const canEvaluate = isSurveyOwnerOrAdmin || evs.some((e: any) => e && String(e).trim().toLowerCase() === currentUserEmail);
                       
                       if (projectFilter === 'pending') {
                         return canEvaluate && !isRated;
@@ -1175,9 +1176,9 @@ export default function Surveys(): JSX.Element {
                                 </div>
                                 <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
                                   {(() => {
-                                    const assignedEvaluator = String(p.evaluator || '').trim().toLowerCase()
-                                    const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase()
-                                    const canEvaluate = isSurveyOwnerOrAdmin || (assignedEvaluator && assignedEvaluator === currentUserEmail)
+                                    const evs = Array.isArray(p.evaluators) ? p.evaluators : (p.evaluator ? [p.evaluator] : []);
+                                    const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase();
+                                    const canEvaluate = isSurveyOwnerOrAdmin || evs.some((e: any) => e && String(e).trim().toLowerCase() === currentUserEmail);
                                     
                                     if (!canEvaluate) {
                                       return (
