@@ -447,7 +447,7 @@ export default function ReportDetail(): JSX.Element {
 
                         return (
                           <div className="flex flex-col">
-                            {uniqueCats.length > 1 && (
+                            {uniqueCats.length > 0 && (
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/50 p-3 rounded-2xl border border-slate-100 mb-8 mt-[-10px]">
                                 <div className="flex flex-1 items-center gap-2 w-full">
                                   <span className="text-sm font-bold text-slate-500 flex items-center gap-1.5 ml-1 shrink-0 hidden md:flex">
