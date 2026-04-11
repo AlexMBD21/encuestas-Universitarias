@@ -285,14 +285,25 @@ export async function getProjectSurveyReport(surveyId: string, opts?: ReportOpts
       let sum = 0
       let count = 0
       const texts: string[] = []
+      const qid = r.id ?? r.text
+
       projResponses.forEach((pr: ProjectResponse) => {
-        const raw = extractAnswerFromResponse(pr, r.id ?? r.text, undefined, r.text)
-        const num = Number(raw)
-        if (!isNaN(num) && raw !== '' && raw !== null && raw !== undefined) {
+        const scoreRaw = extractAnswerFromResponse(pr, qid, undefined, r.text)
+        const commentRaw = extractAnswerFromResponse(pr, `${qid}_comment`)
+        
+        // Handle Score
+        const num = Number(scoreRaw)
+        if (scoreRaw !== '' && scoreRaw !== null && scoreRaw !== undefined && !isNaN(num)) {
           sum += num
           count++
-        } else if (raw !== null && raw !== undefined && String(raw).trim() !== '') {
-          texts.push(String(raw).trim())
+        } else if (scoreRaw !== null && scoreRaw !== undefined && String(scoreRaw).trim() !== '' && isNaN(num)) {
+          // Legacy: if it was a text question, the scoreRaw WAS the text
+          texts.push(String(scoreRaw).trim())
+        }
+
+        // Handle Comment (New dual-key format)
+        if (commentRaw !== null && commentRaw !== undefined && String(commentRaw).trim() !== '') {
+          texts.push(String(commentRaw).trim())
         }
       })
       return { id: r.id, text: r.text, avg: count ? +(sum / count).toFixed(2) : null, count, texts }
@@ -815,9 +826,9 @@ export function exportProjectSurveyPdf(report: {
         </div>`
     }).join('')
 
-    // Open text criteria
-    const textCriteria = ps.criteria.filter(c => c.avg === null && c.texts && c.texts.length > 0)
-    const textBlocks = textCriteria.map(c => `
+    // Open text criteria (now includes comments from scorable criteria too)
+    const textWithComments = ps.criteria.filter(c => c.texts && c.texts.length > 0)
+    const textBlocks = textWithComments.map(c => `
       <div class="text-criterion">
         <div class="text-criterion-title">${esc(c.text)}</div>
         ${c.texts!.map(t => `<div class="comment">${esc(t)}</div>`).join('')}

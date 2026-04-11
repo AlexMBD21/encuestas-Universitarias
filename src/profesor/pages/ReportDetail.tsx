@@ -546,13 +546,15 @@ export default function ReportDetail(): JSX.Element {
                                         </div>
 
                                         {/* Project Details */}
-                                        <div className="flex-1 p-4 flex flex-col justify-center">
-                                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                                            <span className="font-bold text-slate-800 text-base">{ps.project.name}</span>
-                                            {showTieBadge && (
-                                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-500 shadow-sm">EMPATE</span>
-                                            )}
-                                          </div>
+                                          <div className="flex-1 p-4 flex flex-col justify-center min-w-0 overflow-hidden">
+                                            <div className="mb-1">
+                                              <span className="font-bold text-slate-800 text-base break-words leading-tight line-clamp-2" title={ps.project.name}>
+                                                {ps.project.name}
+                                              </span>
+                                              {showTieBadge && (
+                                                <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-500 shadow-sm shrink-0">EMPATE</span>
+                                              )}
+                                            </div>
                                           {members.length > 0 && (
                                             <div className="text-xs text-slate-500 font-medium">
                                               {members.slice(0, 3).join(' • ')}{members.length > 3 ? ` +${members.length - 3}` : ''}

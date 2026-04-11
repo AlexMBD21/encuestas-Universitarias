@@ -195,7 +195,11 @@ export default function Inscripcion() {
           </div>
           <h2 className="text-3xl font-black text-slate-800 mb-3 tracking-tight">¡Genial!</h2>
           <p className="text-slate-500 font-medium text-lg leading-relaxed mb-8">
-            El proyecto <span className="text-indigo-600 font-bold">"{projectName}"</span> se ha registrado con éxito para la feria.
+            El proyecto 
+            <div className="text-indigo-600 font-bold text-xl my-4 break-words px-2 leading-tight">
+              "{projectName}"
+            </div>
+            se ha registrado con éxito para la feria.
           </p>
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-slate-400 text-sm font-medium">
             Ya puedes cerrar este enlace.
@@ -260,14 +264,14 @@ export default function Inscripcion() {
                 <div>
                   <div className="flex items-center justify-between mb-2.5 ml-1">
                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">Nombre del Proyecto <span className="text-red-500">*</span></label>
-                    <span className={`text-[10px] font-bold ${projectName.length >= 110 ? 'text-red-500' : 'text-slate-400'}`}>
-                      {projectName.length}/120
+                    <span className={`text-[10px] font-bold ${projectName.length >= 70 ? 'text-red-500' : 'text-slate-400'}`}>
+                      {projectName.length}/80
                     </span>
                   </div>
                   <input 
                     type="text" 
                     required
-                    maxLength={120}
+                    maxLength={80}
                     value={projectName}
                     onChange={e => setProjectName(e.target.value)}
                     placeholder="Ej. Sistema de Monitoreo IoT..."

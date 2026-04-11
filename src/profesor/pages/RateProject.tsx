@@ -20,6 +20,7 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
   const rubric: RubricQuestion[] = survey.rubric || []
 
   const setAnswer = (qid: string, val: number | string | null) => setAnswers(a => ({ ...a, [qid]: val }))
+  const setComment = (qid: string, val: string) => setAnswers(a => ({ ...a, [`${qid}_comment`]: val }))
 
   const submit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
@@ -27,14 +28,12 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
       setMessage('Ya has calificado este proyecto')
       return
     }
-    // basic validation: ensure score questions have a value
+    // validation: ensure EVERY question has a numeric score (Mandatory for tie-breaking)
     for (const q of rubric) {
-      if (q.kind === 'score') {
-        const v = answers[q.id]
-        if (v === undefined || v === null || v === '') {
-          setMessage('Por favor responde todas las preguntas de puntuación')
-          return
-        }
+      const v = answers[q.id]
+      if (v === undefined || v === null || v === '' || isNaN(Number(v))) {
+        setMessage(`Por favor asigna una puntuación al criterio: "${q.text.substring(0, 30)}..."`)
+        return
       }
     }
     setSaving(true)
@@ -95,17 +94,9 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
                     try { mapped[String(it.qid)] = it.value } catch (e) {}
                   }
                   setAnswers(mapped)
-                } else if (found.answers && typeof found.answers === 'object') {
-                  // Map answers object into expected keys (try original q.id first, then sanitized key)
+                  // Map answers object into expected keys
                   try {
-                    const mapped: Record<string, any> = {}
-                    for (const q of rubric) {
-                      const qk = String(q.id)
-                      const sk = qk.replace(/[.#$\/\[\]]/g, '_')
-                      if (found.answers.hasOwnProperty(qk)) mapped[qk] = found.answers[qk]
-                      else if (found.answers.hasOwnProperty(sk)) mapped[qk] = found.answers[sk]
-                      else if (found.answers.hasOwnProperty(String(qk))) mapped[qk] = found.answers[String(qk)]
-                    }
+                    const mapped: Record<string, any> = { ...found.answers }
                     setAnswers(mapped)
                   } catch (e) {
                     setAnswers(found.answers || {})
@@ -203,42 +194,69 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
         <div className="space-y-6">
           {rubric.length === 0 && <div className="text-slate-600 dark:text-slate-400 p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl text-center">No hay rúbrica definida para esta encuesta.</div>}
           
-          {rubric.map((q: RubricQuestion, i: number) => (
-            <div key={q.id} className="p-5 sm:p-6 border border-slate-200 dark:border-slate-700/80 rounded-2xl bg-white dark:bg-slate-800/50 shadow-sm transition-colors">
-              <div className="flex gap-3 mb-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-primary-100, rgba(0,98,141,0.1))', color: 'var(--color-primary)' }}>
-                  {i + 1}
-                </div>
-                <div className="font-semibold text-slate-800 dark:text-slate-100 text-[15px] sm:text-base leading-relaxed pt-1">
-                  {q.text}
-                </div>
-              </div>
-
-              <div className="pl-0 sm:pl-11">
-                {q.kind === 'score' ? (
-                  <div className="flex flex-wrap gap-2 sm:gap-3">
-                    {[1,2,3,4,5].map(n => {
-                      const isSelected = answers[q.id] === n;
-                      return (
-                        <label key={n} className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl font-bold text-lg transition-all shadow-sm ${readonlyMode ? (isSelected ? 'bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/30' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 opacity-60 cursor-default') : (isSelected ? 'text-white border-transparent scale-105 ring-2 ring-offset-2 cursor-pointer' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/20 cursor-pointer')}`} style={(!readonlyMode && isSelected) ? { backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-primary)', '--tw-ring-color': 'var(--color-primary)'} as React.CSSProperties : {}}>
-                          <input type="radio" name={`q_${q.id}`} value={n} checked={isSelected} onChange={() => { if (!readonlyMode) setAnswer(q.id, n) }} style={{display: 'none'}} disabled={readonlyMode} />
-                          {n}
-                        </label>
-                      );
-                    })}
+          {rubric.map((q: RubricQuestion, i: number) => {
+            const isScoreKind = q.kind === 'score';
+            const scoreValue = answers[q.id];
+            const commentValue = (answers[`${q.id}_comment`] as string) || (isScoreKind ? '' : (answers[q.id] as string)) || '';
+            
+            return (
+              <div key={q.id} className="p-5 sm:p-6 border border-slate-200 dark:border-slate-700/80 rounded-2xl bg-white dark:bg-slate-800/50 shadow-sm transition-colors">
+                <div className="flex gap-3 mb-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-primary-100, rgba(0,98,141,0.1))', color: 'var(--color-primary)' }}>
+                    {i + 1}
                   </div>
-                ) : (
-                  <textarea 
-                    className={`w-full p-4 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-xl text-slate-700 dark:text-slate-200 outline-none transition-all placeholder:text-slate-400 resize-y min-h-[100px] ${readonlyMode ? 'opacity-80 cursor-default' : 'focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/20'}`} 
-                    placeholder="Escribe tus comentarios aquí..."
-                    value={(answers[q.id] as string) || ''} 
-                    onChange={e => { if (!readonlyMode) setAnswer(q.id, e.target.value) }} 
-                    readOnly={readonlyMode} 
-                  />
-                )}
+                  <div className="font-semibold text-slate-800 dark:text-slate-100 text-[15px] sm:text-base leading-relaxed pt-1 flex-1">
+                    {q.text}
+                    {!isScoreKind && (
+                       <span className="ml-2 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 text-[9px] font-black uppercase rounded border border-indigo-100 tracking-tighter align-middle">
+                         Respuesta Evaluada
+                       </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pl-0 sm:pl-11 space-y-4">
+                  {/* Score Selector (Mandatory for ALL types per user request to break ties) */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                         {isScoreKind ? 'Puntuación' : 'Calificación del Criterio'} <span className="text-red-500">*</span>
+                       </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
+                      {[1,2,3,4,5].map(n => {
+                        const isSelected = Number(scoreValue) === n;
+                        return (
+                          <label key={n} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl font-bold text-lg transition-all shadow-sm ${readonlyMode ? (isSelected ? 'bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/30' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 opacity-60 cursor-default') : (isSelected ? 'text-white border-transparent scale-105 ring-2 ring-offset-2 cursor-pointer shadow-lg' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/20 cursor-pointer')}`} style={(!readonlyMode && isSelected) ? { backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-primary)', '--tw-ring-color': 'var(--color-primary)'} as React.CSSProperties : {}}>
+                            <input type="radio" name={`q_${q.id}`} value={n} checked={isSelected} onChange={() => { if (!readonlyMode) setAnswer(q.id, n) }} style={{display: 'none'}} disabled={readonlyMode} />
+                            {n}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Comment Area: ONLY for 'text' kind (evaluator's response) */}
+                  {!isScoreKind && (
+                    <div className="mt-4">
+                      <div className="flex items-center gap-2 mb-2">
+                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                           Respuesta / Observación del evaluador
+                         </span>
+                      </div>
+                      <textarea 
+                        className={`w-full p-4 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-xl text-slate-700 dark:text-slate-200 outline-none transition-all placeholder:text-slate-400 resize-y min-h-[100px] ${readonlyMode ? 'opacity-80 cursor-default' : 'focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/20'}`} 
+                        placeholder="Escribe aquí tu análisis o respuesta a la pregunta..."
+                        value={commentValue} 
+                        onChange={e => { if (!readonlyMode) setComment(q.id, e.target.value) }} 
+                        readOnly={readonlyMode} 
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         
         {message && (

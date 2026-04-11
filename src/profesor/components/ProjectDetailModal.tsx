@@ -169,7 +169,7 @@ export default function ProjectDetailModal({
           className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" 
           style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}
         >
-          <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{ps.project.name}</div>
+          <div className="text-lg sm:text-xl font-bold break-words leading-tight mr-4 tracking-wide">{ps.project.name}</div>
           <div className="ml-auto hidden sm:block">
             <button 
               type="button" 
@@ -350,10 +350,16 @@ export default function ProjectDetailModal({
                 const hasScore = c.avg !== null && c.avg !== undefined
                 const pct = toPercentNum(c.avg)
                 return (
-                  <div key={c.id} className={`p-5 rounded-3xl border transition-colors ${hasScore ? 'bg-white border-slate-200/80 hover:border-slate-300 shadow-sm' : 'bg-slate-50 border-slate-200 border-dashed'}`}>
-                    <div className="text-sm font-semibold text-slate-800 mb-3.5 leading-snug pr-2">{c.text}</div>
-                    {hasScore ? (
-                      <>
+                  <div key={c.id} className={`p-5 rounded-3xl border transition-all ${hasScore ? 'bg-white border-slate-200/80 hover:border-slate-300 shadow-sm' : 'bg-slate-50 border-slate-200 border-dashed'}`}>
+                    <div className="text-sm font-semibold text-slate-800 mb-3.5 leading-snug pr-2 flex items-center justify-between break-words">
+                      {c.text}
+                      {!hasScore && c.texts && c.texts.length > 0 && (
+                        <span className="text-[9px] font-black px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded uppercase tracking-tighter">Abierta</span>
+                      )}
+                    </div>
+
+                    {hasScore && (
+                      <div className="mb-4">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-lg font-black text-slate-900 leading-none">{Number(c.avg).toFixed(2)}</span>
@@ -368,24 +374,21 @@ export default function ProjectDetailModal({
                             {c.count} votos
                           </div>
                         )}
-                      </>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-500 tracking-wider">Abierta</span>
-                          <span className="text-[10px] font-bold text-slate-400">{c.texts && c.texts.length > 0 ? `${c.texts.length} resp.` : 'Sin datos'}</span>
-                        </div>
-                        {c.texts && c.texts.length > 0 && (
-                          <div className="space-y-2 mt-3">
-                            {c.texts.slice(0, 5).map((t, ti) => (
-                              <div key={ti} className="text-xs text-slate-600 bg-white border border-slate-100 shadow-sm rounded-xl px-3.5 py-2.5 leading-relaxed relative hover:border-slate-200 transition-colors">
-                                <span className="absolute top-2 left-2 text-slate-200 font-serif leading-none">"</span>
-                                <span className="relative z-10 pl-2 block">{t}</span>
-                              </div>
-                            ))}
-                            {c.texts.length > 5 && <div className="text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest mt-2 bg-slate-100/50 py-1 rounded-full">+ {c.texts.length - 5} más</div>}
-                          </div>
+                      </div>
+                    )}
+
+                    {c.texts && c.texts.length > 0 && (
+                      <div className={`space-y-2 ${hasScore ? 'mt-4 pt-4 border-t border-slate-50' : 'mt-2'}`}>
+                        {hasScore && (
+                           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Observaciones</div>
                         )}
+                        {c.texts.slice(0, 5).map((t, ti) => (
+                          <div key={ti} className="text-xs text-slate-600 bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/50 shadow-sm rounded-xl px-3.5 py-2.5 leading-relaxed relative hover:border-slate-200 transition-colors">
+                            <span className="absolute top-2 left-2 text-slate-200 dark:text-slate-800/50 font-serif leading-none">"</span>
+                            <span className="relative z-10 pl-2 block">{t}</span>
+                          </div>
+                        ))}
+                        {c.texts.length > 5 && <div className="text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest mt-2 bg-slate-100/50 dark:bg-slate-800/50 py-1 rounded-full">+ {c.texts.length - 5} más</div>}
                       </div>
                     )}
                   </div>

@@ -224,7 +224,9 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
                 {draftProjects.map((p: any) => (
                   <tr key={p.id} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
                     <td className="p-3">
-                      <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{p.name || 'Sin nombre'}</div>
+                      <div className="font-bold text-sm text-slate-800 dark:text-slate-200 line-clamp-2 break-all overflow-hidden max-w-[250px]" title={p.name}>
+                        {p.name || 'Sin nombre'}
+                      </div>
                       <div className="text-xs text-slate-500 truncate max-w-[200px]">Asesor: {p.advisor || '-'}</div>
                     </td>
                     <td className="p-3">
@@ -259,7 +261,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
                       <span className="material-symbols-outlined text-[11px]">category</span>
                       {p.category || 'N/A'}
                     </span>
-                    <h4 className="text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                    <h4 className="text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight line-clamp-2 break-words" title={p.name}>
                       {p.name || 'Sin nombre'}
                     </h4>
                     <div className="text-[11px] text-slate-500 flex items-center gap-1">
