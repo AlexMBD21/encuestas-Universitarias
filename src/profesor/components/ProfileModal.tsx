@@ -1,17 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
-import ReactDOM from 'react-dom'
 import supabaseClient, { getProfile, upsertProfile, uploadAvatar } from '../../services/supabaseClient'
+import { Modal } from '../../components/ui/Modal'
 
 export interface ProfileData {
   displayName: string
   avatarUrl: string | null
-}
-
-interface Props {
-  open: boolean
-  onClose: () => void
-  userId: string | null
-  onSave: (data: ProfileData) => void
 }
 
 const LOCAL_KEY = (userId: string | null) => `profile:${userId || 'guest'}`
@@ -51,16 +44,21 @@ function getFirstNameLastName(fullName: string): string {
   return parts.length >= 2 ? `${parts[0]} ${parts[1]}` : parts[0]
 }
 
+interface Props {
+  open: boolean
+  onClose: () => void
+  userId: string | null
+  onSave: (data: ProfileData) => void
+}
+
 export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
   const [name, setName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [visible, setVisible] = useState(false)
   const [saving, setSaving] = useState(false)
   const [loadingProfile, setLoadingProfile] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
-  const closingRef = useRef<number | null>(null)
 
   // Load profile from Supabase when opening
   useEffect(() => {
@@ -72,18 +70,8 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
         setLoadingProfile(false)
       })
       setPendingFile(null)
-      requestAnimationFrame(() => { requestAnimationFrame(() => setVisible(true)) })
-    } else {
-      setVisible(false)
     }
-    return () => { if (closingRef.current) clearTimeout(closingRef.current) }
   }, [open, userId])
-
-  const handleClose = () => {
-    if (saving) return
-    setVisible(false)
-    closingRef.current = window.setTimeout(() => onClose(), 240)
-  }
 
   const handleImageFile = (file: File) => {
     if (!file.type.startsWith('image/')) return
@@ -128,58 +116,55 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
 
     setSaving(false)
     onSave(data)
-    handleClose()
+    onClose()
   }
 
   const initials = name.trim()
     ? name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase()
     : ''
 
-  if (!open) return null
-
-  return ReactDOM.createPortal(
-    <div
-      className={`profile-modal-overlay${visible ? ' visible' : ''}`}
-      onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
+  return (
+    <Modal
+      isOpen={open}
+      onClose={onClose}
+      title="Mi perfil"
+      maxWidth="max-w-md"
     >
-      <div className={`profile-modal${visible ? ' visible' : ''}`} role="dialog" aria-modal="true" aria-label="Editar perfil">
-
-        {/* Header */}
-        <div className="profile-modal-header">
-          <h2 className="profile-modal-title">Mi perfil</h2>
-          <button className="profile-modal-close" onClick={handleClose} aria-label="Cerrar" disabled={saving}>
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
+      <div className="p-6">
         {/* Avatar */}
-        <div className="profile-avatar-section">
+        <div className="flex flex-col items-center mb-8">
           <div
-            className={`profile-avatar-drop${isDragging ? ' dragging' : ''}${loadingProfile ? ' loading' : ''}`}
+            className={`relative w-28 h-28 rounded-3xl cursor-pointer group transition-all duration-300 ${isDragging ? 'ring-4 ring-blue-400 ring-offset-4' : ''} ${loadingProfile ? 'opacity-50' : ''}`}
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
             onClick={() => !loadingProfile && fileRef.current?.click()}
             title="Haz clic o arrastra una imagen"
           >
-            {loadingProfile ? (
-              <span className="material-symbols-outlined profile-avatar-loading">progress_activity</span>
-            ) : avatarUrl ? (
-              <img src={avatarUrl} alt="Avatar" className="profile-avatar-img" />
-            ) : (
-              initials
-                ? <span className="profile-avatar-initials">{initials}</span>
-                : <span className="material-symbols-outlined profile-avatar-default">account_circle</span>
-            )}
+            <div className="w-full h-full rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 group-hover:border-blue-400 group-hover:bg-blue-50/30 transition-all">
+              {loadingProfile ? (
+                <span className="material-symbols-outlined text-3xl text-blue-500 animate-spin">progress_activity</span>
+              ) : avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <div className="flex flex-col items-center">
+                  {initials ? (
+                    <span className="text-3xl font-black text-slate-400">{initials}</span>
+                  ) : (
+                    <span className="material-symbols-outlined text-4xl text-slate-300">account_circle</span>
+                  )}
+                </div>
+              )}
+            </div>
             {!loadingProfile && (
-              <div className="profile-avatar-overlay">
-                <span className="material-symbols-outlined">photo_camera</span>
+              <div className="absolute inset-0 bg-blue-600/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-3xl text-white">
+                <span className="material-symbols-outlined text-3xl">photo_camera</span>
               </div>
             )}
           </div>
-          <p className="profile-avatar-hint">Haz clic o arrastra una foto</p>
+          <p className="mt-3 text-xs font-bold text-slate-400 uppercase tracking-widest">Haz clic o arrastra una foto</p>
           {avatarUrl && !loadingProfile && (
-            <button className="profile-remove-avatar" onClick={handleRemoveAvatar}>
+            <button className="mt-2 text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider" onClick={handleRemoveAvatar}>
               Eliminar foto
             </button>
           )}
@@ -193,35 +178,51 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
         </div>
 
         {/* Name input */}
-        <div className="profile-field">
-          <label className="profile-field-label" htmlFor="profile-name-input">Nombre completo</label>
-          <input
-            id="profile-name-input"
-            className="profile-field-input"
-            type="text"
-            placeholder="Ej: María García López"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={80}
-            disabled={saving}
-          />
+        <div className="space-y-1.5 mb-8">
+          <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1" htmlFor="profile-name-input">Nombre completo</label>
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <span className="material-symbols-outlined text-[20px]">person</span>
+            </div>
+            <input
+              id="profile-name-input"
+              className="w-full bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-semibold transition-all outline-none text-slate-700 dark:text-slate-200"
+              type="text"
+              placeholder="Ej: María García López"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={80}
+              disabled={saving}
+            />
+          </div>
           {name.trim() && name.trim().split(/\s+/).length >= 2 && (
-            <p className="profile-field-hint">
-              Se mostrará como: <strong>{getFirstNameLastName(name)}</strong>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 ml-1 font-medium">
+              Se mostrará como: <strong className="text-slate-700 dark:text-slate-200">{getFirstNameLastName(name)}</strong>
             </p>
           )}
         </div>
 
         {/* Actions */}
-        <div className="profile-modal-actions">
-          <button className="profile-btn-cancel" onClick={handleClose} disabled={saving}>Cancelar</button>
-          <button className="profile-btn-save" onClick={handleSave} disabled={!name.trim() || saving}>
-            {saving ? 'Guardando…' : 'Guardar'}
+        <div className="flex flex-col sm:flex-row-reverse gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
+          <button 
+            type="button"
+            className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-black text-sm transition-all shadow-lg active:scale-[0.98] ${!name.trim() || saving ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/30'}`}
+            onClick={handleSave} 
+            disabled={!name.trim() || saving}
+          >
+            {saving ? <><span className="material-symbols-outlined text-[20px] animate-spin">refresh</span> Guardando...</> : <><span className="material-symbols-outlined text-[20px]">save</span> Guardar perfil</>}
+          </button>
+          <button 
+            type="button"
+            className="flex-1 px-6 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
+            onClick={onClose} 
+            disabled={saving}
+          >
+            Cancelar y Volver
           </button>
         </div>
       </div>
-    </div>,
-    document.body
+    </Modal>
   )
 }
 

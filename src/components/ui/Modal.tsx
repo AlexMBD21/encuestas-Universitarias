@@ -10,9 +10,10 @@ export interface ModalProps {
   fullHeightOnMobile?: boolean;
   hideMobileIndicator?: boolean;
   scrollableBody?: boolean;
+  hideCloseButton?: boolean;
 }
 
-export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true, hideCloseButton = false }: ModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const [pullDownY, setPullDownY] = useState(0);
@@ -115,13 +116,15 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
             <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
               {title}
             </h2>
-            <button 
-              type="button"
-              onClick={handleClose} 
-              className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >
-              <span className="material-symbols-outlined text-[24px]">close</span>
-            </button>
+            {!hideCloseButton && (
+              <button 
+                type="button"
+                onClick={handleClose} 
+                className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[24px]">close</span>
+              </button>
+            )}
           </div>
         )}
 

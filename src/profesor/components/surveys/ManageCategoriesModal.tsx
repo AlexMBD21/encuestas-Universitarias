@@ -154,7 +154,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl transition-all text-sm shadow-sm border border-slate-100 dark:border-slate-700"
+            className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
           >
             Cancelar y Volver
           </button>

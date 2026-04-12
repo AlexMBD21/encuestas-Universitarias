@@ -225,32 +225,14 @@ export async function getProjectSurveyReport(surveyId: string, opts?: ReportOpts
     } catch (e) {}
     return []
   })()) as ProjectResponse[]
-  // If responses empty and no filters requested, attempt to read a precomputed report entry for this survey
-  try {
-    if ((!responses || responses.length === 0) && (!opts || Object.keys(opts).length === 0)) {
-      try {
-        const dataClient: any = getDataClient()
-        if (dataClient && (dataClient as any).getSurveyReportsOnce) {
-          const reps = await (dataClient as any).getSurveyReportsOnce()
-          if (Array.isArray(reps) && reps.length > 0) {
-            const matching = reps.filter(r => r && String(r.surveyId) === String(surveyId))
-            if (matching && matching.length > 0) {
-              const latest = matching.sort((a: any, b: any) => { try { return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() } catch (e) { return 0 } })[0]
-              if (latest) {
-                const fromReport = (latest.report || latest.payload || latest) as any
-                if (fromReport && (fromReport.projectSummaries || fromReport.rows || fromReport.rubric)) {
-                  return { survey: fromReport.survey || survey, rubric: fromReport.rubric || [], projectSummaries: fromReport.projectSummaries || [], totalResponses: fromReport.totalResponses ?? 0, rows: fromReport.rows || [] }
-                }
-              }
-            }
-          }
-        }
-      } catch (e) { /* ignore fallback errors */ }
-    }
-  } catch (e) { /* ignore fallback errors */ }
-
   // apply client-side filters when provided
-  let filteredResponses = Array.isArray(responses) ? responses.slice() : []
+  // and filter out responses for projects that no longer exist in the survey
+  const projects = survey.projects || []
+  const activeProjectIds = new Set(projects.map((p: any) => String(p.id)))
+
+  let filteredResponses = (Array.isArray(responses) ? responses : [])
+    .filter((r: ProjectResponse) => r && r.projectId && activeProjectIds.has(String(r.projectId)))
+
   try {
     if (opts) {
       filteredResponses = filteredResponses.filter((r: ProjectResponse) => {
@@ -275,7 +257,6 @@ export async function getProjectSurveyReport(surveyId: string, opts?: ReportOpts
       })
     }
   } catch (e) { /* ignore filter errors */ }
-  const projects = survey.projects || []
   const rubric = survey.rubric || []
 
   // For each project compute per-criterion averages and overall average

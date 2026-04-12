@@ -673,9 +673,9 @@ export default function Configuracion() {
               {modalType === 'delete' ? (
                 <div>
                   <p>¿Eliminar usuario <strong>{modalData.email}</strong>?</p>
-                  <div className="mt-4 flex justify-end gap-2">
-                    <button className="btn btn-ghost" onClick={closeModal} disabled={modalLoading}>Cancelar</button>
-                    <button className="btn btn-danger" onClick={confirmModalSave} disabled={modalLoading}>{modalLoading ? 'Eliminando...' : 'Eliminar'}</button>
+                  <div className="mt-4 flex flex-col sm:flex-row-reverse justify-end gap-2">
+                    <button className="w-full sm:w-auto px-8 py-3 sm:py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-lg shadow-red-600/30 transition-all active:scale-[0.98]" onClick={confirmModalSave} disabled={modalLoading}>{modalLoading ? 'Eliminando...' : 'Eliminar'}</button>
+                    <button className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700" onClick={closeModal} disabled={modalLoading}>Cancelar y Volver</button>
                   </div>
                 </div>
               ) : (
@@ -716,9 +716,9 @@ export default function Configuracion() {
                     </select>
                   </div>
 
-                  <div className="mt-4 flex justify-end gap-2">
-                    <button type="button" className="btn btn-ghost" onClick={closeModal} disabled={modalLoading}>Cancelar</button>
-                    <button type="submit" className="btn btn-primary" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar' : 'Crear')}</button>
+                  <div className="mt-4 flex flex-col sm:flex-row-reverse justify-end gap-2">
+                    <button type="submit" className="w-full sm:w-auto px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/30 transition-all text-sm active:scale-[0.98]" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar' : 'Crear')}</button>
+                    <button type="button" className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700" onClick={closeModal} disabled={modalLoading}>Cancelar y Volver</button>
                   </div>
                 </form>
               )}
@@ -750,9 +750,9 @@ export default function Configuracion() {
           {/* Content */}
           <div className="modal-scrollable-content p-5 overflow-y-auto">
             <p className="text-sm text-slate-600 dark:text-slate-300 mb-5">¿Confirmas que deseas cambiar tu contraseña? Esta acción no se puede deshacer.</p>
-            <div className="flex gap-3 justify-end">
-              <button type="button" onClick={() => setConfirmPwdOpen(false)} className="btn btn-ghost border-slate-300">Cancelar</button>
-              <button type="button" onClick={doChangePassword} className="btn btn-primary">Sí, cambiar</button>
+            <div className="flex flex-col sm:flex-row-reverse gap-3 justify-end">
+              <button type="button" onClick={doChangePassword} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/30 transition-all text-sm active:scale-[0.98]">Sí, cambiar</button>
+              <button type="button" onClick={() => setConfirmPwdOpen(false)} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">Cancelar y Volver</button>
             </div>
           </div>
         </div>

@@ -19,6 +19,7 @@ import { ManageCategoriesModal } from '../components/surveys/ManageCategoriesMod
 import { GenerateLinkModal } from '../components/surveys/GenerateLinkModal';
 import { SurveyGridSkeleton } from '../../components/ui/SurveyCardSkeleton';
 import { toast } from '../../components/ui/Toast';
+import { Modal } from '../../components/ui/Modal';
 
 export default function Surveys(): JSX.Element {
   const location = useLocation()
@@ -1289,7 +1290,9 @@ export default function Surveys(): JSX.Element {
                   setConfirmDeleting(false)
                   setConfirmDeleteId(null)
                 }
-              }} disabled={confirmDeleting} className="px-4 py-2 bg-red-600 text-white rounded">{confirmDeleting ? 'Eliminando...' : 'Eliminar'}</button>
+              }} disabled={confirmDeleting} className="w-full sm:w-auto px-8 py-3 sm:py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-lg shadow-red-600/30 transition-all text-sm active:scale-[0.98]">
+                {confirmDeleting ? 'Eliminando...' : 'Eliminar'}
+              </button>
             </div>
           </div>
         </div>, document.body
@@ -1318,17 +1321,22 @@ export default function Surveys(): JSX.Element {
           }
         }
 
-        return ReactDOM.createPortal(
-          <div className="fixed inset-0 z-[10000] flex items-center justify-center">
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => { if (!confirmPublishing) setConfirmPublish(null) }} />
-            <div className={`relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-2xl`} role="dialog" aria-modal="true">
-              <h3 className="text-xl font-bold mb-2 flex items-center gap-2 text-slate-800 dark:text-slate-100">
+        return (
+          <Modal 
+            isOpen={confirmPublish !== null} 
+            onClose={() => { if (!confirmPublishing) setConfirmPublish(null) }} 
+            maxWidth="max-w-md"
+            hideCloseButton={true}
+            title={
+              <div className="flex items-center gap-2">
                 <span className={`material-symbols-outlined ${confirmPublish.action === 'publish' ? 'text-indigo-500' : 'text-amber-500'}`}>
                   {confirmPublish.action === 'publish' ? 'publish' : 'unpublished'}
                 </span>
                 {confirmPublish.action === 'publish' ? 'Publicar encuesta' : 'Retirar publicación'}
-              </h3>
-
+              </div>
+            }
+          >
+            <div className="p-6 pt-0">
               <div className="text-sm mb-6 mt-4">
                 {confirmPublish.action === 'publish' ? (
                   missing.length === 0 ? (
@@ -1360,9 +1368,9 @@ export default function Surveys(): JSX.Element {
                 )}
               </div>
 
-              <div className="flex justify-end gap-3">
-                <button type="button" onClick={() => setConfirmPublish(null)} disabled={confirmPublishing} className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-colors">
-                  Cancelar
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
+                <button type="button" onClick={() => setConfirmPublish(null)} disabled={confirmPublishing} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">
+                  Cancelar y Volver
                 </button>
                 {(confirmPublish.action !== 'publish' || missing.length === 0) && (
                   <button type="button" onClick={async () => {
@@ -1450,7 +1458,7 @@ export default function Surveys(): JSX.Element {
                 )}
               </div>
             </div>
-          </div>, document.body
+          </Modal>
         )
       })()}
       {/* Reports viewer modal (owner) */}
@@ -1844,7 +1852,14 @@ export default function Surveys(): JSX.Element {
               <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Desactivar enlace?</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Esta acción invalidará el link de inscripción inmediatamente. No podrás deshacer este cambio.</p>
               
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col-reverse gap-2">
+                <button 
+                  type="button" 
+                  onClick={() => setConfirmDeactivateLinkSurveyId(null)} 
+                  className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
+                >
+                  Cancelar y Volver
+                </button>
                 <button 
                   type="button" 
                   onClick={async () => {
@@ -1866,13 +1881,6 @@ export default function Surveys(): JSX.Element {
                   className="w-full py-3.5 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-2xl shadow-lg shadow-amber-600/20 transition-all active:scale-95"
                 >
                   Sí, desactivar
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => setConfirmDeactivateLinkSurveyId(null)} 
-                  className="w-full py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-2xl transition-all"
-                >
-                  Cancelar
                 </button>
               </div>
             </div>

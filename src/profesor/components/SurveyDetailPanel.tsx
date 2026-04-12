@@ -98,9 +98,23 @@ function smoothCurvePath(pts: { x: number; y: number }[]): string {
 export default function SurveyDetailPanel({ report, usersCache }: Props) {
   if (!report) return null
 
-  // For project surveys, rawResponses holds the individual responses (rows = project summary CSV rows).
-  // For simple surveys, rawResponses is absent and rows already holds individual responses.
-  const rows = Array.isArray(report.rawResponses) ? report.rawResponses : (Array.isArray(report.rows) ? report.rows : [])
+  const isProjectSurvey = Array.isArray(report.rawResponses)
+
+  // Build project id→name map for project surveys first to use as filter
+  const projectMap: Record<string, string> = {}
+  if (isProjectSurvey && Array.isArray(report.projectSummaries)) {
+    report.projectSummaries.forEach((ps: any) => {
+      if (ps.project?.id) projectMap[String(ps.project.id)] = ps.project.name || ps.project.id
+    })
+  }
+  const totalProjects = Object.keys(projectMap).length
+
+  // For project surveys, rawResponses holds the individual responses.
+  // We filter out responses for projects that no longer exist in the survey.
+  const allRows = Array.isArray(report.rawResponses) ? report.rawResponses : (Array.isArray(report.rows) ? report.rows : [])
+  const rows = isProjectSurvey 
+    ? allRows.filter((r: any) => r && r.projectId && projectMap[String(r.projectId)])
+    : allRows
 
   // Parse submission dates
   const dated: Date[] = []
@@ -188,17 +202,6 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
   const labelStep = Math.max(1, Math.ceil(rawPoints.length / maxLabels))
 
   // Per-user activity
-  const isProjectSurvey = Array.isArray(report.rawResponses)
-
-  // Build project id→name map for project surveys
-  const projectMap: Record<string, string> = {}
-  if (isProjectSurvey && Array.isArray(report.projectSummaries)) {
-    report.projectSummaries.forEach((ps: any) => {
-      if (ps.project?.id) projectMap[String(ps.project.id)] = ps.project.name || ps.project.id
-    })
-  }
-  const totalProjects = Object.keys(projectMap).length
-
   const userCounts: Record<string, number> = {}
   // For project surveys: also track which projects each user rated
   const userProjects: Record<string, Set<string>> = {}

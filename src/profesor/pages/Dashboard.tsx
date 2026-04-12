@@ -684,10 +684,19 @@ export default function Dashboard() {
             const surveyId = batch[idx]
             const survey = publishedSurveys.find(s => String(s.id) === String(surveyId))
             const isProject = survey ? isProjectSurvey(survey) : false
-            total += arr.length
-            if (isProject) projectTotal += arr.length
-            else simpleTotal += arr.length
-            for (const r of arr) {
+            const activeProjectIds = (isProject && survey && survey.projects) 
+              ? new Set(survey.projects.map((p: any) => String(p.id))) 
+              : null
+
+            // Filter responses by active projects if it's a project survey
+            const validResponses = isProject && activeProjectIds 
+              ? arr.filter((r: any) => r && r.projectId && activeProjectIds.has(String(r.projectId)))
+              : arr
+
+            total += validResponses.length
+            if (isProject) projectTotal += validResponses.length
+            else simpleTotal += validResponses.length
+            for (const r of validResponses) {
               try {
                 const nums = (extractNumericAnswers(r) || []).filter((n: any) => typeof n === 'number' && !isNaN(n) && n >= 0 && n <= 5)
                 if (!nums || nums.length === 0) continue

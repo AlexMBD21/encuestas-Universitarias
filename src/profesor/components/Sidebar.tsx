@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom'
 import { useNavigate, useLocation } from 'react-router-dom'
 import AuthAdapter from '../../services/AuthAdapter'
+import { Modal } from '../../components/ui/Modal'
 
 type Props = {
   collapsed: boolean
@@ -147,19 +148,40 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
       </div>
     </aside>
 
-    {showLogoutConfirm && ReactDOM.createPortal(
-      <div className="fixed inset-0 z-[10000] flex items-center justify-center">
-        <div className="absolute inset-0 bg-black opacity-40" onClick={() => setShowLogoutConfirm(false)} />
-        <div className="relative w-full max-w-sm mx-4 bg-white dark:bg-slate-900 rounded p-6 shadow-lg" role="dialog" aria-modal="true">
-          <h3 className="text-lg font-semibold mb-2">¿Cerrar sesión?</h3>
-          <p className="text-sm text-slate-600 mb-4">¿Estás seguro de que deseas cerrar la sesión?</p>
-          <div className="flex justify-end gap-3">
-            <button type="button" onClick={() => setShowLogoutConfirm(false)} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-            <button type="button" onClick={confirmLogout} className="px-4 py-2 bg-red-600 text-white rounded">Cerrar sesión</button>
+    <Modal
+      isOpen={showLogoutConfirm}
+      onClose={() => setShowLogoutConfirm(false)}
+      maxWidth="max-w-sm"
+      hideCloseButton={true}
+      title={
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
+            <span className="material-symbols-outlined text-[26px]">logout</span>
           </div>
+          <span>¿Cerrar sesión?</span>
         </div>
-      </div>, document.body
-    )}
+      }
+    >
+      <div className="p-6">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 font-medium">¿Estás seguro de que deseas cerrar la sesión actual?</p>
+        <div className="flex flex-col sm:flex-row-reverse gap-3">
+          <button 
+            type="button" 
+            onClick={confirmLogout} 
+            className="flex-1 py-3.5 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-lg shadow-red-600/20 transition-all active:scale-95"
+          >
+            Cerrar sesión
+          </button>
+          <button 
+            type="button" 
+            onClick={() => setShowLogoutConfirm(false)} 
+            className="flex-1 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
+          >
+            Cancelar y Volver
+          </button>
+        </div>
+      </div>
+    </Modal>
   </>
   )
 }

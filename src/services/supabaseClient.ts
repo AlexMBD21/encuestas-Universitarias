@@ -445,6 +445,20 @@ export async function removeSurveyReportsBySurveyId(surveyId: string) {
   }
 }
 
+export async function removeResponsesByProjectIds(surveyId: string, projectIds: string[]) {
+  ensureClient()
+  if (!supabase) throw new Error('Supabase not configured')
+  if (!projectIds || projectIds.length === 0) return true
+  try {
+    const { error } = await supabase.from('survey_responses').delete().eq('survey_id', surveyId).in('project_id', projectIds)
+    if (error) throw error
+    return true
+  } catch (e) {
+    console.error('[supabaseClient] removeResponsesByProjectIds failed', e)
+    throw e
+  }
+}
+
 export async function pushSurveyResponse(resp: any) {
   ensureClient()
   if (!supabase) throw new Error('Supabase not configured')
@@ -836,6 +850,7 @@ export default {
   uploadAvatar,
   removeSurveyReportsBySurveyId,
   removeNotificationsBySurveyId,
+  removeResponsesByProjectIds,
 }
 
 // ============================================================

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import '../styles/dashboard-profesor.css'
 import AuthAdapter from '../../services/AuthAdapter'
 import supabaseClient from '../../services/supabaseClient'
+import { Modal } from '../../components/ui/Modal'
 
 type CreateSurveyProps = {
   onClose?: () => void
@@ -38,6 +39,10 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
   const currentUserId = currentUser ? (currentUser.email || (currentUser.id as any) || null) : null
   const supabaseEnabledNow = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
   const dataClientNow: any = supabaseClient
+
+  const [showCleanupConfirm, setShowCleanupConfirm] = useState(false)
+  const [cleanupMessage, setCleanupMessage] = useState('')
+  const [pendingCleanup, setPendingCleanup] = useState<{ deletedProjectIds: string[], isChangingToSimple: boolean } | null>(null)
 
   React.useEffect(() => {
     const onAuth = () => { try { setCurrentUser(AuthAdapter.getUser()) } catch (e) {} }
@@ -116,6 +121,57 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
     try {
       const now = new Date().toISOString()
       if (editSurvey && editSurvey.id) {
+        // Logic to detect deleted projects for cascading cleanup
+        const deletedProjectIds: string[] = []
+        if (editSurvey && Array.isArray(editSurvey.projects)) {
+            const currentIds = new Set(projects.map(p => String(p.id)))
+            editSurvey.projects.forEach((p: any) => {
+                if (p && p.id && !currentIds.has(String(p.id))) {
+                    deletedProjectIds.push(String(p.id))
+                }
+            })
+        }
+
+        // if changing from project to simple, all previous project responses should be considered for deletion
+        const isChangingToSimple = editSurvey && editSurvey.type === 'project' && surveyType === 'simple'
+
+        if (isChangingToSimple || deletedProjectIds.length > 0) {
+          const msg = isChangingToSimple 
+            ? 'Estás cambiando el tipo de encuesta a Simple. Se eliminarán todas las calificaciones de proyectos existentes permanentemente. ¿Deseas continuar?'
+            : `Has eliminado ${deletedProjectIds.length} proyecto(s). Todas sus calificaciones se borrarán de forma permanente e irreversible. ¿Deseas continuar?`
+          
+          setCleanupMessage(msg)
+          setPendingCleanup({ deletedProjectIds, isChangingToSimple })
+          setShowCleanupConfirm(true)
+          setSaving(false)
+          return
+        }
+
+        await handleFinalSave()
+      } else {
+        await handleFinalSave()
+      }
+    } catch (err) {
+      setSaving(false)
+      setMessage('Error al procesar la encuesta')
+    }
+  }
+
+  const handleFinalSave = async (confirmedCleanup?: { deletedProjectIds: string[], isChangingToSimple: boolean }) => {
+    setSaving(true)
+    const now = new Date().toISOString()
+    try {
+      if (editSurvey && editSurvey.id) {
+        // Perform cleanup if confirmed
+        if (confirmedCleanup && dataClientNow.removeResponsesByProjectIds) {
+          if (confirmedCleanup.isChangingToSimple && editSurvey.projects) {
+            const allOldIds = editSurvey.projects.map((p: any) => String(p.id)).filter(Boolean)
+            await dataClientNow.removeResponsesByProjectIds(String(editSurvey.id), allOldIds)
+          } else if (confirmedCleanup.deletedProjectIds.length > 0) {
+            await dataClientNow.removeResponsesByProjectIds(String(editSurvey.id), confirmedCleanup.deletedProjectIds)
+          }
+        }
+
         // update existing
         const updated: any = { ...editSurvey, title: title.trim(), description: description.trim(), type: surveyType }
         if (surveyType === 'simple') {
@@ -471,7 +527,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
         )}
 
         <div className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
-          <button type="button" onClick={onCancel} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors text-center">Cancelar y Volver</button>
+          <button type="button" onClick={onCancel} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">Cancelar y Volver</button>
           <button type="submit" disabled={saving} className="w-full sm:w-auto justify-center px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2 active:scale-[0.98]">
              {saving ? (
                <>
@@ -487,6 +543,49 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
           </button>
         </div>
       </form>
+
+      {/* Confirmation Modal for Project Cleanup */}
+      <Modal 
+        isOpen={showCleanupConfirm} 
+        onClose={() => { setShowCleanupConfirm(false); setSaving(false); }} 
+        maxWidth="max-w-md"
+        hideCloseButton={true}
+        title={
+          <div className="flex items-center gap-2 text-red-600">
+            <span className="material-symbols-outlined">warning</span>
+            Confirmar Eliminación de Datos
+          </div>
+        }
+      >
+        <div className="p-6">
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
+            {cleanupMessage}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button 
+              type="button"
+              onClick={async () => {
+                setShowCleanupConfirm(false);
+                if (pendingCleanup) {
+                  await handleFinalSave(pendingCleanup);
+                }
+              }}
+              className="flex-1 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+            >
+              <span className="material-symbols-outlined text-[20px]">delete_forever</span>
+              Confirmar Borrado
+            </button>
+            <button 
+              type="button" 
+              onClick={() => { setShowCleanupConfirm(false); setSaving(false); }}
+              className="flex-1 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
+            >
+              Cancelar y Volver
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

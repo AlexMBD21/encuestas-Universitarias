@@ -159,7 +159,14 @@ export function useSurveysData() {
                   if (arrResponses && arrResponses.length > 0) {
                     const sample = arrResponses[0]
                     if (sample && (sample as any).projectId) {
-                      map[sid] = (arrResponses as any[]).map((r: any) => String(r.projectId)).filter(Boolean)
+                      // Filter by current survey's projects list to ensure consistency
+                      const survey = arr.find(s => String(s.id) === String(sid))
+                      const activeProjectIds = new Set(
+                        (survey?.projects || []).map((p: any) => String(p.id))
+                      )
+                      map[sid] = (arrResponses as any[])
+                        .map((r: any) => String(r.projectId))
+                        .filter(pid => pid && activeProjectIds.has(pid))
                     } else {
                       map[sid] = ['__simple']
                     }
