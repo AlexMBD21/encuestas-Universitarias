@@ -989,7 +989,7 @@ export default function Surveys(): JSX.Element {
 
       {(modalSurveyId !== null || isModalVisible) && ReactDOM.createPortal(
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => closeModal()} />
+          <div className="absolute inset-0 bg-slate-900/60 transition-opacity" onClick={() => closeModal()} />
           <div className={`relative w-full sm:mx-4 sm:mb-0 transition-all duration-300 ${
             modalKind === 'view' ? 'sm:max-w-2xl' : 
             (modalKind === 'projects' && viewingProjectId) ? 'sm:max-w-3xl' : 
@@ -1231,72 +1231,77 @@ export default function Surveys(): JSX.Element {
         </div>, document.body
       )}
       {/* Custom delete confirmation modal */}
-      {confirmDeleteId && ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black opacity-40" onClick={() => { if (!confirmDeleting) setConfirmDeleteId(null) }} />
-          <div className={`relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded p-6 shadow-lg`} role="dialog" aria-modal="true">
-            <h3 className="text-lg font-semibold mb-2">¿Eliminar esta encuesta?</h3>
-            <p className="text-sm text-slate-600 mb-4">Esta acción es irreversible. ¿Deseas eliminarla definitivamente?</p>
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
-              <button type="button" onClick={() => setConfirmDeleteId(null)} disabled={confirmDeleting} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">
-                Cancelar y Volver
-              </button>
-              <button type="button" onClick={async () => {
-                try {
-                  setConfirmDeleting(true)
-                  // If a DB backend is enabled, remove via its API
-                  if (backendEnabled) {
-                    // find target in local state for ownership check
-                    const target = surveys.find((x: any) => String(x.id) === String(confirmDeleteId))
-                    if (target && !isOwnerOf(target)) {
-                      setToastMessage('No tienes permiso para eliminar esta encuesta')
-                      setTimeout(() => setToastMessage(null), 3000)
-                      setConfirmDeleting(false)
-                      setConfirmDeleteId(null)
-                      return
-                    }
-                    try {
-                      // remove survey and all related data (responses, userResponses, reports, notifications, published index)
-                      if ((dataClientNow as any).removeSurveyCascade) {
-                        await (dataClientNow as any).removeSurveyCascade(String(confirmDeleteId))
-                      } else {
-                        await dataClientNow.removeSurveyById(String(confirmDeleteId))
-                      }
-                    } catch (e: any) {
-                      console.error('delete survey failed', e)
-                      const msg = (e && e.message) ? String(e.message) : 'Error al eliminar la encuesta'
-                      setToastMessage(msg)
-                      setTimeout(() => setToastMessage(null), 4000)
-                      setConfirmDeleting(false)
-                      setConfirmDeleteId(null)
-                      return
-                    }
-                    // Only do optimistic removal after confirming DB delete succeeded
-                    setSurveys(prev => prev.filter(x => String(x.id) !== String(confirmDeleteId)))
-                    setToastMessage('Encuesta eliminada')
-                    setTimeout(() => setToastMessage(null), 3000)
-                    try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { surveyId: confirmDeleteId } })) } catch (e) { }
-                  } else {
-                    // Not allowed when no backend is configured
-                    setToastMessage('No se puede eliminar: no hay servicio de datos configurado.')
+      <Modal
+        isOpen={confirmDeleteId !== null}
+        onClose={() => { if (!confirmDeleting) setConfirmDeleteId(null) }}
+        maxWidth="max-w-sm"
+        hideCloseButton={true}
+      >
+        <div className="p-6 text-center bg-white dark:bg-slate-900 flex-1 flex flex-col justify-center">
+          <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-4 shadow-sm">
+            <span className="material-symbols-outlined text-[32px]">delete_forever</span>
+          </div>
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Eliminar esta encuesta?</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Esta acción es irreversible. ¿Deseas eliminarla definitivamente?</p>
+          <div className="flex flex-col-reverse gap-2 mt-auto sm:mt-0">
+            <button type="button" onClick={() => setConfirmDeleteId(null)} disabled={confirmDeleting} className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">
+              Cancelar y Volver
+            </button>
+            <button type="button" onClick={async () => {
+              try {
+                setConfirmDeleting(true)
+                // If a DB backend is enabled, remove via its API
+                if (backendEnabled) {
+                  // find target in local state for ownership check
+                  const target = surveys.find((x: any) => String(x.id) === String(confirmDeleteId))
+                  if (target && !isOwnerOf(target)) {
+                    setToastMessage('No tienes permiso para eliminar esta encuesta')
                     setTimeout(() => setToastMessage(null), 3000)
                     setConfirmDeleting(false)
                     setConfirmDeleteId(null)
                     return
                   }
-                } catch (e) {
-                  console.error(e)
-                } finally {
+                  try {
+                    // remove survey and all related data (responses, userResponses, reports, notifications, published index)
+                    if ((dataClientNow as any).removeSurveyCascade) {
+                      await (dataClientNow as any).removeSurveyCascade(String(confirmDeleteId))
+                    } else {
+                      await dataClientNow.removeSurveyById(String(confirmDeleteId))
+                    }
+                  } catch (e: any) {
+                    console.error('delete survey failed', e)
+                    const msg = (e && e.message) ? String(e.message) : 'Error al eliminar la encuesta'
+                    setToastMessage(msg)
+                    setTimeout(() => setToastMessage(null), 4000)
+                    setConfirmDeleting(false)
+                    setConfirmDeleteId(null)
+                    return
+                  }
+                  // Only do optimistic removal after confirming DB delete succeeded
+                  setSurveys(prev => prev.filter(x => String(x.id) !== String(confirmDeleteId)))
+                  setToastMessage('Encuesta eliminada')
+                  setTimeout(() => setToastMessage(null), 3000)
+                  try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { surveyId: confirmDeleteId } })) } catch (e) { }
+                } else {
+                  // Not allowed when no backend is configured
+                  setToastMessage('No se puede eliminar: no hay servicio de datos configurado.')
+                  setTimeout(() => setToastMessage(null), 3000)
                   setConfirmDeleting(false)
                   setConfirmDeleteId(null)
+                  return
                 }
-              }} disabled={confirmDeleting} className="w-full sm:w-auto px-8 py-3 sm:py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-lg shadow-red-600/30 transition-all text-sm active:scale-[0.98]">
-                {confirmDeleting ? 'Eliminando...' : 'Eliminar'}
-              </button>
-            </div>
+              } catch (e) {
+                console.error(e)
+              } finally {
+                setConfirmDeleting(false)
+                setConfirmDeleteId(null)
+              }
+            }} disabled={confirmDeleting} className="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-lg shadow-red-600/20 transition-all text-sm active:scale-[0.98]">
+              {confirmDeleting ? 'Eliminando...' : 'Eliminar'}
+            </button>
           </div>
-        </div>, document.body
-      )}
+        </div>
+      </Modal>
       {/* Publish / Unpublish confirmation modal */}
       {confirmPublish && (() => {
         const s = surveys.find(x => String(x.id) === String(confirmPublish.id))
@@ -1464,7 +1469,7 @@ export default function Surveys(): JSX.Element {
       {/* Reports viewer modal (owner) */}
       {viewReportsFor && ReactDOM.createPortal(
         <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} />
+          <div className="absolute inset-0 bg-slate-900/60" onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} />
           <div className={`relative w-full sm:max-w-2xl sm:mx-4 sm:mb-0 bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col h-[90dvh] sm:h-auto sm:max-h-[80vh] overflow-hidden transform transition-all duration-300 ${isReportsVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`} role="dialog" aria-modal="true"
             ref={reportsModalRef}
             style={{
@@ -1557,7 +1562,7 @@ export default function Surveys(): JSX.Element {
       {/* Report modal */}
       {confirmReportId && ReactDOM.createPortal(
         <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center overscroll-none touch-none">
-          <div className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 pointer-events-auto ${isConfirmReportVisible ? 'opacity-100' : 'opacity-0'}`} onClick={() => !confirmReporting && closeConfirmReportModal()} style={{ touchAction: 'none' }} />
+          <div className={`absolute inset-0 bg-slate-900/60 transition-opacity duration-300 pointer-events-auto ${isConfirmReportVisible ? 'opacity-100' : 'opacity-0'}`} onClick={() => !confirmReporting && closeConfirmReportModal()} style={{ touchAction: 'none' }} />
           <div 
             ref={confirmReportRef}
             className={`relative w-full sm:max-w-md sm:mx-4 sm:mb-0 transform transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${isConfirmReportVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 sm:translate-y-4 sm:scale-95'}`}
@@ -1700,75 +1705,49 @@ export default function Surveys(): JSX.Element {
         </div>, document.body
       )}
       {/* Create modal */}
-      {createModalOpen && ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => closeCreateModal()} />
-          <div className="relative w-full sm:max-w-xl sm:mx-4 sm:mb-0">
-            <div className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isCreateVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-              ref={createModalRef}
-              style={{
-                overscrollBehaviorY: 'contain',
-                ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
+      <Modal
+        isOpen={createModalOpen}
+        onClose={closeCreateModal}
+        maxWidth="max-w-xl"
+        title={editSurvey ? 'Editar encuesta' : 'Crear encuesta'}
+        fullHeightOnMobile={true}
+        scrollableBody={false}
+      >
+        <div className="flex-1 overflow-y-auto px-0 sm:px-4 pb-0 sm:pb-4 w-full h-full custom-scrollbar-sm relative">
+          <React.Suspense fallback={<div className="flex items-center justify-center h-full min-h-[50vh]"><svg width="40" height="40" viewBox="0 0 36 36" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#6366f1" strokeWidth="4" strokeLinecap="round" /></svg></div>}>
+            <CreateSurvey
+              hideTypeSelector={true}
+              initialType={createInitialType}
+              editSurvey={editSurvey}
+              onSaved={(key: any, surveyData?: any) => {
+                const wasEditing = !!editSurvey
+                closeCreateModal()
+                setEditSurvey(null)
+                setCreateInitialType(undefined)
+                setToastMessage(wasEditing ? 'Encuesta actualizada' : 'Encuesta creada')
+                setTimeout(() => setToastMessage(null), 3000)
+                // Optimistic: add/update survey in local state immediately
+                if (surveyData) {
+                  setSurveys(prev => {
+                    const copy = Array.isArray(prev) ? [...prev] : []
+                    const idx = copy.findIndex((s: any) => String(s.id) === String(key))
+                    return idx >= 0
+                      ? copy.map((s: any) => String(s.id) === String(key) ? surveyData : s)
+                      : [...copy, surveyData]
+                  })
+                }
+                // Then sync from server in case optimistic data differs
+                try {
+                  dataClientNow.getSurveysOnce().then((arr: any[]) => {
+                    try { setSurveys(arr) } catch (e) { }
+                  }).catch(() => { })
+                } catch (e) { }
               }}
-              onTouchStart={(e) => {
-                const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
-                touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
-              }}
-              onTouchEnd={() => {
-                if (pullDownY > 80) closeCreateModal();
-                setPullDownY(0);
-              }}>
-              {/* Drag handle for mobile */}
-              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => closeCreateModal()}>
-                <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700"></div>
-              </div>
-              {/* Header (sticky) */}
-              <div className="sticky top-0 z-10 border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between bg-white dark:bg-slate-900 flex-shrink-0 pt-7 sm:pt-4" style={{ borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
-                <div className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 truncate mr-4 tracking-tight">{editSurvey ? 'Editar encuesta' : 'Crear encuesta'}</div>
-                <div className="ml-auto hidden sm:block">
-                  <button type="button" onClick={() => closeCreateModal()} aria-label="Cerrar" title="Cerrar" className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                    <span className="material-symbols-outlined text-[24px]">close</span>
-                  </button>
-                </div>
-              </div>
-              <div className="flex-1 overflow-y-auto px-0 sm:px-4 pb-0 sm:pb-4 w-full">
-                <React.Suspense fallback={<div className="flex items-center justify-center py-16"><svg width="40" height="40" viewBox="0 0 36 36" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#6366f1" strokeWidth="4" strokeLinecap="round" /></svg></div>}>
-                  <CreateSurvey
-                    hideTypeSelector={true}
-                    initialType={createInitialType}
-                    editSurvey={editSurvey}
-                    onSaved={(key: any, surveyData?: any) => {
-                      const wasEditing = !!editSurvey
-                      closeCreateModal()
-                      setEditSurvey(null)
-                      setCreateInitialType(undefined)
-                      setToastMessage(wasEditing ? 'Encuesta actualizada' : 'Encuesta creada')
-                      setTimeout(() => setToastMessage(null), 3000)
-                      // Optimistic: add/update survey in local state immediately
-                      if (surveyData) {
-                        setSurveys(prev => {
-                          const copy = Array.isArray(prev) ? [...prev] : []
-                          const idx = copy.findIndex((s: any) => String(s.id) === String(key))
-                          return idx >= 0
-                            ? copy.map((s: any) => String(s.id) === String(key) ? surveyData : s)
-                            : [...copy, surveyData]
-                        })
-                      }
-                      // Then sync from server in case optimistic data differs
-                      try {
-                        dataClientNow.getSurveysOnce().then((arr: any[]) => {
-                          try { setSurveys(arr) } catch (e) { }
-                        }).catch(() => { })
-                      } catch (e) { }
-                    }}
-                    onClose={() => { setCreateModalOpen(false); setEditSurvey(null); setCreateInitialType(undefined); }}
-                  />
-                </React.Suspense>
-              </div>
-            </div>
-          </div>
-        </div>, document.body
-      )}
+              onClose={() => { setCreateModalOpen(false); setEditSurvey(null); setCreateInitialType(undefined); }}
+            />
+          </React.Suspense>
+        </div>
+      </Modal>
       {/* Manage Access (Evaluators) modal */}
       {manageAccessSurveyId && (() => {
         const s = surveys.find(x => String(x.id) === String(manageAccessSurveyId))
@@ -1841,52 +1820,51 @@ export default function Surveys(): JSX.Element {
         }
       `}</style>
       {/* Confirm Deactivate Link modal */}
-      {confirmDeactivateLinkSurveyId && ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setConfirmDeactivateLinkSurveyId(null)} />
-          <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden transform transition-all border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in duration-200">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-4">
-                <span className="material-symbols-outlined text-[32px]">warning</span>
-              </div>
-              <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Desactivar enlace?</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Esta acción invalidará el link de inscripción inmediatamente. No podrás deshacer este cambio.</p>
-              
-              <div className="flex flex-col-reverse gap-2">
-                <button 
-                  type="button" 
-                  onClick={() => setConfirmDeactivateLinkSurveyId(null)} 
-                  className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
-                >
-                  Cancelar y Volver
-                </button>
-                <button 
-                  type="button" 
-                  onClick={async () => {
-                    try {
-                      const s = surveys.find(x => String(x.id) === String(confirmDeactivateLinkSurveyId));
-                      if (s) {
-                        const updated = { ...s, linkExpiresAt: null, linkToken: null };
-                        await dataClientNow.setSurvey(String(s.id), updated);
-                        setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updated : x));
-                        setToastMessage('Enlace desactivado');
-                        setTimeout(() => setToastMessage(null), 3000);
-                      }
-                      setConfirmDeactivateLinkSurveyId(null);
-                    } catch (err) {
-                      setToastMessage('Error');
-                      setTimeout(() => setToastMessage(null), 3000);
-                    }
-                  }} 
-                  className="w-full py-3.5 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-2xl shadow-lg shadow-amber-600/20 transition-all active:scale-95"
-                >
-                  Sí, desactivar
-                </button>
-              </div>
-            </div>
+      <Modal
+        isOpen={confirmDeactivateLinkSurveyId !== null}
+        onClose={() => setConfirmDeactivateLinkSurveyId(null)}
+        maxWidth="max-w-sm"
+        hideCloseButton={true}
+      >
+        <div className="p-6 text-center bg-white dark:bg-slate-900 flex-1 flex flex-col justify-center">
+          <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-4 shadow-sm">
+            <span className="material-symbols-outlined text-[32px]">warning</span>
           </div>
-        </div>, document.body
-      )}
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Desactivar enlace?</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Esta acción invalidará el link de inscripción inmediatamente. No podrás deshacer este cambio.</p>
+          <div className="flex flex-col-reverse gap-2 mt-auto sm:mt-0">
+            <button 
+              type="button" 
+              onClick={() => setConfirmDeactivateLinkSurveyId(null)} 
+              className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
+            >
+              Cancelar y Volver
+            </button>
+            <button 
+              type="button" 
+              onClick={async () => {
+                try {
+                  const s = surveys.find(x => String(x.id) === String(confirmDeactivateLinkSurveyId));
+                  if (s) {
+                    const updated = { ...s, linkExpiresAt: null, linkToken: null };
+                    await dataClientNow.setSurvey(String(s.id), updated);
+                    setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updated : x));
+                    setToastMessage('Enlace desactivado');
+                    setTimeout(() => setToastMessage(null), 3000);
+                  }
+                  setConfirmDeactivateLinkSurveyId(null);
+                } catch (err) {
+                  setToastMessage('Error');
+                  setTimeout(() => setToastMessage(null), 3000);
+                }
+              }} 
+              className="w-full py-3.5 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-2xl shadow-lg shadow-amber-600/20 transition-all active:scale-[0.98]"
+            >
+              Sí, desactivar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

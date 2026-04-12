@@ -77,7 +77,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
     <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 perspective-1000">
       {/* Backdrop */}
       <div 
-        className={`absolute inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 bg-slate-900/60 dark:bg-slate-950/80 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
         onClick={handleClose}
       />
       
@@ -85,7 +85,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
       <div 
         ref={modalRef}
         className={`relative w-full ${maxWidth} bg-white dark:bg-slate-900 
-          ${fullHeightOnMobile ? 'h-[90vh] sm:h-auto' : 'max-h-[90vh]'} 
+          ${fullHeightOnMobile ? 'h-[90vh] sm:h-auto sm:max-h-[90vh]' : 'max-h-[90vh]'} 
           rounded-t-[2rem] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden 
           transition-all duration-300 ease-[cubic-bezier(0.2,0.9,0.3,1.1)]
           ${isVisible ? 'translate-y-0 opacity-100 sm:scale-100' : 'translate-y-full opacity-0 sm:translate-y-8 sm:scale-95'}`}
@@ -120,7 +120,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
               <button 
                 type="button"
                 onClick={handleClose} 
-                className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="hidden sm:flex w-10 h-10 items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <span className="material-symbols-outlined text-[24px]">close</span>
               </button>

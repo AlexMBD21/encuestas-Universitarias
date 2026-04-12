@@ -237,7 +237,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
                     <td className="p-3">
                       <div 
                         onClick={(e) => toggleTitleExpansion(e, p.id)}
-                        className={`font-bold text-sm text-slate-800 dark:text-slate-200 cursor-pointer transition-all max-w-[250px] sm:max-w-[300px] ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
+                        className={`font-bold text-sm text-slate-800 dark:text-slate-200 cursor-pointer transition-all break-all max-w-[250px] sm:max-w-[300px] ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
                         title={p.name}
                       >
                         {p.name || 'Sin nombre'}
@@ -278,7 +278,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
                     </span>
                     <h4 
                       onClick={(e) => toggleTitleExpansion(e, p.id)}
-                      className={`text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight cursor-pointer transition-all ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
+                      className={`text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight break-all cursor-pointer transition-all ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
                       title={p.name}
                     >
                       {p.name || 'Sin nombre'}
