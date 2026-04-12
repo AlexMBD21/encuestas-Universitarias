@@ -432,6 +432,19 @@ export async function removeSurveyReportById(id: string) {
   }
 }
 
+export async function removeSurveyReportsBySurveyId(surveyId: string) {
+  ensureClient()
+  if (!supabase) throw new Error('Supabase not configured')
+  try {
+    const { error } = await supabase.from('survey_reports').delete().eq('survey_id', surveyId)
+    if (error) throw error
+    return true
+  } catch (e) {
+    console.error('[supabaseClient] removeSurveyReportsBySurveyId failed', e)
+    throw e
+  }
+}
+
 export async function pushSurveyResponse(resp: any) {
   ensureClient()
   if (!supabase) throw new Error('Supabase not configured')
@@ -821,6 +834,8 @@ export default {
   getProfile,
   upsertProfile,
   uploadAvatar,
+  removeSurveyReportsBySurveyId,
+  removeNotificationsBySurveyId,
 }
 
 // ============================================================

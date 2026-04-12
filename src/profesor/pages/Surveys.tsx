@@ -1421,24 +1421,14 @@ export default function Surveys(): JSX.Element {
                         // when unpublishing, remove any previous notifications and user reports for this survey
                         if (confirmPublish.action !== 'publish') {
                           try {
-                            const notifs = await dataClientNow.getNotificationsOnce()
-                            for (const n of notifs || []) {
-                              try {
-                                if (n && String(n.surveyId) === String(confirmPublish.id)) {
-                                  await dataClientNow.removeNotificationById(String(n.id))
-                                }
-                              } catch (e) { }
+                            if (dataClientNow.removeNotificationsBySurveyId) {
+                              await dataClientNow.removeNotificationsBySurveyId(String(confirmPublish.id))
                             }
                             try { window.dispatchEvent(new CustomEvent('notifications:updated', { detail: { surveyId: String(confirmPublish.id) } })) } catch (e) { }
                           } catch (e) { }
                           try {
-                            const reps = await dataClientNow.getSurveyReportsOnce()
-                            for (const r of reps || []) {
-                              try {
-                                if (r && String(r.surveyId) === String(confirmPublish.id)) {
-                                  await dataClientNow.removeSurveyReportById(String(r.id))
-                                }
-                              } catch (e) { }
+                            if (dataClientNow.removeSurveyReportsBySurveyId) {
+                              await dataClientNow.removeSurveyReportsBySurveyId(String(confirmPublish.id))
                             }
                             try { window.dispatchEvent(new CustomEvent('survey:reports:updated', { detail: { surveyId: String(confirmPublish.id) } })) } catch (e) { }
                           } catch (e) { }
@@ -1637,6 +1627,21 @@ export default function Surveys(): JSX.Element {
                           setTimeout(() => setToastMessage(null), 3000)
                           return
                         }
+                        const myEmail = currentUser?.email || (typeof currentUserId === 'string' && currentUserId.includes('@') ? currentUserId : null);
+                        const myUid = currentUser?.id || (typeof currentUserId === 'string' && !currentUserId.includes('@') ? currentUserId : null);
+                        
+                        const existingReport = (surveyReports || []).find(r => {
+                          if (String(r.surveyId) !== String(confirmReportId)) return false;
+                          const rId = String(r.reporterId || '');
+                          const rEmail = String(r.reporterEmail || '');
+                          return (myUid && rId === String(myUid)) || (myEmail && (rEmail === String(myEmail) || rId === String(myEmail)));
+                        });
+                        if (existingReport) {
+                          setToastMessage('Ya has reportado esta encuesta. Solo se permite un reporte activo por encuesta.')
+                          setTimeout(() => setToastMessage(null), 4000)
+                          closeConfirmReportModal()
+                          return
+                        }
                         setConfirmReporting(true)
                         const _reportSurvey = (surveys || []).find((sv: any) => String(sv.id) === String(confirmReportId))
                         const report = {
@@ -1658,11 +1663,11 @@ export default function Surveys(): JSX.Element {
                             setConfirmReporting(false)
                             return
                           }
+                          closeConfirmReportModal()
                           setSurveyReports(prev => [...prev, report])
                           try { window.dispatchEvent(new CustomEvent('survey:reported', { detail: { report } })) } catch (e) { }
                           setToastMessage('Reporte enviado. Gracias.')
                           setTimeout(() => setToastMessage(null), 3000)
-                          closeConfirmReportModal()
                         } else {
                           setToastMessage('No se puede enviar reportes: no hay servicio de datos configurado.')
                           setTimeout(() => setToastMessage(null), 3000)

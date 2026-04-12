@@ -35,6 +35,15 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
         setMessage(`Por favor asigna una puntuación al criterio: "${q.text.substring(0, 30)}..."`)
         return
       }
+
+      // Ensure 'text' kind criteria have a non-empty response
+      if (q.kind === 'text') {
+        const c = answers[`${q.id}_comment`]
+        if (!c || !String(c).trim()) {
+          setMessage(`Por favor escribe una respuesta/análisis para el criterio: "${q.text.substring(0, 30)}..."`)
+          return
+        }
+      }
     }
     setSaving(true)
     try {
@@ -197,7 +206,9 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
           {rubric.map((q: RubricQuestion, i: number) => {
             const isScoreKind = q.kind === 'score';
             const scoreValue = answers[q.id];
-            const commentValue = (answers[`${q.id}_comment`] as string) || (isScoreKind ? '' : (answers[q.id] as string)) || '';
+            // Fix: Do not fallback to numeric score string if comment is empty
+            const commentValue = (answers[`${q.id}_comment`] as string) || '';
+            const isRatingDisabled = !isScoreKind && !commentValue.trim() && !readonlyMode;
             
             return (
               <div key={q.id} className="p-5 sm:p-6 border border-slate-200 dark:border-slate-700/80 rounded-2xl bg-white dark:bg-slate-800/50 shadow-sm transition-colors">
@@ -226,9 +237,29 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
                     <div className="flex flex-wrap gap-2 sm:gap-3">
                       {[1,2,3,4,5].map(n => {
                         const isSelected = Number(scoreValue) === n;
+                        const isDisabled = isRatingDisabled;
+
                         return (
-                          <label key={n} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl font-bold text-lg transition-all shadow-sm ${readonlyMode ? (isSelected ? 'bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/30' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 opacity-60 cursor-default') : (isSelected ? 'text-white border-transparent scale-105 ring-2 ring-offset-2 cursor-pointer shadow-lg' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/20 cursor-pointer')}`} style={(!readonlyMode && isSelected) ? { backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-primary)', '--tw-ring-color': 'var(--color-primary)'} as React.CSSProperties : {}}>
-                            <input type="radio" name={`q_${q.id}`} value={n} checked={isSelected} onChange={() => { if (!readonlyMode) setAnswer(q.id, n) }} style={{display: 'none'}} disabled={readonlyMode} />
+                          <label key={n} 
+                            className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl font-bold text-lg transition-all shadow-sm ${readonlyMode ? (isSelected ? 'bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/30' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 opacity-60 cursor-default') : (isDisabled ? 'bg-slate-50 dark:bg-slate-800/20 border-slate-100 dark:border-slate-800/50 text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40' : (isSelected ? 'text-white border-transparent scale-105 ring-2 ring-offset-2 cursor-pointer shadow-lg' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/20 cursor-pointer'))}`} 
+                            style={(!readonlyMode && !isDisabled && isSelected) ? { backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-primary)', '--tw-ring-color': 'var(--color-primary)'} as React.CSSProperties : {}}>
+                            <input 
+                              type="radio" 
+                              name={`q_${q.id}`} 
+                              value={n} 
+                              checked={isSelected} 
+                              onChange={() => { 
+                                if (!readonlyMode) {
+                                  if (isDisabled) {
+                                    setMessage(`Debes escribir tu análisis/respuesta antes de calificar este criterio.`);
+                                    return;
+                                  }
+                                  setAnswer(q.id, n) 
+                                }
+                              }} 
+                              style={{display: 'none'}} 
+                              disabled={readonlyMode || isDisabled} 
+                            />
                             {n}
                           </label>
                         );
