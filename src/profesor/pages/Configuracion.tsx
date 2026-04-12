@@ -649,21 +649,21 @@ export default function Configuracion() {
           <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl">
             {/* Drag handle for mobile */}
             <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={closeModal}>
-              <div className="w-12 h-1.5 rounded-full bg-white/40" />
+              <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700" />
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-3xl sm:rounded-[1.5rem] sm:rounded-b-none pt-7 sm:pt-4 z-10 shadow-[0_4px_20px_rgba(0,0,0,0.1)] border-b border-white/10" style={{ backgroundColor: 'var(--color-primary)' }}>
-              <div className="text-lg sm:text-xl font-bold text-white truncate tracking-wide">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-3xl sm:rounded-[1.5rem] sm:rounded-b-none pt-7 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+              <div className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 truncate tracking-tight">
                 {modalType === 'edit' ? 'Editar usuario' : (modalType === 'delete' ? 'Confirmar eliminación' : 'Crear usuario')}
               </div>
               <div className="hidden sm:block">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors outline-none"
+                  className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none"
                 >
-                  <span className="material-symbols-outlined text-[22px]">close</span>
+                  <span className="material-symbols-outlined text-[24px]">close</span>
                 </button>
               </div>
             </div>
@@ -734,15 +734,15 @@ export default function Configuracion() {
         <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl">
           {/* Drag handle */}
           <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => setConfirmPwdOpen(false)}>
-            <div className="w-12 h-1.5 rounded-full bg-white/40" />
+            <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700" />
           </div>
 
           {/* Header */}
-          <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-3xl sm:rounded-[1.5rem] sm:rounded-b-none pt-7 sm:pt-4 z-10" style={{ backgroundColor: 'var(--color-primary)' }}>
-            <span className="text-base sm:text-lg font-bold text-white tracking-wide">Confirmar cambio</span>
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-3xl sm:rounded-[1.5rem] sm:rounded-b-none pt-7 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+            <span className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 tracking-tight">Confirmar cambio</span>
             <div className="hidden sm:block">
-              <button type="button" onClick={() => setConfirmPwdOpen(false)} className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
-                <span className="material-symbols-outlined text-[22px]">close</span>
+              <button type="button" onClick={() => setConfirmPwdOpen(false)} className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none">
+                <span className="material-symbols-outlined text-[24px]">close</span>
               </button>
             </div>
           </div>

@@ -159,25 +159,21 @@ export default function ProjectDetailModal({
         className={`relative w-full sm:max-w-3xl sm:mx-4 rounded-t-3xl sm:rounded-2xl bg-white dark:bg-slate-900 shadow-2xl transition-all duration-300 flex flex-col max-h-[94dvh] sm:max-h-[85vh] overflow-hidden ${isVisible ? 'translate-y-0 sm:scale-100' : 'translate-y-full sm:translate-y-4 sm:scale-95'}`}
         style={{ transform: pullDownY > 0 ? `translateY(${pullDownY}px)` : undefined }}
       >
-        {/* Drag handle for mobile (absolute inside modal) */}
-        <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ backgroundColor: 'var(--color-primary)', touchAction: 'none' }} onClick={handleClose}>
-          <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
+        {/* Drag handle for mobile */}
+        <div className="w-full flex justify-center pt-2 pb-2 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={handleClose}>
+          <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700"></div>
         </div>
 
-        {/* Header (pt-7 mobile to clear the handle, pt-4 desktop) */}
-        <div 
-          className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" 
-          style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}
-        >
-          <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">Detalle de Resultados</div>
-          <div className="ml-auto hidden sm:block">
-            <button 
-              type="button" 
-              onClick={handleClose} 
-              aria-label="Cerrar" 
-              className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
+        {/* Header — clean premium */}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+          <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Detalle de Resultados</h3>
+          <div className="hidden sm:block">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none"
             >
-              <span className="material-symbols-outlined text-[22px]">close</span>
+              <span className="material-symbols-outlined text-[24px]">close</span>
             </button>
           </div>
         </div>

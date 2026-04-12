@@ -57,20 +57,20 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
       <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden">
         {/* Drag handle for mobile */}
         <div className="w-full flex justify-center pt-2 pb-2 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={onClose}>
-          <div className="w-12 h-1.5 rounded-full bg-white/40"></div>
+          <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700"></div>
         </div>
 
-        {/* Header — teal sólido */}
-        <div className="flex items-center justify-between px-5 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-4 z-10" style={{ backgroundColor: 'var(--color-primary)' }}>
-          <h3 className="text-lg sm:text-xl font-bold text-white tracking-wide">Categorías del Proyecto</h3>
+        {/* Header — clean premium */}
+        <div className="flex items-center justify-between px-5 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+          <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Categorías del Proyecto</h3>
           <div className="hidden sm:block">
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors outline-none"
+              className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none"
             >
-              <span className="material-symbols-outlined text-[22px]">close</span>
+              <span className="material-symbols-outlined text-[24px]">close</span>
             </button>
           </div>
         </div>
