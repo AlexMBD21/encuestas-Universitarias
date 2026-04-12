@@ -169,7 +169,7 @@ export default function ProjectDetailModal({
           className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" 
           style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}
         >
-          <div className="text-lg sm:text-xl font-bold break-words leading-tight mr-4 tracking-wide">{ps.project.name}</div>
+          <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">Detalle de Resultados</div>
           <div className="ml-auto hidden sm:block">
             <button 
               type="button" 
@@ -185,6 +185,13 @@ export default function ProjectDetailModal({
         <div 
           className="flex-1 overflow-y-auto p-4 sm:p-6 sm:px-8 space-y-6 sm:space-y-8 custom-scrollbar bg-slate-50/50"
         >
+          {/* Project Title as primary Heading */}
+          <div className="mb-2">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-tight break-all">
+              {ps.project.name}
+            </h2>
+          </div>
+
           {/* Overall score card */}
           {ps.overall !== null && (
             <div className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200/80 hover:border-slate-300 hover:shadow-slate-500/10 transition-all flex flex-wrap items-center gap-4 sm:gap-6 shadow-sm font-sans relative overflow-hidden">

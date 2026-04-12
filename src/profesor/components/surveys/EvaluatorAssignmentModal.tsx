@@ -164,6 +164,17 @@ const MultiEvaluatorSelector = ({ values, evaluatorUsers, onChange, onSave }: an
 export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUsers, dataClientNow, onSave, onCancel }: any) => {
   const [draftProjects, setDraftProjects] = React.useState<any[]>(survey?.projects || []);
   const [saving, setSaving] = React.useState(false);
+  const [expandedTitles, setExpandedTitles] = React.useState<Set<string>>(new Set());
+
+  const toggleTitleExpansion = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    setExpandedTitles(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   React.useEffect(() => {
     setDraftProjects(survey?.projects || []);
@@ -224,7 +235,11 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
                 {draftProjects.map((p: any) => (
                   <tr key={p.id} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
                     <td className="p-3">
-                      <div className="font-bold text-sm text-slate-800 dark:text-slate-200 line-clamp-2 break-all overflow-hidden max-w-[250px]" title={p.name}>
+                      <div 
+                        onClick={(e) => toggleTitleExpansion(e, p.id)}
+                        className={`font-bold text-sm text-slate-800 dark:text-slate-200 cursor-pointer transition-all max-w-[250px] sm:max-w-[300px] ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
+                        title={p.name}
+                      >
                         {p.name || 'Sin nombre'}
                       </div>
                       <div className="text-xs text-slate-500 truncate max-w-[200px]">Asesor: {p.advisor || '-'}</div>
@@ -261,7 +276,11 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
                       <span className="material-symbols-outlined text-[11px]">category</span>
                       {p.category || 'N/A'}
                     </span>
-                    <h4 className="text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight line-clamp-2 break-words" title={p.name}>
+                    <h4 
+                      onClick={(e) => toggleTitleExpansion(e, p.id)}
+                      className={`text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight cursor-pointer transition-all ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
+                      title={p.name}
+                    >
                       {p.name || 'Sin nombre'}
                     </h4>
                     <div className="text-[11px] text-slate-500 flex items-center gap-1">

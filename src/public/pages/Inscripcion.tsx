@@ -260,23 +260,29 @@ export default function Inscripcion() {
                   <h3 className="text-lg font-black text-slate-800 tracking-tight">Detalles del Proyecto</h3>
                 </div>
 
-                {/* Nombre */}
                 <div>
-                  <div className="flex items-center justify-between mb-2.5 ml-1">
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">Nombre del Proyecto <span className="text-red-500">*</span></label>
-                    <span className={`text-[10px] font-bold ${projectName.length >= 70 ? 'text-red-500' : 'text-slate-400'}`}>
-                      {projectName.length}/80
-                    </span>
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Nombre del Proyecto <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      required
+                      maxLength={80}
+                      value={projectName}
+                      onChange={e => setProjectName(e.target.value)}
+                      placeholder="Ej. Sistema de Monitoreo IoT..."
+                      className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all placeholder:text-slate-300 font-medium"
+                    />
+                    <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-2 pointer-events-none">
+                      <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full transition-colors ${projectName.length > 70 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>
+                        {projectName.length}/80
+                      </span>
+                    </div>
                   </div>
-                  <input 
-                    type="text" 
-                    required
-                    maxLength={80}
-                    value={projectName}
-                    onChange={e => setProjectName(e.target.value)}
-                    placeholder="Ej. Sistema de Monitoreo IoT..."
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all placeholder:text-slate-300 font-medium"
-                  />
+                  
+                  {/* Helper info field */}
+                  <div className="mt-1.5 flex items-center justify-between px-1">
+                    <p className="text-[10px] text-slate-400 font-medium">Nombre completo del proyecto, máximo 80 caracteres.</p>
+                  </div>
                 </div>
 
                 {/* Descripción */}

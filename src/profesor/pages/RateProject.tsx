@@ -150,7 +150,7 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
   return (
     <div className="animate-in fade-in zoom-in-95 duration-200">
       <div className="mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
-        <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-2">{project.name || 'Proyecto sin nombre'}</h3>
+        <h3 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100 mb-2 leading-tight break-all" title={project.name}>{project.name || 'Proyecto sin nombre'}</h3>
         <div className="flex flex-col gap-3 mb-6">
           {project.description && (
              <p className="text-[15px] sm:text-base text-slate-500 dark:text-slate-400 italic leading-relaxed">

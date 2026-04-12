@@ -76,6 +76,17 @@ export default function Surveys(): JSX.Element {
   const [titleSearch, setTitleSearch] = useState<string>('')
   const [publishedFilter, setPublishedFilter] = useState<'all' | 'published' | 'unpublished' | 'reported'>('all')
   const [ownerFilter, setOwnerFilter] = useState<string>('all')
+  const [expandedTitles, setExpandedTitles] = useState<Set<string>>(new Set())
+
+  const toggleTitleExpansion = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    setExpandedTitles(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   // close menu when clicking outside
   React.useEffect(() => {
@@ -1007,7 +1018,7 @@ export default function Surveys(): JSX.Element {
               </div>
               {/* Header (sticky) */}
               <div className="sticky top-0 z-10 border-b px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between text-white flex-shrink-0 pt-7 sm:pt-4" style={{ backgroundColor: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
-                <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
+                <div className="text-lg sm:text-xl font-bold truncate mr-4 tracking-wide max-w-[calc(100%-48px)]">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
                 <div className="ml-auto hidden sm:block">
                   <button type="button" onClick={() => closeModal()} aria-label="Cerrar" title="Cerrar" className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors">
                     <span className="material-symbols-outlined text-[22px]">close</span>
@@ -1152,7 +1163,13 @@ export default function Surveys(): JSX.Element {
                               <div key={p.id} className="p-4 sm:p-5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 group h-full">
                                 <div>
                                   <div className="mb-3">
-                                    <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] leading-snug line-clamp-2" title={p.name}>{p.name || 'Proyecto sin nombre'}</h4>
+                                    <h4 
+                                  onClick={(e) => toggleTitleExpansion(e, p.id)}
+                                  className={`font-bold text-slate-800 dark:text-slate-100 text-[15px] leading-snug break-all cursor-pointer transition-all ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
+                                  title={p.name}
+                                >
+                                  {p.name || 'Proyecto sin nombre'}
+                                </h4>
                                   </div>
                                   {p.category && (
                                     <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-3">

@@ -113,6 +113,17 @@ export default function ReportDetail(): JSX.Element {
   const [usersCache, setUsersCache] = useState<Record<string, any>>({})
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas')
   const [showWinnersOnly, setShowWinnersOnly] = useState<boolean>(false)
+  const [expandedTitles, setExpandedTitles] = useState<Set<string>>(new Set())
+
+  const toggleTitleExpansion = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    setExpandedTitles(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   // Reiniciar scroll al entrar y cuando termina de cargar
   const resetScroll = () => {
@@ -548,7 +559,11 @@ export default function ReportDetail(): JSX.Element {
                                         {/* Project Details */}
                                           <div className="flex-1 p-4 flex flex-col justify-center min-w-0 overflow-hidden">
                                             <div className="mb-1">
-                                              <span className="font-bold text-slate-800 text-base break-words leading-tight line-clamp-2" title={ps.project.name}>
+                                              <span 
+                                                onClick={(e) => toggleTitleExpansion(e, ps.project.id)}
+                                                className={`font-black text-slate-800 text-sm sm:text-base leading-tight cursor-pointer transition-all ${expandedTitles.has(ps.project.id) ? 'whitespace-normal' : 'line-clamp-2 break-all'}`}
+                                                title={ps.project.name}
+                                              >
                                                 {ps.project.name}
                                               </span>
                                               {showTieBadge && (
