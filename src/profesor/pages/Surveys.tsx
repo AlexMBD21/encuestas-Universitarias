@@ -482,8 +482,8 @@ export default function Surveys(): JSX.Element {
               )
             })()}
 
-            {/* Gestionar Categorías (solo admin o profesor owner) */}
-            {isAdmin && (
+            {/* Gestionar Categorías (Global para todos los usuarios) */}
+            {authUser && (
               <button
                 type="button"
                 onClick={async () => {
