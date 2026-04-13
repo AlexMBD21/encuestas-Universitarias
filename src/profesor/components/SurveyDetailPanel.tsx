@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import ReactDOM from 'react-dom'
+import Dropdown from '../../components/ui/Dropdown'
 
 type Props = { report: any, usersCache?: Record<string, any> }
 
@@ -329,58 +330,57 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
 
       {/* ── Per-user activity ── */}
       <div className="rounded-3xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-        {/* Header */}
         <div className="flex flex-col gap-4 px-6 pt-5 pb-5 border-b border-slate-100 rounded-t-3xl bg-white">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="material-symbols-outlined text-[22px] text-indigo-500 shrink-0">group</span>
-              <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-white truncate">Actividad por usuario</h2>
-            </div>
-            {(userSearch || userSelected) && (
-              <button 
-                onClick={clearFilters} 
-                className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl hover:bg-indigo-100 transition-all shrink-0"
-              >
-                × Limpiar
-              </button>
-            )}
+          <div className="flex items-center gap-2.5">
+            <span className={`material-symbols-outlined text-[22px] shrink-0 ${isProjectSurvey ? 'text-indigo-500' : 'text-emerald-500'}`}>group</span>
+            <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-white">Actividad por usuario</h2>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-2.5">
-            <div className="relative flex-1">
-              <select
-                value={userSelected}
-                onChange={e => { setUserSelected(e.target.value); setUserSearch('') }}
-                className="w-full text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50/30 px-3 py-2.5 pr-8 appearance-none focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all cursor-pointer truncate"
-              >
-                <option value="">Todos los usuarios</option>
-                {userList.map(u => (
-                  <option key={u.id} value={u.id}>{u.label}</option>
-                ))}
-              </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              <div className="relative flex-1 [&>div]:!w-full">
+                <Dropdown
+                  value={userSelected}
+                  label="Todos los usuarios"
+                  options={[
+                    { id: '', label: 'Todos los usuarios' },
+                    ...userList.map(u => ({ id: u.id, label: u.label }))
+                  ]}
+                  onChange={val => { setUserSelected(val); setUserSearch('') }}
+                  icon="account_circle"
+                  color={isProjectSurvey ? "indigo" : "emerald"}
+                />
+              </div>
+              
+              <div className="relative flex-1">
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.5" />
+                  <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Buscar usuario..."
+                  value={userSearch}
+                  onChange={e => { setUserSearch(e.target.value); setUserSelected('') }}
+                  className={`w-full pl-10 pr-10 py-2.5 text-xs font-semibold rounded-xl shadow-sm border border-slate-200 bg-white focus:outline-none focus:ring-4 transition-all ${isProjectSurvey ? 'focus:border-indigo-300 focus:ring-indigo-100' : 'focus:border-emerald-300 focus:ring-emerald-100'}`}
+                />
+                {userSearch && (
+                  <button onClick={() => setUserSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+                  </button>
+                )}
               </div>
             </div>
-            
-            <div className="relative flex-[1.5]">
-              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.5" />
-                <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Buscar usuario..."
-                value={userSearch}
-                onChange={e => { setUserSearch(e.target.value); setUserSelected('') }}
-                className="w-full pl-10 pr-10 py-2.5 text-xs font-semibold rounded-xl shadow-sm border border-slate-200 bg-white focus:outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all"
-              />
-              {userSearch && (
-                <button onClick={() => setUserSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+            {(userSearch || userSelected) && (
+              <div className="flex justify-end animate-fade-in-down">
+                <button 
+                  onClick={clearFilters} 
+                  className={`text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all ${isProjectSurvey ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'}`}
+                >
+                  × Limpiar filtros
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 

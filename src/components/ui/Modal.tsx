@@ -23,7 +23,13 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
     if (isOpen) {
       setIsVisible(false);
       const prevOverflow = document.body.style.overflow;
+      const prevOverscroll = document.body.style.overscrollBehavior;
+      const prevDocOverscroll = document.documentElement.style.overscrollBehavior;
+      
       document.body.style.overflow = 'hidden';
+      document.body.style.overscrollBehavior = 'none';
+      document.documentElement.style.overscrollBehavior = 'none';
+      
       const t = setTimeout(() => setIsVisible(true), 50);
 
       const handleKeyDown = (e: KeyboardEvent) => {
@@ -36,6 +42,8 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
       return () => {
         clearTimeout(t);
         document.body.style.overflow = prevOverflow;
+        document.body.style.overscrollBehavior = prevOverscroll;
+        document.documentElement.style.overscrollBehavior = prevDocOverscroll;
         window.removeEventListener('keydown', handleKeyDown);
       };
     } else {
@@ -95,7 +103,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
         }}
         onTouchStart={(e) => {
           const target = e.target as HTMLElement;
-          const scrollable = target.closest('.modal-scrollable-content');
+          const scrollable = target.closest('.modal-scrollable-content, .overflow-y-auto, .overflow-auto, [style*="overflow-y: auto"], [style*="overflow: auto"]');
           touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollable ? scrollable.scrollTop : 0 };
         }}
         onTouchEnd={() => {

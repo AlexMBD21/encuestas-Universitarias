@@ -92,7 +92,7 @@ export default function ProjectDetailModal({
       fullHeightOnMobile={true}
       scrollableBody={false}
     >
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 sm:px-8 space-y-6 sm:space-y-8 custom-scrollbar bg-slate-50/50 w-full h-full">
+      <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 sm:px-8 space-y-6 sm:space-y-8 custom-scrollbar bg-slate-50/50 w-full h-full">
         {/* Project Title as primary Heading */}
         <div className="mb-2">
           <h2 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-tight break-all">
@@ -245,7 +245,7 @@ export default function ProjectDetailModal({
           </div>
 
           {/* Scale legend */}
-          <div className="mb-6 flex items-center gap-1 rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+          <div className="mb-6 flex items-center rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
             {[
               { score: 1, label: 'Deficiente', color: '#ef4444', pct: 0 },
               { score: 2, label: 'Regular', color: '#f97316', pct: 25 },
@@ -253,9 +253,9 @@ export default function ProjectDetailModal({
               { score: 4, label: 'Muy bueno', color: '#22c55e', pct: 75 },
               { score: 5, label: 'Excelente', color: '#06b6d4', pct: 100 },
             ].map(s => (
-              <div key={s.score} className="flex-1 flex flex-col items-center py-3 px-1 gap-1 border-r border-slate-100 last:border-r-0 hover:bg-slate-50 transition-colors">
-                <span className="text-xl font-black leading-none" style={{ color: s.color }}>{s.score}</span>
-                <span className="text-[9px] font-bold text-slate-400 uppercase text-center leading-tight tracking-widest truncate w-full">{s.label}</span>
+              <div key={s.score} className="flex-1 flex flex-col items-center py-2 sm:py-3 px-0.5 sm:px-1 gap-1 border-r border-slate-100 last:border-r-0 hover:bg-slate-50 transition-colors justify-start">
+                <span className="text-lg sm:text-xl font-black leading-none" style={{ color: s.color }}>{s.score}</span>
+                <span className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase text-center leading-[1.1] tracking-wider sm:tracking-widest break-words w-full px-0.5">{s.label}</span>
               </div>
             ))}
           </div>

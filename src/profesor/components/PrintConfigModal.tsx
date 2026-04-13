@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Modal from '../../components/ui/Modal';
+import Dropdown from '../../components/ui/Dropdown';
 
 export interface PrintConfig {
   includeStats: boolean;
@@ -81,14 +82,19 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
                   {categories.length > 0 && (
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-bold text-slate-600">Filtrar por Categoría</label>
-                      <select 
-                        value={config.categoryFilter}
-                        onChange={(e) => setConfig({...config, categoryFilter: e.target.value})}
-                        className="bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                      >
-                        <option value="Todas">Todas las categorías</option>
-                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
+                      <div className="[&>div]:!w-full relative z-20">
+                        <Dropdown
+                          value={config.categoryFilter}
+                          label="Todas las categorías"
+                          options={[
+                            { id: 'Todas', label: 'Todas las categorías' },
+                            ...categories.map(c => ({ id: c, label: c }))
+                          ]}
+                          onChange={(val) => setConfig({...config, categoryFilter: val})}
+                          icon="category"
+                          color="blue"
+                        />
+                      </div>
                     </div>
                   )}
                   <Toggle 
