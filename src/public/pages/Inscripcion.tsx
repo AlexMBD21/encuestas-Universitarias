@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import { Modal } from '../../components/ui/Modal';
 
 const CategorySelect = ({ value, options, onChange, placeholder }: any) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,6 +76,7 @@ export default function Inscripcion() {
   const [projectMembers, setProjectMembers] = useState('');
   const [projectAdvisor, setProjectAdvisor] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -121,7 +123,7 @@ export default function Inscripcion() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!projectName.trim() || !projectCategory.trim() || !projectMembers.trim()) {
-      alert('Por favor completa todos los campos requeridos.');
+      setModalError('Por favor completa todos los campos requeridos.');
       return;
     }
     setSubmitting(true);
@@ -149,7 +151,7 @@ export default function Inscripcion() {
       setSuccess(true);
     } catch (err: any) {
       console.error(err);
-      alert(err.message || 'Hubo un error al registrar el proyecto.');
+      setModalError(err.message || 'Hubo un error al registrar el proyecto.');
     } finally {
       setSubmitting(false);
     }
@@ -268,7 +270,7 @@ export default function Inscripcion() {
                       required
                       maxLength={80}
                       value={projectName}
-                      onChange={e => setProjectName(e.target.value)}
+                      onChange={e => setProjectName(e.target.value.slice(0, 80))}
                       placeholder="Ej. Sistema de Monitoreo IoT..."
                       className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 text-slate-800 outline-none transition-all placeholder:text-slate-300 font-medium"
                     />
@@ -364,6 +366,30 @@ export default function Inscripcion() {
           </div>
         </div>
       </div>
+      
+      {/* Premium Error Modal */}
+      <Modal isOpen={!!modalError} onClose={() => setModalError(null)} maxWidth="max-w-md" hideMobileIndicator={true}>
+        <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl">
+          <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => setModalError(null)}>
+            <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700" />
+          </div>
+          <div className="p-8 text-center flex-1 overflow-y-auto">
+            <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6">
+               <span className="material-symbols-outlined text-red-500 text-[40px] drop-shadow-sm">warning</span>
+            </div>
+            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-3 tracking-tight">Oops... algo falló</h3>
+            <p className="text-slate-500 dark:text-slate-400 font-medium mb-8 text-lg">
+              {modalError}
+            </p>
+            <button 
+              onClick={() => setModalError(null)}
+              className="w-full py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-black rounded-2xl transition-all active:scale-[0.98]"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
