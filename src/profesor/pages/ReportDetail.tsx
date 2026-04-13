@@ -131,7 +131,6 @@ export default function ReportDetail(): JSX.Element {
   const handlePrintFn = useReactToPrint({
     contentRef: printRef,
     documentTitle: surveyTitleHeader + ' - Reporte',
-    onAfterPrint: () => setPrintConfig(null),
   })
 
   const categoriesSet = new Set<string>();
