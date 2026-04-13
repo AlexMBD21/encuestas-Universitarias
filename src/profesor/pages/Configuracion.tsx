@@ -6,7 +6,7 @@ import AuthAdapter from '../../services/AuthAdapter'
 import { useAuth } from '../../services/AuthContext'
 import { toast } from '../../components/ui/Toast'
 import { Modal } from '../../components/ui/Modal';
-
+import { Dropdown } from '../../components/ui/Dropdown';
 export default function Configuracion() {
   const navigate = useNavigate();
   const supabaseEnabledNow = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
@@ -708,12 +708,19 @@ export default function Configuracion() {
                       <div className="text-xs text-slate-500 mt-1">La nueva contraseña se aplica desde un proceso seguro del servidor.</div>
                     </div>
                   )}
-                  <div>
-                    <label className="block text-sm">Rol</label>
-                    <select className="border px-2 py-2 rounded w-full" value={modalData.role} onChange={e => setModalData({...modalData, role: e.target.value})}>
-                      <option value="profesor">Profesor</option>
-                      <option value="admin">Administrador</option>
-                    </select>
+                  <div className="space-y-1.5 relative z-50">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Rol</label>
+                    <Dropdown 
+                      value={modalData.role}
+                      label="Seleccione un rol"
+                      options={[
+                        { id: 'profesor', label: 'Profesor' },
+                        { id: 'admin', label: 'Administrador' }
+                      ]}
+                      onChange={(val) => setModalData({...modalData, role: val})}
+                      icon="badge"
+                      color="blue"
+                    />
                   </div>
 
                   <div className="mt-4 flex flex-col sm:flex-row-reverse justify-end gap-2">
