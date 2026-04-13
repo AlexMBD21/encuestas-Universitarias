@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthAdapter from '../services/AuthAdapter'
 import { useAuth } from '../services/AuthContext'
-// Import removed to avoid legacy style conflicts
+import Loader from './Loader'
 import initLegacyLogin from '../legacy/loginLegacy'
 
 export default function Login() {
@@ -134,15 +134,7 @@ export default function Login() {
     }
   }, [])
 
-  if (loading) return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 gap-6 overflow-hidden">
-      <div className="relative">
-        <div className="w-16 h-16 border-4 border-slate-200 dark:border-slate-800 rounded-full"></div>
-        <div className="w-16 h-16 border-4 border-transparent border-t-blue-600 rounded-full animate-spin absolute inset-0"></div>
-      </div>
-      <div className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest animate-pulse">Cargando sesión...</div>
-    </div>
-  )
+  if (loading) return <Loader fullScreen text="Cargando sesión..." />
 
   return (
     <div className="login-root fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-[#00628d] to-[#004a6b] overflow-hidden font-outfit">

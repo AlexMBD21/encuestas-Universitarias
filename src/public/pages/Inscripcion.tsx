@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Modal } from '../../components/ui/Modal';
+import Loader from '../../components/Loader';
 
 const CategorySelect = ({ value, options, onChange, placeholder }: any) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -159,17 +160,7 @@ export default function Inscripcion() {
 
   // --- LOADING STATE ---
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-6">
-        <div className="flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-500">
-          <div className="relative">
-            <div className="h-16 w-16 border-4 border-indigo-100 rounded-full"></div>
-            <div className="h-16 w-16 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin absolute top-0"></div>
-          </div>
-          <span className="text-slate-500 font-bold tracking-tight text-lg">Validando invitación...</span>
-        </div>
-      </div>
-    );
+    return <Loader fullScreen text="Validando invitación..." />;
   }
 
   // --- ERROR STATE ---
@@ -343,11 +334,11 @@ export default function Inscripcion() {
                 <button 
                   type="submit" 
                   disabled={submitting}
-                  className={`w-full py-5 rounded-2xl text-lg font-black text-white shadow-2xl shadow-indigo-200/50 transition-all flex justify-center items-center gap-3 ${submitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-indigo-300/50 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98]'}`}
+                  className={`w-full py-5 rounded-2xl text-lg font-black text-white shadow-2xl shadow-indigo-200/50 transition-all flex justify-center items-center gap-3 relative overflow-hidden ${submitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-indigo-300/50 hover:-translate-y-1 active:translate-y-0 active:scale-[0.98]'}`}
                 >
                   {submitting ? (
                     <>
-                      <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                      <Loader size={24} text={null} innerColor="#cbd5e1" outerColor="#ffffff" />
                       <span>Procesando...</span>
                     </>
                   ) : (
