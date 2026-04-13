@@ -245,7 +245,7 @@ export default function ReportDetail(): JSX.Element {
   const surveyTitle =
     (survey && (survey.title || survey.name)) ||
     (report && report.survey && (report.survey.title || report.survey.name)) ||
-    surveyId
+    'Reporte sin título'
 
   const reload = async () => {
     if (!surveyId) return
@@ -278,14 +278,22 @@ export default function ReportDetail(): JSX.Element {
               Reportes
             </button>
             <span className="material-symbols-outlined text-[14px] text-slate-400">chevron_right</span>
-            <span className="text-slate-800 truncate max-w-[150px] sm:max-w-xs">{surveyTitle}</span>
+            {loading ? (
+              <div className="w-32 h-4 bg-slate-200/70 rounded-md animate-pulse" />
+            ) : (
+              <span className="text-slate-800 truncate max-w-[150px] sm:max-w-xs">{surveyTitle}</span>
+            )}
           </nav>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 animate-fade-in-up">
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-                {surveyTitle}
-              </h1>
+              {loading ? (
+                <div className="h-9 sm:h-10 lg:h-12 w-[80%] max-w-md bg-slate-200/70 rounded-xl animate-pulse" />
+              ) : (
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                  {surveyTitle}
+                </h1>
+              )}
             </div>
             
             {/* Quick Actions (Export) si el reporte está cargado */}
