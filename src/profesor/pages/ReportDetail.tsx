@@ -492,6 +492,22 @@ export default function ReportDetail(): JSX.Element {
                         })
                         const uniqueCats = sortedGroupsEntry.map(x => x[0])
 
+                        let globalRankCounter = 0;
+                        let lastGlobalScore: number | null = null;
+                        let lastGlobalRank = 0;
+                        let globalScoreCounts: Record<string, number> = {};
+
+                        if (showWinnersOnly && selectedCategory === 'Todas') {
+                            sortedGroupsEntry.forEach(([cat, catSummaries]) => {
+                                const maxSc = catMaxScore[cat];
+                                const winners = catSummaries.filter(ps => ps.overall !== null && ps.overall === maxSc && maxSc > -1);
+                                winners.forEach(w => {
+                                    const sc = String(w.overall);
+                                    globalScoreCounts[sc] = (globalScoreCounts[sc] || 0) + 1;
+                                });
+                            });
+                        }
+
                         return (
                           <div className="flex flex-col">
                             {uniqueCats.length > 0 && (
@@ -552,17 +568,32 @@ export default function ReportDetail(): JSX.Element {
                                       ? Math.max(0, Math.min(100, Math.round(((overall - 1) / 4) * 100)))
                                       : null
 
-                                    const prevOverall = i > 0 ? (visibleSummaries[i - 1].overall ?? null) : null
-                                    const isTied = overall !== null && prevOverall !== null && Number(overall) === Number(prevOverall)
-                                    const nextOverall = i < visibleSummaries.length - 1 ? (visibleSummaries[i + 1].overall ?? null) : null
-                                    const tiedWithNext = overall !== null && nextOverall !== null && Number(overall) === Number(nextOverall)
-                                    const showTieBadge = isTied || tiedWithNext
+                                    let colorIdx = i;
+                                    let showTieBadge = false;
 
-                                    let colorIdx = i
-                                    if (isTied) {
-                                      let j = i
-                                      while (j > 0 && Number(visibleSummaries[j].overall) === Number(visibleSummaries[j - 1].overall)) j--
-                                      colorIdx = j
+                                    if (showWinnersOnly && selectedCategory === 'Todas') {
+                                        if (overall !== null && lastGlobalScore !== null && Number(overall) === Number(lastGlobalScore)) {
+                                            colorIdx = lastGlobalRank;
+                                            globalRankCounter++;
+                                        } else {
+                                            colorIdx = globalRankCounter;
+                                            lastGlobalRank = colorIdx;
+                                            lastGlobalScore = overall;
+                                            globalRankCounter++;
+                                        }
+                                        showTieBadge = overall !== null && (globalScoreCounts[String(overall)] || 0) > 1;
+                                    } else {
+                                        const prevOverall = i > 0 ? (visibleSummaries[i - 1].overall ?? null) : null
+                                        const isTied = overall !== null && prevOverall !== null && Number(overall) === Number(prevOverall)
+                                        const nextOverall = i < visibleSummaries.length - 1 ? (visibleSummaries[i + 1].overall ?? null) : null
+                                        const tiedWithNext = overall !== null && nextOverall !== null && Number(overall) === Number(nextOverall)
+                                        showTieBadge = isTied || tiedWithNext
+
+                                        if (isTied) {
+                                          let j = i
+                                          while (j > 0 && Number(visibleSummaries[j].overall) === Number(visibleSummaries[j - 1].overall)) j--
+                                          colorIdx = j
+                                        }
                                     }
 
                                     // Premium colors for podioum (Top 3)
