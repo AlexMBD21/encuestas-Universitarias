@@ -2,10 +2,13 @@ import React, { useEffect, useState, useLayoutEffect, useRef } from 'react'
 import ReactDOM from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import reportHelpers from '../services/reportHelpers'
+import { useReactToPrint } from 'react-to-print'
 import supabaseClient from '../../services/supabaseClient'
 import QuestionStatCard from '../components/QuestionStatCard'
 import SurveyDetailPanel from '../components/SurveyDetailPanel'
 import ProjectDetailModal from '../components/ProjectDetailModal'
+import PrintConfigModal, { PrintConfig } from '../components/PrintConfigModal'
+import PrintLayout from '../components/PrintLayout'
 import { toast } from '../../components/ui/Toast'
 
 const CategoryDropdown = ({ value, options, onChange }: { value: string, options: string[], onChange: (val: string) => void }) => {
@@ -114,6 +117,40 @@ export default function ReportDetail(): JSX.Element {
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas')
   const [showWinnersOnly, setShowWinnersOnly] = useState<boolean>(false)
   const [expandedTitles, setExpandedTitles] = useState<Set<string>>(new Set())
+
+  // --- Print Configuration State ---
+  const [showPrintModal, setShowPrintModal] = useState(false)
+  const [printConfig, setPrintConfig] = useState<PrintConfig | null>(null)
+  const printRef = useRef<HTMLDivElement>(null)
+
+  const surveyTitleHeader =
+    (survey && (survey.title || survey.name)) ||
+    (report && report.survey && (report.survey.title || report.survey.name)) ||
+    'Reporte'
+
+  const handlePrintFn = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: surveyTitleHeader + ' - Reporte',
+    onAfterPrint: () => setPrintConfig(null),
+  })
+
+  const categoriesSet = new Set<string>();
+  if (report?.projectSummaries) {
+    report.projectSummaries.forEach((ps: any) => {
+      const cat = (ps.project?.category || 'Sin Categoría').trim();
+      categoriesSet.add(cat);
+    });
+  }
+  const availableCategories = Array.from(categoriesSet).sort();
+
+  const handleGeneratePdf = (config: PrintConfig) => {
+    setPrintConfig(config);
+    toast({ message: 'Preparando vista de impresión...', type: 'info', duration: 2000 })
+    setTimeout(() => {
+      if (handlePrintFn) handlePrintFn();
+    }, 150);
+  };
+  // ----------------------------------
 
   const toggleTitleExpansion = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
@@ -300,18 +337,7 @@ export default function ReportDetail(): JSX.Element {
             {report && !loading && (
               <div className="flex shrink-0 gap-2">
                 <button
-                  onClick={() => {
-                    try {
-                      if (report.projectSummaries) {
-                        reportHelpers.exportProjectSurveyPdf(report, usersCache, 'preview')
-                      } else {
-                        reportHelpers.exportSimpleSurveyPdf(report, usersCache, 'preview')
-                      }
-                      toast({ message: 'Preparando vista de impresión...', type: 'info', duration: 3000 })
-                    } catch (e) {
-                      toast({ message: 'No se pudo abrir la vista de impresión', type: 'error' })
-                    }
-                  }}
+                  onClick={() => setShowPrintModal(true)}
                   className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl transition-all shadow-md shadow-slate-900/10 active:scale-[0.98]"
                 >
                   <span className="material-symbols-outlined text-[18px]">print</span>
@@ -655,6 +681,23 @@ export default function ReportDetail(): JSX.Element {
         <ProjectDetailModal ps={modalProject} onClose={() => setModalProject(null)} usersCache={usersCache} />
       )}
       
+      {/* Print System */}
+      <PrintConfigModal
+        isOpen={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        onPrint={handleGeneratePdf}
+        isProject={survey?.type === 'project'}
+        categories={availableCategories}
+      />
+      <div style={{ display: 'none' }}>
+        <PrintLayout
+          ref={printRef}
+          report={report}
+          config={printConfig}
+          usersCache={usersCache}
+        />
+      </div>
+
       <style>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(10px); }
