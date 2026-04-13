@@ -118,7 +118,15 @@ const PrintLayout = forwardRef<HTMLDivElement, PrintLayoutProps>(({ report, conf
           <SectionDivider />
           <h2 className="text-2xl font-black text-slate-900 border-b-2 border-indigo-100 pb-3 mb-4">Ranking de Proyectos</h2>
           <div className="space-y-4">
-            {visibleSummaries.map((ps: any, idx: number) => {
+            {visibleSummaries.map((ps: any, i: number) => {
+              const overall: number | null = ps.overall ?? null;
+              let rankIdx = i;
+              if (overall !== null) {
+                 let j = i;
+                 while (j > 0 && Number(visibleSummaries[j].overall) === Number(visibleSummaries[j - 1].overall)) j--;
+                 rankIdx = j;
+              }
+
               const pct = toPercent(ps.overall);
               let badgeTheme = {
                 stripe: 'bg-slate-300',
@@ -128,20 +136,20 @@ const PrintLayout = forwardRef<HTMLDivElement, PrintLayoutProps>(({ report, conf
                 icon: ''
               };
 
-              if (idx === 0) {
+              if (rankIdx === 0) {
                 badgeTheme = { stripe: 'bg-amber-500', medalText: 'text-amber-600', scoreText: 'text-amber-600', barSrc: 'from-amber-400 to-amber-500', icon: '🥇' };
-              } else if (idx === 1) {
+              } else if (rankIdx === 1) {
                 badgeTheme = { stripe: 'bg-slate-400', medalText: 'text-slate-500', scoreText: 'text-slate-500', barSrc: 'from-slate-300 to-slate-400', icon: '🥈' };
-              } else if (idx === 2) {
+              } else if (rankIdx === 2) {
                 badgeTheme = { stripe: 'bg-orange-600', medalText: 'text-orange-700', scoreText: 'text-orange-700', barSrc: 'from-orange-500 to-orange-600', icon: '🥉' };
               }
               
               return (
-                <div key={idx} className="border border-slate-200 bg-white rounded-xl p-3.5 flex gap-4 items-center avoid-break shadow-sm relative overflow-hidden">
+                <div key={ps.project?.id || i} className="border border-slate-200 bg-white rounded-xl p-3.5 flex gap-4 items-center avoid-break shadow-sm relative overflow-hidden">
                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${badgeTheme.stripe}`}></div>
                    <div className="flex flex-col items-center justify-center shrink-0 w-14">
                       {badgeTheme.icon && <span className="text-2xl leading-none mb-1">{badgeTheme.icon}</span>}
-                      <span className={`font-black text-xl ${badgeTheme.medalText}`}>#{idx + 1}</span>
+                      <span className={`font-black text-xl ${badgeTheme.medalText}`}>#{rankIdx + 1}</span>
                    </div>
                    <div className="flex-1 min-w-0">
                      <h3 className="font-bold text-slate-900 text-lg leading-tight break-all whitespace-normal pr-2">{ps.project?.name || 'Sin nombre'}</h3>
