@@ -21,7 +21,7 @@ export default function Configuracion() {
 
   const user = AuthAdapter.getUser()
   const email = user ? (user.email || '') : ''
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, loading: authLoading } = useAuth()
   const isAdmin = (currentUser && (currentUser as any).role === 'admin') || (user && (user.role === 'admin'))
   const [adminVisible, setAdminVisible] = useState<boolean>(!!isAdmin)
 
@@ -72,7 +72,7 @@ export default function Configuracion() {
 
   useEffect(() => {
     const loadUsers = async () => {
-      if (!isAdmin) return
+      if (!isAdmin || authLoading) return
       if (!dataClientNow || !(dataClientNow as any).isEnabled || !(dataClientNow as any).isEnabled()) return
       setUsersLoading(true)
       try {
@@ -88,7 +88,7 @@ export default function Configuracion() {
     }
     loadUsers()
     if (isAdmin) setAdminVisible(true)
-  }, [isAdmin])
+  }, [isAdmin, authLoading, currentUser])
 
 
 

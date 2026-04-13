@@ -45,7 +45,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const mergedBase = { id: supabaseUser.id || supabaseUser.uid, email: supabaseUser.email, ...cached };
           try {
             const claims = await supabaseClient.getCurrentUserClaims(true)
-            const withRole = { ...mergedBase, role: (claims && claims.role) ? claims.role : mergedBase.role }
+            const freshRole = (claims && claims.role) ? claims.role : mergedBase.role
+            
+            // Check for stale JWT claims
+            const tokenRole = (supabaseUser.app_metadata && supabaseUser.app_metadata.role) || (supabaseUser.user_metadata && supabaseUser.user_metadata.role)
+            if (freshRole && freshRole !== tokenRole) {
+               console.debug('[AuthContext] JWT role mismatch detected. Triggering silent refresh...')
+               if (typeof (supabaseClient as any).refreshFirebaseSession === 'function') {
+                 await (supabaseClient as any).refreshFirebaseSession()
+                 // Return early configures onAuthStateChange to re-run and set state with updated token constraints
+                 return
+               }
+            }
+
+            const withRole = { ...mergedBase, role: freshRole }
             console.log('AuthContext: supabaseUser', supabaseUser && supabaseUser.id, 'mergedBase', mergedBase, 'claims', claims, 'withRole', withRole)
             setUser(withRole)
           } catch (e) {

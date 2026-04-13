@@ -145,6 +145,14 @@ export async function firebaseSignOut() {
   try { await supabase.auth.signOut() } catch (e) {}
 }
 
+export async function refreshFirebaseSession() {
+  ensureClient()
+  if (!supabase) return
+  try { await supabase.auth.refreshSession() } catch (e) {
+    console.error('[supabaseClient] refreshSession error', e)
+  }
+}
+
 export function onAuthChanged(cb: (user: any | null) => void) {
   ensureClient()
   if (!supabase) return () => {}
