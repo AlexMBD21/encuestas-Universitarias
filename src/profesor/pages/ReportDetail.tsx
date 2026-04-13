@@ -145,10 +145,11 @@ export default function ReportDetail(): JSX.Element {
 
   const handleGeneratePdf = (config: PrintConfig) => {
     setPrintConfig(config);
+    setShowPrintModal(false);
     toast({ message: 'Preparando vista de impresión...', type: 'info', duration: 2000 })
     setTimeout(() => {
       if (handlePrintFn) handlePrintFn();
-    }, 150);
+    }, 400); // Dar más tiempo para que el modal se cierre visualmente
   };
   // ----------------------------------
 
@@ -298,7 +299,8 @@ export default function ReportDetail(): JSX.Element {
   }
 
   return (
-    <div id="report-detail-root" className="min-h-screen bg-slate-50/50 pb-24">
+    <>
+      <div id="report-detail-root" className="min-h-screen bg-slate-50/50 pb-24 print:hidden">
 
       {/* Header Premium */}
       <div className="bg-white border-b border-slate-200/60 shadow-sm relative overflow-hidden">
@@ -677,6 +679,8 @@ export default function ReportDetail(): JSX.Element {
 
       </div>
 
+      </div>
+
       {modalProject && (
         <ProjectDetailModal ps={modalProject} onClose={() => setModalProject(null)} usersCache={usersCache} />
       )}
@@ -689,7 +693,8 @@ export default function ReportDetail(): JSX.Element {
         isProject={survey?.type === 'project'}
         categories={availableCategories}
       />
-      <div style={{ display: 'none' }}>
+      
+      <div className="hidden print:block">
         <PrintLayout
           ref={printRef}
           report={report}
@@ -715,6 +720,6 @@ export default function ReportDetail(): JSX.Element {
           animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
-    </div>
+    </>
   )
 }
