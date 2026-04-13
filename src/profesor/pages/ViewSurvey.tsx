@@ -190,9 +190,11 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
   const isModal = !!onClose;
 
   return (
-    <div className={isModal ? "animate-in fade-in duration-300 relative" : "bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xl shadow-slate-200/40 dark:shadow-none mb-6 animate-in fade-in zoom-in-95 duration-300 relative overflow-hidden"}>
+    <div className={isModal ? "animate-in fade-in duration-300 flex flex-col flex-1 h-full min-h-0 w-full relative" : "bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xl shadow-slate-200/40 dark:shadow-none mb-6 animate-in fade-in zoom-in-95 duration-300 flex flex-col flex-1 h-full min-h-0 w-full relative overflow-hidden"}>
       {!isModal && <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: 'var(--color-primary)' }}></div>}
       
+      <div className={isModal ? "flex-1 overflow-y-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6 custom-scrollbar-sm w-full" : ""}>
+
       <div className={`flex justify-between items-start pb-6 border-b border-slate-100 dark:border-slate-800 ${isModal ? 'mb-6' : 'mb-8'}`}>
         <div className="w-full">
           {!onClose && (
@@ -216,7 +218,7 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
 
       <div>
         {!submitted ? (
-          <form onSubmit={async (e) => {
+          <form id={`view-survey-form-${survey.id}`} onSubmit={async (e) => {
             e.preventDefault()
             // save response via unified data client (Supabase preferred)
             try {
@@ -321,13 +323,6 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
                 <div className="text-slate-500 dark:text-slate-400 text-center p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">No hay preguntas en esta encuesta.</div>
               )}
             </div>
-
-            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row justify-end gap-3">
-              <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">Cancelar y Volver</button>
-              <button type="submit" className="w-full sm:w-auto px-8 py-3 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all flex items-center justify-center gap-2 active:scale-[0.98] outline-none">
-                 <span className="material-symbols-outlined text-[20px]">send</span> Enviar respuestas
-              </button>
-            </div>
           </form>
         ) : (
           <div className="animate-in slide-in-from-bottom-4 fade-in duration-300">
@@ -395,12 +390,25 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
               ))}
             </div>
             
-            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-               <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">Volver a encuestas</button>
-            </div>
           </div>
         )}
       </div>
+
+      </div> {/* end scrollable boundary */}
+
+      <div className={`shrink-0 p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 relative flex flex-col-reverse sm:flex-row justify-end gap-3 ${isModal ? 'rounded-b-[1.5rem]' : 'mt-8 pt-6 -mx-8 -mb-8 rounded-b-2xl sm:rounded-b-3xl'}`}>
+        {!submitted ? (
+          <>
+            <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">Cancelar y Volver</button>
+            <button type="submit" form={`view-survey-form-${survey.id}`} className="w-full sm:w-auto px-8 py-3 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all flex items-center justify-center gap-2 active:scale-[0.98] outline-none">
+              <span className="material-symbols-outlined text-[20px]">send</span> Enviar respuestas
+            </button>
+          </>
+        ) : (
+          <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">Volver a encuestas</button>
+        )}
+      </div>
+
     </div>
   )
 }

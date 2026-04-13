@@ -269,7 +269,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
   const isModal = !!onClose;
 
   return (
-    <div className={`create-survey ${isModal ? 'px-4 pb-8 pt-5 sm:pt-4 sm:px-2' : 'bg-white dark:bg-slate-900 sm:rounded-3xl border-y sm:border border-slate-200 dark:border-slate-800 p-4 sm:p-6 md:p-8 shadow-xl shadow-slate-200/40 dark:shadow-none mb-0 sm:mb-8'} animate-in fade-in duration-300 w-full`}>
+    <div className={`create-survey flex flex-col min-h-0 w-full animate-in fade-in duration-300 ${isModal ? 'h-full flex-1' : 'bg-white dark:bg-slate-900 sm:rounded-3xl border-y sm:border border-slate-200 dark:border-slate-800 p-4 sm:p-6 md:p-8 shadow-xl shadow-slate-200/40 dark:shadow-none mb-0 sm:mb-8'}`}>
       {/* Breadcrumb — solo visible cuando no hay onClose (es página completa) */}
       {!onClose && (
         <nav className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 mb-8 pb-4 border-b border-slate-100 dark:border-slate-800" aria-label="Ruta de navegación">
@@ -282,7 +282,8 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
         </nav>
       )}
 
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0">
+        <div className={isModal ? 'flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-2 pt-5 sm:pt-4 pb-4' : ''}>
         {!hideTypeSelector && (
           <div className="mb-6">
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Formato de la Encuesta</label>
@@ -525,8 +526,9 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
             {message}
           </div>
         )}
+        </div>
 
-        <div className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
+        <div className={`shrink-0 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 flex-wrap ${isModal ? 'p-4 sm:p-5 bg-white dark:bg-slate-900 rounded-b-[1.5rem] sm:rounded-none z-10 sticky bottom-0' : 'pt-6 mt-10'}`}>
           <button type="button" onClick={onCancel} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">Cancelar y Volver</button>
           <button type="submit" disabled={saving} className="w-full sm:w-auto justify-center px-8 py-3 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all flex items-center gap-2 active:scale-[0.98] outline-none">
              {saving ? (

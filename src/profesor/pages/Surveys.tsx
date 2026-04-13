@@ -1026,21 +1026,15 @@ export default function Surveys(): JSX.Element {
                   </button>
                 </div>
               </div>
-              {/* Scrollable content area */}
-              <div className="p-3 sm:p-6 flex-1 overflow-y-auto w-full">
+              {/* Split scrolling responsibilities to children */}
+              <div className="flex-1 flex flex-col min-h-0 w-full relative">
+
                 {/* If survey is a project-type, show projects list or the RateProject UI */}
                 {(() => {
                   const s = surveys.find(x => String(x.id) === String(modalSurveyId))
                   if (!s) return !surveysLoaded
-                    ? <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: 10 }}>
-                      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 0.9s linear infinite' }}>
-                        <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" />
-                        <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round" />
-                      </svg>
-                      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                      <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 500 }}>Cargando...</div>
-                    </div>
-                    : <div className="text-slate-600">Encuesta no encontrada.</div>
+                    ? <div className="flex-1 w-full h-full flex flex-col items-center justify-center p-8 gap-3"><svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round" /></svg><style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style><div className="text-sm text-slate-400 font-medium">Cargando...</div></div>
+                    : <div className="p-6 text-slate-600">Encuesta no encontrada.</div>
                   if (modalKind === 'projects') {
                     // if viewing a single project, render RateProject
                     if (viewingProjectId) {
@@ -1105,8 +1099,9 @@ export default function Surveys(): JSX.Element {
                       }
                       return true
                     })
+                    // ... other branches
                     return (
-                      <div>
+                      <div className="flex-1 overflow-y-auto p-3 sm:p-6 w-full h-full custom-scrollbar-sm relative">
                         <div className="flex flex-col gap-4 mb-6">
                           {/* Stats */}
                           <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -1223,7 +1218,7 @@ export default function Surveys(): JSX.Element {
                     )
                   }
                   // default for non-project surveys
-                  return <React.Suspense fallback={<div className="flex items-center justify-center py-16"><svg width="40" height="40" viewBox="0 0 36 36" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round" /></svg></div>}><ViewSurvey surveyId={modalSurveyId ?? undefined} onClose={() => closeModal()} hideCloseButton={true} /></React.Suspense>
+                  return <React.Suspense fallback={<div className="flex items-center justify-center flex-1 h-full py-16"><svg width="40" height="40" viewBox="0 0 36 36" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round" /></svg></div>}><ViewSurvey surveyId={modalSurveyId ?? undefined} onClose={() => closeModal()} hideCloseButton={true} /></React.Suspense>
                 })()}
               </div>
             </div>
@@ -1713,7 +1708,7 @@ export default function Surveys(): JSX.Element {
         fullHeightOnMobile={true}
         scrollableBody={false}
       >
-        <div className="flex-1 overflow-y-auto px-0 sm:px-4 pb-0 sm:pb-4 w-full h-full custom-scrollbar-sm relative">
+        <div className="flex-1 flex flex-col min-h-0 px-0 sm:px-4 pb-0 sm:pb-4 w-full h-full relative bg-slate-50 dark:bg-slate-900/50">
           <React.Suspense fallback={<div className="flex items-center justify-center h-full min-h-[50vh]"><svg width="40" height="40" viewBox="0 0 36 36" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#6366f1" strokeWidth="4" strokeLinecap="round" /></svg></div>}>
             <CreateSurvey
               hideTypeSelector={true}

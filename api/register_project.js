@@ -61,8 +61,16 @@ module.exports = async function handler(req, res) {
       return res.status(403).json({ error: 'Este enlace de inscripción ha expirado.' });
     }
 
-    // 2. Insertar el proyecto
+    // 2. Validación de proyectos duplicados
     const currentProjects = Array.isArray(survey.projects) ? survey.projects : [];
+    
+    const incomingName = (projectData.name || '').trim().toLowerCase();
+    const isDuplicate = currentProjects.some(p => (p.name || '').trim().toLowerCase() === incomingName);
+    
+    if (isDuplicate) {
+      return res.status(400).json({ error: 'Ya existe un proyecto registrado con este nombre. Por favor, elige uno diferente.' });
+    }
+
     const newProject = {
       id: `p_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
       name: projectData.name,
