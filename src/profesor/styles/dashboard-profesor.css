@@ -2147,3 +2147,26 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     #report-detail-root table td { padding: 6px 8px; }
 }
 
+
+/* ========================= */
+/*  PRINT OVERRIDES          */
+/* ========================= */
+@media print {
+    #top-bar, .app-sidebar, .sidebar-mobile-backdrop {
+        display: none !important;
+    }
+    .sidebar-main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 0 !important;
+    }
+    .layout-container, .layout-container > div {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        overflow: visible !important;
+    }
+}
+
