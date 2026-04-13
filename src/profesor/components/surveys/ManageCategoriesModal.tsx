@@ -141,7 +141,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
                 }
               }}
               disabled={!newCategoryInput.trim()}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all text-sm flex items-center gap-1.5 shrink-0 disabled:opacity-50 disabled:bg-blue-400 shadow-md shadow-blue-500/20 whitespace-nowrap active:scale-95"
+              className="px-4 py-2 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 text-white font-bold rounded-xl transition-all text-sm flex items-center gap-1.5 shrink-0 disabled:opacity-50 disabled:from-blue-400 disabled:to-blue-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_10px_0_rgba(37,99,235,0.2)] whitespace-nowrap active:scale-95"
             >
               <span className="material-symbols-outlined text-[20px]">add</span> Añadir
             </button>
@@ -162,7 +162,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
             type="button"
             disabled={saving}
             onClick={handleSave}
-            className="w-full sm:w-auto px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-black rounded-2xl transition-all text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 active:scale-95"
+            className="w-full sm:w-auto px-8 py-3 sm:py-2 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl transition-all text-sm flex items-center justify-center gap-2 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] active:scale-95"
           >
             {saving ? (
               <span className="animate-spin material-symbols-outlined">refresh</span>

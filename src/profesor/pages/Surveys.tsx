@@ -752,21 +752,21 @@ export default function Surveys(): JSX.Element {
                           </div>
 
                           {isProjectType && isOwnerOf(s) && (
-                            <div className={`mt-4 pt-3 border-t transition-colors rounded-xl max-w-full ${s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() ? 'border-emerald-200/50 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-900/10 p-3.5' : 'border-slate-100 dark:border-slate-800'}`}>
+                            <div className={`mt-4 pt-3 border-t transition-colors rounded-xl max-w-full ${s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() ? (isProjectType ? 'border-indigo-200/50 dark:border-indigo-800/50 bg-indigo-50/50 dark:bg-indigo-900/10 p-3.5' : 'border-emerald-200/50 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-900/10 p-3.5') : 'border-slate-100 dark:border-slate-800'}`}>
                               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div className="flex flex-col gap-2">
                                   <div className="flex flex-col">
                                     <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Inscripción</span>
                                     {s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() && (
-                                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                      <span className={`text-[11px] font-bold flex items-center gap-1 ${isProjectType ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                                         <span className="material-symbols-outlined text-[15px]">event</span>
                                         Vence {new Date(s.linkExpiresAt).toLocaleDateString()}
                                       </span>
                                     )}
                                   </div>
                                   {s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() && (
-                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-[9px] font-black border border-emerald-200/50 dark:border-emerald-800/50 shadow-sm self-start">
-                                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.8)] shrink-0"></span>
+                                    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-black border shadow-sm self-start ${isProjectType ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-indigo-200/50 dark:border-indigo-800/50' : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/50 dark:border-emerald-800/50'}`}>
+                                      <span className={`w-1.5 h-1.5 rounded-full animate-pulse shadow-sm shrink-0 ${isProjectType ? 'bg-indigo-500' : 'bg-emerald-500'}`}></span>
                                       ACTIVO ({(() => {
                                         const diffDays = Math.floor((new Date(s.linkExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                                         const diffHrs = Math.floor(((new Date(s.linkExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60)) % 24);
@@ -805,7 +805,7 @@ export default function Surveys(): JSX.Element {
                                           document.body.removeChild(textArea);
                                           setTimeout(() => setToastMessage(null), 3000);
                                         }
-                                      }} className="w-full xs:flex-1 flex items-center justify-center gap-2 text-[10px] font-black bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700/50 shadow-sm text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:border-emerald-600 px-3 py-2 rounded-xl transition-all active:scale-95 whitespace-nowrap" title="Copiar link">
+                                      }} className={`w-full xs:flex-1 flex items-center justify-center gap-2 text-[10px] font-black bg-white dark:bg-slate-800 border shadow-sm px-3 py-2 rounded-xl transition-all active:scale-95 whitespace-nowrap ${isProjectType ? 'border-indigo-200 dark:border-indigo-700/50 text-indigo-700 hover:text-indigo-800 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:border-indigo-600' : 'border-emerald-200 dark:border-emerald-700/50 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:border-emerald-600'}`} title="Copiar link">
                                         <span className="material-symbols-outlined text-[15px]">content_copy</span> Link
                                       </button>
                                       <button 
@@ -1457,7 +1457,7 @@ export default function Surveys(): JSX.Element {
                       }
                     } catch (e) { console.error(e) }
                     finally { setConfirmPublishing(false); setConfirmPublish(null) }
-                  }} disabled={confirmPublishing} className="w-full sm:w-auto px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/30 transition-all active:scale-[0.98]">
+                  }} disabled={confirmPublishing} className="w-full sm:w-auto px-8 py-3 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all active:scale-[0.98]">
                     {confirmPublishing ? 'Procesando...' : (confirmPublish.action === 'publish' ? 'Publicar Ahora' : 'Confirmar Retiro')}
                   </button>
                 )}

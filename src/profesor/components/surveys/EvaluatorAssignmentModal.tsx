@@ -321,7 +321,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
              onSave(updatedSurvey);
            } catch(e) { console.error(e) }
            finally { setSaving(false); }
-        }} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/30 transition-all text-sm active:scale-[0.98]">
+        }} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all text-sm active:scale-[0.98]">
           {saving ? <span className="material-symbols-outlined text-[20px] animate-spin">refresh</span> : <span className="material-symbols-outlined text-[20px]">save</span>}
           {saving ? 'Guardando...' : 'Guardar Cambios'}
         </button>
