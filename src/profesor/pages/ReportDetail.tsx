@@ -144,11 +144,21 @@ export default function ReportDetail(): JSX.Element {
 
   const handleGeneratePdf = (config: PrintConfig) => {
     setPrintConfig(config);
-    setShowPrintModal(false);
-    toast({ message: 'Preparando vista de impresión...', type: 'info', duration: 2000 })
-    setTimeout(() => {
-      if (handlePrintFn) handlePrintFn();
-    }, 400); // Dar más tiempo para que el modal se cierre visualmente
+    
+    const isMobile = typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      setShowPrintModal(false);
+      toast({ message: 'Preparando vista de impresión...', type: 'info', duration: 2000 })
+      setTimeout(() => {
+        if (handlePrintFn) handlePrintFn();
+      }, 400); // Dar más tiempo para que el modal se cierre visualmente en móvil
+    } else {
+      toast({ message: 'Preparando vista de impresión...', type: 'info', duration: 2000 })
+      setTimeout(() => {
+        if (handlePrintFn) handlePrintFn();
+      }, 150);
+    }
   };
   // ----------------------------------
 
