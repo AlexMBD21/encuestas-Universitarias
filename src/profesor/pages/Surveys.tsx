@@ -1019,7 +1019,7 @@ export default function Surveys(): JSX.Element {
                 <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700"></div>
               </div>
               {/* Header (sticky) */}
-              <div className="sticky top-0 z-10 border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between bg-white dark:bg-slate-900 flex-shrink-0 pt-7 sm:pt-4" style={{ borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
+              <div className="sticky top-0 z-10 border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between bg-white dark:bg-slate-900 flex-shrink-0 pt-7 sm:pt-4 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]" style={{ borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
                 <div className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 truncate mr-4 tracking-tight max-w-[calc(100%-48px)]">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
                 <div className="ml-auto hidden sm:block">
                   <button type="button" onClick={() => closeModal()} aria-label="Cerrar" title="Cerrar" className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
