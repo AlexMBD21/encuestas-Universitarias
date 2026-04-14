@@ -49,8 +49,8 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Configurar Impresión" maxWidth="max-w-lg" scrollableBody={false}>
-      <div className="flex flex-col max-h-[calc(100vh-10rem)] bg-slate-50">
+    <Modal isOpen={isOpen} onClose={onClose} title="Configurar Impresión" maxWidth="max-w-lg" scrollableBody={false} noHeaderShadow>
+      <div className="flex flex-col flex-1 min-h-0">
         <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-2 shrink-0 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
           {/* Helper alert */}
           <div className="bg-blue-50/50 border border-blue-100 text-blue-800 text-sm px-4 py-3 rounded-xl flex items-start gap-3">
@@ -59,7 +59,7 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
           </div>
         </div>
 
-        <div className="px-5 sm:px-6 pb-5 sm:pb-6 overflow-y-auto flex-1 custom-scrollbar relative z-0">
+        <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-5 sm:pb-6 overflow-y-auto flex-1 custom-scrollbar relative z-0">
           <div className="space-y-3">
           <Toggle 
             title="Estadísticas de Preguntas" 

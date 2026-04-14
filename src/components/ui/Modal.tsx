@@ -11,9 +11,10 @@ export interface ModalProps {
   hideMobileIndicator?: boolean;
   scrollableBody?: boolean;
   hideCloseButton?: boolean;
+  noHeaderShadow?: boolean;
 }
 
-export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true, hideCloseButton = false }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true, hideCloseButton = false, noHeaderShadow = false }: ModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const [pullDownY, setPullDownY] = useState(0);
@@ -120,7 +121,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
 
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
+          <div className={`flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 relative z-10 ${noHeaderShadow ? '' : 'shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]'}`}>
             <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
               {title}
             </h2>
