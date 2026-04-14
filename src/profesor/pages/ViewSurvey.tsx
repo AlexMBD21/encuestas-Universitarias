@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import surveyHelpers from '../../services/surveyHelpers'
 import supabaseClient from '../../services/supabaseClient'
+import Loader from '../../components/Loader'
 
 type ViewSurveyProps = {
   surveyId?: string | null
@@ -161,15 +162,8 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
 
   if (surveyLoading) {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-xl border p-6 shadow mb-6">
-        <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 0',gap:10}}>
-          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{animation:'spin 0.9s linear infinite'}}>
-            <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4"/>
-            <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round"/>
-          </svg>
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          <div style={{fontSize:'0.8rem',color:'#94a3b8',fontWeight:500}}>Cargando...</div>
-        </div>
+      <div className="flex-1 w-full flex items-center justify-center py-16">
+        <Loader size={56} text="Cargando..." />
       </div>
     )
   }

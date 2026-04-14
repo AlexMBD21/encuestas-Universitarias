@@ -18,6 +18,7 @@ import { EvaluatorAssignmentModal as EvaluatorModalContent } from '../components
 import { ManageCategoriesModal } from '../components/surveys/ManageCategoriesModal';
 import { GenerateLinkModal } from '../components/surveys/GenerateLinkModal';
 import { SurveyGridSkeleton } from '../../components/ui/SurveyCardSkeleton';
+import Loader from '../../components/Loader';
 import { toast } from '../../components/ui/Toast';
 import { Modal } from '../../components/ui/Modal';
 
@@ -1033,7 +1034,7 @@ export default function Surveys(): JSX.Element {
                 {(() => {
                   const s = surveys.find(x => String(x.id) === String(modalSurveyId))
                   if (!s) return !surveysLoaded
-                    ? <div className="flex-1 w-full h-full flex flex-col items-center justify-center p-8 gap-3"><svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round" /></svg><style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style><div className="text-sm text-slate-400 font-medium">Cargando...</div></div>
+                    ? <div className="flex-1 w-full h-full flex flex-col items-center justify-center p-8"><Loader size={56} text="Cargando..." /></div>
                     : <div className="p-6 text-slate-600">Encuesta no encontrada.</div>
                   if (modalKind === 'projects') {
                     // if viewing a single project, render RateProject
@@ -1041,7 +1042,7 @@ export default function Surveys(): JSX.Element {
                       console.debug('[Surveys] rendering RateProject for surveyId=', s.id, 'viewingProjectId=', viewingProjectId)
                       const proj = (s.projects || []).find((p: any) => String(p.id) === String(viewingProjectId))
                       if (!proj) return <div className="text-slate-600">Proyecto no encontrado.</div>
-                      return <React.Suspense fallback={<div className="flex items-center justify-center py-16"><svg width="36" height="36" viewBox="0 0 36 36" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#6366f1" strokeWidth="4" strokeLinecap="round" /></svg></div>}><RateProject survey={s} project={proj} readOnly={viewingReadOnly} onClose={() => setViewingProjectId(null)} onSaved={(opts) => {
+                      return <React.Suspense fallback={<div className="flex-1 flex items-center justify-center py-16"><Loader size={56} text="Cargando..." innerColor="#a5b4fc" outerColor="#4f46e5" /></div>}><RateProject survey={s} project={proj} readOnly={viewingReadOnly} onClose={() => setViewingProjectId(null)} onSaved={(opts) => {
                         // After saving a project's rating, return to the projects list view
                         // Update local ratedMap so the UI shows 'Calificado' immediately for this project
                         try {
@@ -1218,7 +1219,7 @@ export default function Surveys(): JSX.Element {
                     )
                   }
                   // default for non-project surveys
-                  return <React.Suspense fallback={<div className="flex items-center justify-center flex-1 h-full py-16"><svg width="40" height="40" viewBox="0 0 36 36" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round" /></svg></div>}><ViewSurvey surveyId={modalSurveyId ?? undefined} onClose={() => closeModal()} hideCloseButton={true} /></React.Suspense>
+                  return <React.Suspense fallback={<div className="flex-1 flex items-center justify-center py-16"><Loader size={56} text="Cargando..." /></div>}><ViewSurvey surveyId={modalSurveyId ?? undefined} onClose={() => closeModal()} hideCloseButton={true} /></React.Suspense>
                 })()}
               </div>
             </div>
@@ -1514,13 +1515,8 @@ export default function Surveys(): JSX.Element {
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {(() => {
                 if (!reportsLoaded) return (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 0', gap: 10 }}>
-                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animation: 'spin 0.9s linear infinite' }}>
-                      <circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" />
-                      <path d="M18 4a14 14 0 0 1 14 14" stroke="#00628d" strokeWidth="4" strokeLinecap="round" />
-                    </svg>
-                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 500 }}>Cargando reportes...</div>
+                  <div className="flex items-center justify-center py-12">
+                    <Loader size={48} text="Cargando reportes..." />
                   </div>
                 )
                 const reports = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
@@ -1709,7 +1705,7 @@ export default function Surveys(): JSX.Element {
         scrollableBody={false}
       >
         <div className="flex-1 flex flex-col min-h-0 px-0 sm:px-4 pb-0 sm:pb-4 w-full h-full relative bg-slate-50 dark:bg-slate-900/50">
-          <React.Suspense fallback={<div className="flex items-center justify-center h-full min-h-[50vh]"><svg width="40" height="40" viewBox="0 0 36 36" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}><circle cx="18" cy="18" r="14" stroke="#e2e8f0" strokeWidth="4" /><path d="M18 4a14 14 0 0 1 14 14" stroke="#6366f1" strokeWidth="4" strokeLinecap="round" /></svg></div>}>
+          <React.Suspense fallback={<div className="flex items-center justify-center h-full min-h-[50vh]"><Loader size={56} text="Cargando..." innerColor="#a5b4fc" outerColor="#4f46e5" /></div>}>
             <CreateSurvey
               hideTypeSelector={true}
               initialType={createInitialType}
