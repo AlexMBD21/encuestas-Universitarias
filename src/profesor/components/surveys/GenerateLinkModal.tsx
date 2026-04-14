@@ -74,10 +74,10 @@ export const GenerateLinkModal = ({ isOpen, onClose, survey, dataClientNow, onSa
             </div>
             
             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row justify-end gap-3 shrink-0">
-              <button disabled={saving} type="button" onClick={onClose} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">
+              <button disabled={saving} type="button" onClick={onClose} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">
                 Cancelar y Volver
               </button>
-              <button disabled={saving} type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 sm:py-2 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl transition-all text-sm shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] active:scale-[0.98]">
+              <button disabled={saving} type="submit" className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2 sm:px-8 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl transition-all text-sm shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] active:scale-[0.98]">
                 {saving ? <span className="material-symbols-outlined text-[20px] animate-spin">refresh</span> : <span className="material-symbols-outlined text-[20px]">save</span>}
                 {saving ? 'Guardando...' : 'Guardar Fecha'}
               </button>

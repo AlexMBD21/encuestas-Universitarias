@@ -393,13 +393,13 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
       <div className={`shrink-0 p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 relative flex flex-col-reverse sm:flex-row justify-end gap-3 ${isModal ? 'rounded-b-[1.5rem]' : 'mt-8 pt-6 -mx-8 -mb-8 rounded-b-2xl sm:rounded-b-3xl'}`}>
         {!submitted ? (
           <>
-            <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">Cancelar y Volver</button>
-            <button type="submit" form={`view-survey-form-${survey.id}`} className="w-full sm:w-auto px-8 py-3 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all flex items-center justify-center gap-2 active:scale-[0.98] outline-none">
+            <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">Cancelar y Volver</button>
+            <button type="submit" form={`view-survey-form-${survey.id}`} className="w-full sm:w-auto px-5 py-2 sm:px-8 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all flex items-center justify-center gap-2 active:scale-[0.98] outline-none">
               <span className="material-symbols-outlined text-[20px]">send</span> Enviar respuestas
             </button>
           </>
         ) : (
-          <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700">Volver a encuestas</button>
+          <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">Volver a encuestas</button>
         )}
       </div>
 

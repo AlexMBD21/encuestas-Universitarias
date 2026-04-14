@@ -154,7 +154,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
+            className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]"
           >
             Cancelar y Volver
           </button>
@@ -162,7 +162,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
             type="button"
             disabled={saving}
             onClick={handleSave}
-            className="w-full sm:w-auto px-8 py-3 sm:py-2 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl transition-all text-sm flex items-center justify-center gap-2 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] active:scale-95"
+            className="w-full sm:w-auto px-5 py-2 sm:px-8 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl transition-all text-sm flex items-center justify-center gap-2 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] active:scale-[0.98]"
           >
             {saving ? (
               <span className="animate-spin material-symbols-outlined">refresh</span>
