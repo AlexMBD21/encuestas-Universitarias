@@ -283,7 +283,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
       )}
 
       <form onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0">
-        <div className={isModal ? 'flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-2 pt-5 sm:pt-4 pb-4' : ''}>
+        <div className={isModal ? 'flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-2 pt-5 sm:pt-4 pb-4 relative z-0 bg-white dark:bg-slate-900' : ''}>
         {!hideTypeSelector && (
           <div className="mb-6">
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Formato de la Encuesta</label>
@@ -528,7 +528,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
         )}
         </div>
 
-        <div className={`shrink-0 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 flex-wrap ${isModal ? 'p-4 sm:p-5 bg-white dark:bg-slate-900 rounded-b-[1.5rem] sm:rounded-none z-10 sticky bottom-0' : 'pt-6 mt-10'}`}>
+        <div className={`shrink-0 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 flex-wrap ${isModal ? 'p-4 sm:p-5 bg-white dark:bg-slate-900 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]' : 'pt-6 mt-10'}`}>
           <button type="button" onClick={onCancel} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">Cancelar y Volver</button>
           <button type="submit" disabled={saving} className="w-full sm:w-auto justify-center px-5 py-2 sm:px-8 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all flex items-center gap-2 active:scale-[0.98] outline-none">
              {saving ? (
@@ -581,7 +581,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
             <button 
               type="button" 
               onClick={() => { setShowCleanupConfirm(false); setSaving(false); }}
-              className="flex-1 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
+              className="flex-1 px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]"
             >
               Cancelar y Volver
             </button>

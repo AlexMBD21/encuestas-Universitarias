@@ -189,7 +189,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
         </div>
 
         {/* Header — clean premium */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 relative">
           <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Configurar Evaluadores</h3>
           <div className="hidden sm:block">
             <button
@@ -203,14 +203,14 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
           </div>
         </div>
       {/* Fixed Instructions at the top */}
-      <div className="p-4 sm:px-6 sm:py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+      <div className="p-4 sm:px-6 sm:py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
         <p className="text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
           Asigna uno o más profesores evaluadores a cada proyecto. Los profesores asignados podrán revisar y calificar el proyecto de forma independiente desde su cuenta.
         </p>
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="modal-scrollable-content flex-1 overflow-y-auto w-full bg-slate-50 dark:bg-slate-900 p-4 sm:p-6 pt-5 pb-32 sm:pb-10">
+      <div className="modal-scrollable-content flex-1 overflow-y-auto w-full bg-slate-50 dark:bg-slate-900 p-4 sm:p-6 pt-5 pb-32 sm:pb-10 relative z-0">
         {draftProjects.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center h-full">
             <span className="material-symbols-outlined text-[60px] text-slate-300 dark:text-slate-600 mb-4 opacity-75">inbox</span>
@@ -309,7 +309,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
       </div>
 
       {/* Fixed Footer at the bottom */}
-      <div className="border-t border-slate-200 dark:border-slate-800 p-4 sm:px-6 bg-white dark:bg-slate-900 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 shrink-0 z-20 relative">
+      <div className="border-t border-slate-200 dark:border-slate-800 p-4 sm:px-6 bg-white dark:bg-slate-900 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 shrink-0 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
         <button type="button" onClick={onClose || onCancel} disabled={saving} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">
           Cancelar y Volver
         </button>

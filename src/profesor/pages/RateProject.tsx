@@ -159,7 +159,7 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
   return (
     <div className="animate-in fade-in zoom-in-95 duration-200 flex flex-col flex-1 h-full min-h-0 w-full relative">
       <form onSubmit={submit} className="flex flex-col flex-1 min-h-0 relative">
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6 custom-scrollbar-sm w-full">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6 custom-scrollbar-sm w-full relative z-0 bg-white dark:bg-slate-900">
           <div className="mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
             <h3 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100 mb-2 leading-tight break-all" title={project.name}>{project.name || 'Proyecto sin nombre'}</h3>
         <div className="flex flex-col gap-3 mb-6">
@@ -299,7 +299,7 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
         )}
         </div> {/* close scrollable container */}
         
-        <div className="shrink-0 p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-b-[1.5rem] flex flex-col-reverse sm:flex-row justify-end gap-3 z-10 relative">
+        <div className="shrink-0 p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-b-[1.5rem] flex flex-col-reverse sm:flex-row justify-end gap-3 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
           <button type="button" onClick={() => { if (onClose) onClose() }} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">{readonlyMode ? 'Volver' : 'Cancelar y Volver'}</button>
           {!readonlyMode && (
             <button type="submit" disabled={saving || already} className="w-full sm:w-auto px-5 py-2 sm:px-8 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:cursor-not-allowed outline-none">

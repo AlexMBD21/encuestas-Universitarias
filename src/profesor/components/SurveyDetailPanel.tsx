@@ -330,7 +330,7 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
 
       {/* ── Per-user activity ── */}
       <div className="rounded-3xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-        <div className="flex flex-col gap-4 px-6 pt-5 pb-5 border-b border-slate-100 rounded-t-3xl bg-white">
+        <div className="flex flex-col gap-4 px-6 pt-5 pb-5 border-b border-slate-100 rounded-t-3xl bg-white relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
           <div className="flex items-center gap-2.5">
             <span className={`material-symbols-outlined text-[22px] shrink-0 ${isProjectSurvey ? 'text-indigo-500' : 'text-emerald-500'}`}>group</span>
             <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-white">Actividad por usuario</h2>
@@ -385,13 +385,13 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
         </div>
 
         {/* Column headers */}
-        <div className="grid grid-cols-[1fr_auto] px-6 py-3 bg-white border-b border-slate-100">
+        <div className="grid grid-cols-[1fr_auto] px-6 py-3 bg-white border-b border-slate-100 relative z-[5]">
           <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Usuario</span>
           <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase text-right">{isProjectSurvey ? 'Calificaciones' : 'Respuestas'}</span>
         </div>
 
         {/* Rows */}
-        <div className="divide-y divide-slate-50 pb-2">
+        <div className="divide-y divide-slate-50 pb-2 relative z-0">
           {filteredUserList.length === 0 ? (
             <div className="px-6 py-10 text-xs font-medium text-slate-400 text-center flex flex-col items-center justify-center gap-2">
               <span className="material-symbols-outlined text-3xl opacity-50">search_off</span>

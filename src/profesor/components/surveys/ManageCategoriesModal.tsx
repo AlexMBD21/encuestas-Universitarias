@@ -76,7 +76,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
 
         {/* Subtitle bar */}
-        <div className="px-6 sm:px-8 py-2.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 flex flex-col gap-1.5 items-start">
+        <div className="px-6 sm:px-8 py-2.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 flex flex-col gap-1.5 items-start relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
           <span className="text-[10px] font-black px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full">
             {categoriesList.length} REGISTRADAS
           </span>
@@ -87,7 +87,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
 
         {/* List */}
-        <div className="modal-scrollable-content flex-1 overflow-y-auto px-6 sm:px-8 py-4 space-y-3 bg-white dark:bg-slate-900">
+        <div className="modal-scrollable-content flex-1 overflow-y-auto px-6 sm:px-8 py-4 space-y-3 bg-white dark:bg-slate-900 relative z-0">
           {categoriesList.length === 0 && (
             <div className="py-10 text-center">
               <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 block mb-2">category</span>
@@ -117,7 +117,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
 
         {/* Add new input */}
-        <div className="px-5 sm:px-8 py-4 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 shrink-0 shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)]">
+        <div className="px-5 sm:px-8 py-4 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 shrink-0 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
           <div className="flex gap-1.5 sm:gap-2">
             <input
               className="min-w-0 flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl px-3.5 sm:px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 shadow-sm"
@@ -149,7 +149,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 px-6 sm:px-8 py-4 sm:py-5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0">
+        <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 px-6 sm:px-8 py-4 sm:py-5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0 relative z-10 shadow-[0_-6px_16px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_-6px_16px_-4px_rgba(0,0,0,0.30)]">
           <button
             type="button"
             onClick={onClose}

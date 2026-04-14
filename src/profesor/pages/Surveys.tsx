@@ -1704,7 +1704,7 @@ export default function Surveys(): JSX.Element {
         fullHeightOnMobile={true}
         scrollableBody={false}
       >
-        <div className="flex-1 flex flex-col min-h-0 px-0 sm:px-4 pb-0 sm:pb-4 w-full h-full relative bg-slate-50 dark:bg-slate-900/50">
+        <div className="flex-1 flex flex-col min-h-0 w-full h-full relative">
           <React.Suspense fallback={<div className="flex items-center justify-center h-full min-h-[50vh]"><Loader size={56} text="Cargando..." innerColor="#a5b4fc" outerColor="#4f46e5" /></div>}>
             <CreateSurvey
               hideTypeSelector={true}

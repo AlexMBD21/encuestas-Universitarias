@@ -187,7 +187,7 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
     <div className={isModal ? "animate-in fade-in duration-300 flex flex-col flex-1 h-full min-h-0 w-full relative" : "bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xl shadow-slate-200/40 dark:shadow-none mb-6 animate-in fade-in zoom-in-95 duration-300 flex flex-col flex-1 h-full min-h-0 w-full relative overflow-hidden"}>
       {!isModal && <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: 'var(--color-primary)' }}></div>}
       
-      <div className={isModal ? "flex-1 overflow-y-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6 custom-scrollbar-sm w-full" : ""}>
+      <div className={isModal ? "flex-1 overflow-y-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6 custom-scrollbar-sm w-full relative z-0 bg-white dark:bg-slate-900" : ""}>
 
       <div className={`flex justify-between items-start pb-6 border-b border-slate-100 dark:border-slate-800 ${isModal ? 'mb-6' : 'mb-8'}`}>
         <div className="w-full">
@@ -390,7 +390,7 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
 
       </div> {/* end scrollable boundary */}
 
-      <div className={`shrink-0 p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 relative flex flex-col-reverse sm:flex-row justify-end gap-3 ${isModal ? 'rounded-b-[1.5rem]' : 'mt-8 pt-6 -mx-8 -mb-8 rounded-b-2xl sm:rounded-b-3xl'}`}>
+      <div className={`shrink-0 p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 relative z-10 flex flex-col-reverse sm:flex-row justify-end gap-3 ${isModal ? 'rounded-b-[1.5rem] shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]' : 'mt-8 pt-6 -mx-8 -mb-8 rounded-b-2xl sm:rounded-b-3xl'}`}>
         {!submitted ? (
           <>
             <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">Cancelar y Volver</button>

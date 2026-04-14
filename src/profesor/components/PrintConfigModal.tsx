@@ -51,7 +51,7 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Configurar Impresión" maxWidth="max-w-lg" scrollableBody={false}>
       <div className="flex flex-col max-h-[calc(100vh-10rem)] bg-slate-50">
-        <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-2 shrink-0">
+        <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-2 shrink-0 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
           {/* Helper alert */}
           <div className="bg-blue-50/50 border border-blue-100 text-blue-800 text-sm px-4 py-3 rounded-xl flex items-start gap-3">
             <span className="material-symbols-outlined text-blue-500 text-[20px] shrink-0 mt-0.5">info</span>
@@ -59,7 +59,7 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
           </div>
         </div>
 
-        <div className="px-5 sm:px-6 pb-5 sm:pb-6 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="px-5 sm:px-6 pb-5 sm:pb-6 overflow-y-auto flex-1 custom-scrollbar relative z-0">
           <div className="space-y-3">
           <Toggle 
             title="Estadísticas de Preguntas" 
@@ -125,7 +125,7 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
 
         </div>
         {/* Footer estático igual al de Categorías */}
-        <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 px-5 py-4 bg-white border-t border-slate-100 shrink-0 rounded-b-[1.5rem]">
+        <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 px-5 py-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0 rounded-b-[1.5rem] relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
           <button 
             type="button" 
             onClick={onClose}

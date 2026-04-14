@@ -120,7 +120,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
 
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 z-10">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
             <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
               {title}
             </h2>
@@ -137,7 +137,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
         )}
 
         {/* Body content */}
-        <div className={`flex-1 flex flex-col ${scrollableBody ? 'overflow-y-auto overscroll-contain modal-scrollable-content' : 'overflow-hidden'} bg-slate-50 dark:bg-slate-900/50`}>
+        <div className={`flex-1 flex flex-col ${scrollableBody ? 'overflow-y-auto overscroll-contain modal-scrollable-content bg-slate-50 dark:bg-slate-900/50' : 'overflow-hidden bg-white dark:bg-slate-900'}`}>
           {children}
         </div>
       </div>
