@@ -68,9 +68,10 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors outline-none shadow-sm"
+              aria-label="Cerrar"
             >
-              <span className="material-symbols-outlined text-[24px]">close</span>
+              <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
         </div>

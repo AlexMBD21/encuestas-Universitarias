@@ -129,9 +129,10 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
               <button 
                 type="button"
                 onClick={handleClose} 
-                className="hidden sm:flex w-10 h-10 items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="hidden sm:flex w-10 h-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors shadow-sm"
+                aria-label="Cerrar"
               >
-                <span className="material-symbols-outlined text-[24px]">close</span>
+                <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             )}
           </div>

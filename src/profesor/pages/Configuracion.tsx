@@ -661,9 +661,10 @@ export default function Configuracion() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none"
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors outline-none shadow-sm"
+                  aria-label="Cerrar"
                 >
-                  <span className="material-symbols-outlined text-[24px]">close</span>
+                  <span className="material-symbols-outlined text-[20px]">close</span>
                 </button>
               </div>
             </div>
@@ -748,8 +749,13 @@ export default function Configuracion() {
           <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-3xl sm:rounded-[1.5rem] sm:rounded-b-none pt-7 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
             <span className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 tracking-tight">Confirmar cambio</span>
             <div className="hidden sm:block">
-              <button type="button" onClick={() => setConfirmPwdOpen(false)} className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none">
-                <span className="material-symbols-outlined text-[24px]">close</span>
+              <button 
+                type="button" 
+                onClick={() => setConfirmPwdOpen(false)} 
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors outline-none shadow-sm"
+                aria-label="Cerrar"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
           </div>

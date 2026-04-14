@@ -1026,8 +1026,14 @@ export default function Surveys(): JSX.Element {
               <div className="sticky top-0 z-10 border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between bg-white dark:bg-slate-900 flex-shrink-0 pt-7 sm:pt-4 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]" style={{ borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
                 <div className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 truncate mr-4 tracking-tight max-w-[calc(100%-48px)]">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
                 <div className="ml-auto hidden sm:block">
-                  <button type="button" onClick={() => closeModal()} aria-label="Cerrar" title="Cerrar" className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                    <span className="material-symbols-outlined text-[24px]">close</span>
+                  <button 
+                    type="button" 
+                    onClick={() => closeModal()} 
+                    aria-label="Cerrar" 
+                    title="Cerrar" 
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors shadow-sm"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">close</span>
                   </button>
                 </div>
               </div>
@@ -1665,7 +1671,13 @@ export default function Surveys(): JSX.Element {
                     </div>
                     <span>Reportar encuesta</span>
                   </h3>
-                  <button type="button" onClick={() => closeConfirmReportModal()} disabled={confirmReporting} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors hidden sm:flex">
+                  <button 
+                    type="button" 
+                    onClick={() => closeConfirmReportModal()} 
+                    disabled={confirmReporting} 
+                    className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors hidden sm:flex shadow-sm"
+                    aria-label="Cerrar"
+                  >
                     <span className="material-symbols-outlined text-[20px]">close</span>
                   </button>
                 </div>
