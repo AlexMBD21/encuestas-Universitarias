@@ -50,6 +50,7 @@ export default function Surveys(): JSX.Element {
   const [highlightedReportId, setHighlightedReportId] = useState<string | null>(null)
   const [isConfirmReportVisible, setIsConfirmReportVisible] = useState(false)
   const [reportSearch, setReportSearch] = useState<string>('')
+  const [reportUserFilter, setReportUserFilter] = useState<string>('all')
 
   useEffect(() => {
     if (viewReportsFor) setTimeout(() => setIsReportsVisible(true), 50)
@@ -62,6 +63,7 @@ export default function Surveys(): JSX.Element {
       setViewReportsFor(null)
       setHighlightedReportId(null)
       setReportSearch('')
+      setReportUserFilter('all')
     }, 300)
   }
 
@@ -1521,20 +1523,43 @@ export default function Surveys(): JSX.Element {
 
             {/* Static filter bar */}
             <div className="shrink-0 px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
-                <input
-                  type="text"
-                  placeholder="Buscar por usuario o mensaje..."
-                  value={reportSearch ?? ''}
-                  onChange={e => setReportSearch(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20 text-slate-700 dark:text-slate-300 placeholder:text-slate-400 transition-all"
-                />
-                {reportSearch && (
-                  <button type="button" onClick={() => setReportSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                    <span className="material-symbols-outlined text-[18px]">close</span>
-                  </button>
-                )}
+              <div className="flex flex-col sm:flex-row gap-2">
+                {/* User filter dropdown — options built from current survey reports */}
+                {(() => {
+                  const currentReports = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
+                  const uniqueUsers = Array.from(new Set(currentReports.map(r => r.reporterEmail || r.reporterId || 'Anónimo').filter(Boolean)))
+                  return uniqueUsers.length > 1 ? (
+                    <div className="sm:w-56 shrink-0">
+                      <FilterDropdown
+                        value={reportUserFilter}
+                        label="Todos los usuarios"
+                        icon="person_alert"
+                        color="red"
+                        options={[
+                          { id: 'all', label: 'Todos los usuarios' },
+                          ...uniqueUsers.map(u => ({ id: u, label: u }))
+                        ]}
+                        onChange={(val) => setReportUserFilter(val)}
+                      />
+                    </div>
+                  ) : null
+                })()}
+                {/* Text search */}
+                <div className="relative flex-1">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
+                  <input
+                    type="text"
+                    placeholder="Buscar por usuario o mensaje..."
+                    value={reportSearch ?? ''}
+                    onChange={e => setReportSearch(e.target.value)}
+                    className="w-full pl-9 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20 text-slate-700 dark:text-slate-300 placeholder:text-slate-400 transition-all"
+                  />
+                  {reportSearch && (
+                    <button type="button" onClick={() => setReportSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                      <span className="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1547,20 +1572,25 @@ export default function Surveys(): JSX.Element {
                   </div>
                 )
                 const allReports = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
-                const reports = (reportSearch ?? '').trim()
-                  ? allReports.filter(r => {
-                      const q = (reportSearch ?? '').trim().toLowerCase()
-                      return (
-                        (r.reporterEmail || r.reporterId || '').toLowerCase().includes(q) ||
-                        (r.comment || '').toLowerCase().includes(q)
-                      )
-                    })
-                  : allReports
+                const reports = allReports.filter(r => {
+                  // User filter
+                  if (reportUserFilter !== 'all') {
+                    const userKey = r.reporterEmail || r.reporterId || 'Anónimo'
+                    if (userKey !== reportUserFilter) return false
+                  }
+                  // Text search filter
+                  const q = (reportSearch ?? '').trim().toLowerCase()
+                  if (q) {
+                    const hay = `${r.reporterEmail || r.reporterId || ''} ${r.comment || ''}`.toLowerCase()
+                    if (!hay.includes(q)) return false
+                  }
+                  return true
+                })
                 if (!allReports || allReports.length === 0) return <div className="text-slate-600 text-sm py-4 text-center">No hay reportes para esta encuesta.</div>
                 if (reports.length === 0) return (
                   <div className="py-10 flex flex-col items-center text-center gap-2">
                     <span className="material-symbols-outlined text-[40px] text-slate-300 dark:text-slate-600">manage_search</span>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sin resultados para <span className="font-bold">"{reportSearch}"</span></p>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sin resultados{reportSearch ? <span className="font-bold"> para "{reportSearch}"</span> : ''}</p>
                   </div>
                 )
                 return reports.map(r => {

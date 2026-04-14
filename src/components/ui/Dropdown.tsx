@@ -12,7 +12,7 @@ export interface DropdownProps {
   options: DropdownOption[];
   onChange: (val: string) => void;
   icon: string;
-  color?: 'blue' | 'indigo' | 'emerald';
+  color?: 'blue' | 'indigo' | 'emerald' | 'red';
 }
 
 export function Dropdown({ value, label, options, onChange, icon, color = 'blue' }: DropdownProps) {
@@ -48,6 +48,15 @@ export function Dropdown({ value, label, options, onChange, icon, color = 'blue'
       textSelected: 'text-emerald-700',
       hoverBg: 'hover:bg-emerald-50/50',
       hoverText: 'hover:text-emerald-600'
+    },
+    red: {
+      border: 'border-red-500',
+      ring: 'ring-red-500/10',
+      icon: 'text-red-600',
+      bgSelected: 'bg-red-50',
+      textSelected: 'text-red-700',
+      hoverBg: 'hover:bg-red-50/50',
+      hoverText: 'hover:text-red-600'
     }
   }[color];
 
