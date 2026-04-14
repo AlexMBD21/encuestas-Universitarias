@@ -49,6 +49,7 @@ export default function Surveys(): JSX.Element {
   const [isReportsVisible, setIsReportsVisible] = useState(false)
   const [highlightedReportId, setHighlightedReportId] = useState<string | null>(null)
   const [isConfirmReportVisible, setIsConfirmReportVisible] = useState(false)
+  const [reportSearch, setReportSearch] = useState<string>('')
 
   useEffect(() => {
     if (viewReportsFor) setTimeout(() => setIsReportsVisible(true), 50)
@@ -60,6 +61,7 @@ export default function Surveys(): JSX.Element {
     setTimeout(() => {
       setViewReportsFor(null)
       setHighlightedReportId(null)
+      setReportSearch('')
     }, 300)
   }
 
@@ -1490,7 +1492,7 @@ export default function Surveys(): JSX.Element {
               <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
             </div>
             {/* Header */}
-            <div className="px-5 py-3.5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10" style={{ touchAction: 'none' }}>
+            <div className="px-5 py-3.5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]" style={{ touchAction: 'none' }}>
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-2xl bg-red-100 text-red-600 dark:bg-red-900/30 flex items-center justify-center shrink-0">
                   <span className="material-symbols-outlined text-[24px]">flag</span>
@@ -1516,16 +1518,51 @@ export default function Surveys(): JSX.Element {
                 </button>
               </div>
             </div>
+
+            {/* Static filter bar */}
+            <div className="shrink-0 px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
+                <input
+                  type="text"
+                  placeholder="Buscar por usuario o mensaje..."
+                  value={reportSearch ?? ''}
+                  onChange={e => setReportSearch(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20 text-slate-700 dark:text-slate-300 placeholder:text-slate-400 transition-all"
+                />
+                {reportSearch && (
+                  <button type="button" onClick={() => setReportSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                    <span className="material-symbols-outlined text-[18px]">close</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Scrollable list */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 relative z-0 custom-scrollbar-sm">
               {(() => {
                 if (!reportsLoaded) return (
                   <div className="flex items-center justify-center py-12">
                     <Loader size={48} text="Cargando reportes..." />
                   </div>
                 )
-                const reports = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
-                if (!reports || reports.length === 0) return <div className="text-slate-600 text-sm">No hay reportes para esta encuesta.</div>
+                const allReports = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
+                const reports = (reportSearch ?? '').trim()
+                  ? allReports.filter(r => {
+                      const q = (reportSearch ?? '').trim().toLowerCase()
+                      return (
+                        (r.reporterEmail || r.reporterId || '').toLowerCase().includes(q) ||
+                        (r.comment || '').toLowerCase().includes(q)
+                      )
+                    })
+                  : allReports
+                if (!allReports || allReports.length === 0) return <div className="text-slate-600 text-sm py-4 text-center">No hay reportes para esta encuesta.</div>
+                if (reports.length === 0) return (
+                  <div className="py-10 flex flex-col items-center text-center gap-2">
+                    <span className="material-symbols-outlined text-[40px] text-slate-300 dark:text-slate-600">manage_search</span>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sin resultados para <span className="font-bold">"{reportSearch}"</span></p>
+                  </div>
+                )
                 return reports.map(r => {
                   const isHighlighted = highlightedReportId && String(r.id) === String(highlightedReportId)
                   return (
