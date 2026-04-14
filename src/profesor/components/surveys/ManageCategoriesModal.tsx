@@ -53,7 +53,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-md" hideMobileIndicator={true} scrollableBody={false}>
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" hideMobileIndicator={true} scrollableBody={false}>
       <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden">
         {/* Drag handle for mobile */}
         <div className="w-full flex justify-center pt-2 pb-2 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={onClose}>
@@ -61,7 +61,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
 
         {/* Header — clean premium */}
-        <div className="flex items-center justify-between px-5 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div className="flex items-center justify-between px-6 sm:px-8 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-5 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Categorías del Proyecto</h3>
           <div className="hidden sm:block">
             <button
@@ -76,7 +76,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
 
         {/* Subtitle bar */}
-        <div className="px-5 py-2.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 flex flex-col gap-1.5 items-start">
+        <div className="px-6 sm:px-8 py-2.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 flex flex-col gap-1.5 items-start">
           <span className="text-[10px] font-black px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full">
             {categoriesList.length} REGISTRADAS
           </span>
@@ -87,7 +87,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
 
         {/* List */}
-        <div className="modal-scrollable-content flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-white dark:bg-slate-900">
+        <div className="modal-scrollable-content flex-1 overflow-y-auto px-6 sm:px-8 py-4 space-y-3 bg-white dark:bg-slate-900">
           {categoriesList.length === 0 && (
             <div className="py-10 text-center">
               <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 block mb-2">category</span>
@@ -117,7 +117,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
 
         {/* Add new input */}
-        <div className="px-4 sm:px-5 py-4 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 shrink-0 shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)]">
+        <div className="px-5 sm:px-8 py-4 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 shrink-0 shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)]">
           <div className="flex gap-1.5 sm:gap-2">
             <input
               className="min-w-0 flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl px-3.5 sm:px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 shadow-sm"
@@ -149,7 +149,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 px-5 py-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0">
+        <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 px-6 sm:px-8 py-4 sm:py-5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0">
           <button
             type="button"
             onClick={onClose}
