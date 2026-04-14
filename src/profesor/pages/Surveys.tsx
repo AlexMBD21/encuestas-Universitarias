@@ -1102,118 +1102,123 @@ export default function Surveys(): JSX.Element {
                     })
                     // ... other branches
                     return (
-                      <div className="flex-1 overflow-y-auto p-3 sm:p-6 w-full h-full custom-scrollbar-sm relative">
-                        <div className="flex flex-col gap-4 mb-6">
-                          {/* Stats */}
-                          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                            <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Proyectos: <span className="font-bold text-slate-800 dark:text-slate-200 ml-1">{allProjects.length}</span></div>
-                            <div className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">done_all</span> Calificados: {globalProgress.rated} / {globalProgress.total}</div>
-                          </div>
-
-                          {/* Filters */}
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <FilterDropdown 
-                              value={projectFilter} 
-                              label="Todos los proyectos" 
-                              icon="filter_list"
-                              color="indigo"
-                              options={[
-                                { id: 'all', label: 'Todos los proyectos' },
-                                { id: 'pending', label: 'Mis pendientes' },
-                                { id: 'rated', label: 'Mis calificados' },
-                                { id: 'unassigned', label: 'No asignados a mí' }
-                              ]} 
-                              onChange={(val) => setProjectFilter(val as any)} 
-                            />
-                            <FilterDropdown 
-                              value={projectCategory} 
-                              label="Todas las categorías" 
-                              icon="category"
-                              color="indigo"
-                              options={[
-                                { id: 'all', label: 'Todas las categorías' },
-                                ...categories.map(c => ({ id: c, label: c }))
-                              ]} 
-                              onChange={(val) => setProjectCategory(val)} 
-                            />
-                            <div className="relative w-full">
-                              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
-                              <input placeholder="Buscar proyecto..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400" />
+                      <div className="flex flex-col flex-1 min-h-0 w-full h-full">
+                        {/* Static stats + filters bar — casts shadow downward */}
+                        <div className="shrink-0 px-3 sm:px-6 py-3 sm:py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
+                          <div className="flex flex-col gap-3">
+                            {/* Stats */}
+                            <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 bg-slate-50 dark:bg-slate-800/50 p-2 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                              <div className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">Total Proyectos: <span className="font-bold text-slate-800 dark:text-slate-200">{allProjects.length}</span></div>
+                              <div className="text-xs sm:text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0"><span className="material-symbols-outlined text-[13px] sm:text-[16px]">done_all</span> Calificados: {globalProgress.rated} / {globalProgress.total}</div>
+                            </div>
+                            {/* Filters */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <FilterDropdown 
+                                value={projectFilter} 
+                                label="Todos los proyectos" 
+                                icon="filter_list"
+                                color="indigo"
+                                options={[
+                                  { id: 'all', label: 'Todos los proyectos' },
+                                  { id: 'pending', label: 'Mis pendientes' },
+                                  { id: 'rated', label: 'Mis calificados' },
+                                  { id: 'unassigned', label: 'No asignados a mí' }
+                                ]} 
+                                onChange={(val) => setProjectFilter(val as any)} 
+                              />
+                              <FilterDropdown 
+                                value={projectCategory} 
+                                label="Todas las categorías" 
+                                icon="category"
+                                color="indigo"
+                                options={[
+                                  { id: 'all', label: 'Todas las categorías' },
+                                  ...categories.map(c => ({ id: c, label: c }))
+                                ]} 
+                                onChange={(val) => setProjectCategory(val)} 
+                              />
+                              <div className="relative w-full">
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
+                                <input placeholder="Buscar proyecto..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400" />
+                              </div>
                             </div>
                           </div>
                         </div>
-                        {/* project-level filter intentionally removed; use top-level 'Sin calificar' */}
-                        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                          {filteredProjects.length === 0 && !isSurveyOwnerOrAdmin && (
-                            <div className="col-span-full py-12 flex flex-col items-center justify-center text-center">
-                              <span className="material-symbols-outlined text-[48px] text-slate-300 dark:text-slate-600 mb-3 block">inventory_2</span>
-                              <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-1">Aún no se te han asignado proyectos</h3>
-                              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">
-                                El administrador debe asignarte proyectos individualmente para poder calificarlos.
-                              </p>
-                            </div>
-                          )}
-                          {filteredProjects.map((p: any) => {
-                            const ratedLocal = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id))
-                            const rated = ratedLocal || surveyHelpers.hasUserRated(String(s.id), String(p.id))
-                            return (
-                              <div key={p.id} className="p-4 sm:p-5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 group h-full">
-                                <div>
-                                  <div className="mb-3">
-                                    <h4 
-                                  onClick={(e) => toggleTitleExpansion(e, p.id)}
-                                  className={`font-bold text-slate-800 dark:text-slate-100 text-[15px] leading-snug break-all cursor-pointer transition-all ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
-                                  title={p.name}
-                                >
-                                  {p.name || 'Proyecto sin nombre'}
-                                </h4>
-                                  </div>
-                                  {p.category && (
-                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-3">
-                                      <span className="material-symbols-outlined text-[13px]">category</span> {p.category}
-                                    </div>
-                                  )}
-                                  <div className="space-y-2 mt-1">
-                                    {p.members && (
-                                      <div className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                        <span className="material-symbols-outlined text-[15px] mt-[1px] text-slate-400">groups</span>
-                                        <div className="flex-1 leading-relaxed whitespace-pre-wrap"><span className="font-semibold text-slate-700 dark:text-slate-300 block mb-0.5">Integrantes:</span>{String(p.members).replace(/([a-zñáéíóú])([A-Z])/g, '$1, $2')}</div>
-                                      </div>
-                                    )}
-                                    {p.advisor && (
-                                      <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                        <span className="material-symbols-outlined text-[15px] text-slate-400">school</span>
-                                        <div className="flex-1 leading-relaxed truncate"><span className="font-semibold text-slate-700 dark:text-slate-300 mr-1">Asesor:</span>{p.advisor}</div>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
-                                  {(() => {
-                                    const evs = Array.isArray(p.evaluators) ? p.evaluators : (p.evaluator ? [p.evaluator] : []);
-                                    const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase();
-                                    const canEvaluate = isSurveyOwnerOrAdmin || evs.some((e: any) => e && String(e).trim().toLowerCase() === currentUserEmail);
-                                    
-                                    if (!canEvaluate) {
-                                      return (
-                                        <button type="button" disabled className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed flex justify-center items-center gap-2 shadow-inner">
-                                          <span className="material-symbols-outlined text-[18px]">lock</span> No Asignado
-                                        </button>
-                                      )
-                                    }
 
-                                    if (rated) {
-                                      return <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(true); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-4 py-2 text-sm font-bold rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">check_circle</span> Calificado</button>
-                                    }
-                                    
-                                    return (
-                                      <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(false); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">edit_document</span> Calificar</button>
-                                    )
-                                  })()}
-                                </div>
+                        {/* Scrollable projects list */}
+                        <div className="flex-1 overflow-y-auto p-3 sm:p-6 w-full custom-scrollbar-sm relative z-0">
+                          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                            {filteredProjects.length === 0 && !isSurveyOwnerOrAdmin && (
+                              <div className="col-span-full py-12 flex flex-col items-center justify-center text-center">
+                                <span className="material-symbols-outlined text-[48px] text-slate-300 dark:text-slate-600 mb-3 block">inventory_2</span>
+                                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-1">Aún no se te han asignado proyectos</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">
+                                  El administrador debe asignarte proyectos individualmente para poder calificarlos.
+                                </p>
                               </div>
-                            )
-                          })}
+                            )}
+                            {filteredProjects.map((p: any) => {
+                              const ratedLocal = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id))
+                              const rated = ratedLocal || surveyHelpers.hasUserRated(String(s.id), String(p.id))
+                              return (
+                                <div key={p.id} className="p-4 sm:p-5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 group h-full">
+                                  <div>
+                                    <div className="mb-3">
+                                      <h4 
+                                    onClick={(e) => toggleTitleExpansion(e, p.id)}
+                                    className={`font-bold text-slate-800 dark:text-slate-100 text-[15px] leading-snug break-all cursor-pointer transition-all ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
+                                    title={p.name}
+                                  >
+                                    {p.name || 'Proyecto sin nombre'}
+                                  </h4>
+                                    </div>
+                                    {p.category && (
+                                      <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-3">
+                                        <span className="material-symbols-outlined text-[13px]">category</span> {p.category}
+                                      </div>
+                                    )}
+                                    <div className="space-y-2 mt-1">
+                                      {p.members && (
+                                        <div className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                                          <span className="material-symbols-outlined text-[15px] mt-[1px] text-slate-400">groups</span>
+                                          <div className="flex-1 leading-relaxed whitespace-pre-wrap"><span className="font-semibold text-slate-700 dark:text-slate-300 block mb-0.5">Integrantes:</span>{String(p.members).replace(/([a-zñáéíóú])([A-Z])/g, '$1, $2')}</div>
+                                        </div>
+                                      )}
+                                      {p.advisor && (
+                                        <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                                          <span className="material-symbols-outlined text-[15px] text-slate-400">school</span>
+                                          <div className="flex-1 leading-relaxed truncate"><span className="font-semibold text-slate-700 dark:text-slate-300 mr-1">Asesor:</span>{p.advisor}</div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                                    {(() => {
+                                      const evs = Array.isArray(p.evaluators) ? p.evaluators : (p.evaluator ? [p.evaluator] : []);
+                                      const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase();
+                                      const canEvaluate = isSurveyOwnerOrAdmin || evs.some((e: any) => e && String(e).trim().toLowerCase() === currentUserEmail);
+                                      
+                                      if (!canEvaluate) {
+                                        return (
+                                          <button type="button" disabled className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed flex justify-center items-center gap-2 shadow-inner">
+                                            <span className="material-symbols-outlined text-[18px]">lock</span> No Asignado
+                                          </button>
+                                        )
+                                      }
+
+                                      if (rated) {
+                                        return <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(true); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-4 py-2 text-sm font-bold rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">check_circle</span> Calificado</button>
+                                      }
+                                      
+                                      return (
+                                        <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(false); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">edit_document</span> Calificar</button>
+                                      )
+                                    })()}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
                         </div>
                       </div>
                     )
