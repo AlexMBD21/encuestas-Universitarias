@@ -385,13 +385,13 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
         </div>
 
         {/* Column headers */}
-        <div className="grid grid-cols-[1fr_auto] px-6 py-3 bg-white border-b border-slate-100 relative z-[5]">
+        <div className="grid grid-cols-[1fr_auto] px-6 py-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 relative shadow-sm">
           <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Usuario</span>
           <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase text-right">{isProjectSurvey ? 'Calificaciones' : 'Respuestas'}</span>
         </div>
 
         {/* Rows */}
-        <div className="divide-y divide-slate-50 pb-2 relative z-0">
+        <div className="divide-y divide-slate-50 dark:divide-slate-800/40 pb-2 relative">
           {filteredUserList.length === 0 ? (
             <div className="px-6 py-10 text-xs font-medium text-slate-400 text-center flex flex-col items-center justify-center gap-2">
               <span className="material-symbols-outlined text-3xl opacity-50">search_off</span>
@@ -419,6 +419,7 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
   projectMap: Record<string, string>
 }) {
   const [open, setOpen] = useState(false)
+  const [rect, setRect] = useState<DOMRect | null>(null)
   const popRef = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
   const ratedCount = u.ratedProjects.length
@@ -439,18 +440,33 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
   // Close on outside click
   useEffect(() => {
     if (!open) return
+    const updatePosition = () => {
+      if (btnRef.current) setRect(btnRef.current.getBoundingClientRect())
+    }
+    updatePosition()
+    window.addEventListener('scroll', updatePosition, true)
+    window.addEventListener('resize', updatePosition)
+
     function handle(e: MouseEvent) {
       if (
         btnRef.current && !btnRef.current.contains(e.target as Node) &&
         popRef.current && !popRef.current.contains(e.target as Node)
-      ) setOpen(false)
+      ) {
+        const portalMenu = document.querySelector('.activity-portal-menu')
+        if (portalMenu && portalMenu.contains(e.target as Node)) return
+        setOpen(false)
+      }
     }
     document.addEventListener('mousedown', handle)
-    return () => document.removeEventListener('mousedown', handle)
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true)
+      window.removeEventListener('resize', updatePosition)
+      document.removeEventListener('mousedown', handle)
+    }
   }, [open])
 
   return (
-    <div className="flex items-center gap-3 px-6 py-3.5 hover:bg-slate-50/80 transition-colors group">
+    <div className={`flex items-center gap-3 px-6 py-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all group relative ${open ? 'z-[20] shadow-sm bg-slate-50/50 dark:bg-slate-800/20' : 'z-0'}`}>
       {/* Avatar */}
       <div className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border shadow-sm ${avatarClass}`}>
         {String((u.label || u.id)[0] || '?').toUpperCase()}
@@ -472,7 +488,10 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
           <div className="relative">
             <button
               ref={btnRef}
-              onClick={() => setOpen(v => !v)}
+              onClick={() => {
+                if (!open && btnRef.current) setRect(btnRef.current.getBoundingClientRect())
+                setOpen(v => !v)
+              }}
               className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all ${
                 open ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 shadow-sm'
               }`}
@@ -483,17 +502,22 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
               </svg>
             </button>
 
-            {open && (
+            {open && rect && ReactDOM.createPortal(
               <div
                 ref={popRef}
-                className="absolute bottom-full right-0 mb-3 z-50 w-64 max-w-[calc(100vw-2rem)] bg-white border border-slate-200/80 rounded-2xl shadow-xl p-4 space-y-2 origin-bottom-right animate-fade-in-up"
+                className="activity-portal-menu fixed z-[100010] w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] p-4 space-y-2 origin-bottom animate-fade-in-up"
+                style={{
+                  bottom: window.innerHeight - rect.top + 8,
+                  left: rect.right - 256, // Align right with button right
+                  touchAction: 'none'
+                }}
               >
-                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 border-b border-slate-100 pb-2">Proyectos calificados</div>
-                <div className="max-h-48 overflow-y-auto pr-1 space-y-1.5 custom-scrollbar">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 border-b border-slate-100 dark:border-slate-700 pb-2">Proyectos calificados</div>
+                <div className="max-h-48 overflow-y-auto pr-1 space-y-1.5 custom-scrollbar-sm">
                   {u.ratedProjects.length === 0 && <span className="text-xs text-slate-400 italic">Ninguno</span>}
                   {u.ratedProjects.map(pid => (
-                    <div key={pid} className="flex items-center gap-2.5 text-xs text-slate-700">
-                      <span className="w-5 h-5 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+                    <div key={pid} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-200">
+                      <span className="w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 flex items-center justify-center shrink-0">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
                           <path d="M5 13l4 4L19 7" stroke="#4f46e5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -517,7 +541,8 @@ function UserActivityRow({ u, isProjectSurvey, totalProjects, projectMap }: {
                     </div>
                   )}
                 </div>
-              </div>
+              </div>,
+              document.body
             )}
           </div>
         </div>
