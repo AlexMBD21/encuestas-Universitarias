@@ -405,13 +405,13 @@ export default function Surveys(): JSX.Element {
             <button type="button" onClick={() => {
               if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
               handleCreate()
-            }} className={`flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition duration-200 ${!backendEnabled ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 active:scale-[0.98]'}`} disabled={!backendEnabled}>
+            }} className={`btn btn-emerald ${!backendEnabled ? 'opacity-50 grayscale cursor-not-allowed' : ''}`} disabled={!backendEnabled}>
               <span className="material-symbols-outlined text-[18px]">add_circle</span> <span className="hidden sm:inline">Nueva</span> Encuesta
             </button>
             <button type="button" onClick={() => {
               if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
               setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true)
-            }} className={`flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition duration-200 ${!backendEnabled ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 active:scale-[0.98]'}`} disabled={!backendEnabled}>
+            }} className={`btn btn-indigo ${!backendEnabled ? 'opacity-50 grayscale cursor-not-allowed' : ''}`} disabled={!backendEnabled}>
               <span className="material-symbols-outlined text-[18px]">fact_check</span> <span className="hidden sm:inline">Calificar</span> Proyecto
             </button>
           </div>
@@ -836,7 +836,7 @@ export default function Surveys(): JSX.Element {
                         {/* Botonera inferior */}
                         <div className="mt-5 flex justify-end items-center gap-2">
                           {!s.published ? (
-                            <button type="button" onClick={() => setConfirmPublish({ id: String(s.id), action: 'publish' })} className={`px-4 py-1.5 text-sm font-bold rounded-lg text-white shadow-md transition-all flex items-center gap-2 ${isProjectType ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'}`}>
+                            <button type="button" onClick={() => setConfirmPublish({ id: String(s.id), action: 'publish' })} className={`btn ${isProjectType ? 'btn-indigo' : 'btn-emerald'} px-4 py-1.5 text-xs`}>
                               <span className="material-symbols-outlined text-[18px]">publish</span> Publicar
                             </button>
                           ) : isProjectType ? (
@@ -851,13 +851,13 @@ export default function Surveys(): JSX.Element {
                                 setModalSurveyId(String(s.id))
                                 setModalKind('projects')
                                 setViewingProjectId(null)
-                              }} className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all">Calificar</button>
+                              }} className="btn btn-indigo px-4 py-1.5 text-xs">Calificar</button>
                             )
                           ) : (
                             userResponded ? (
                               <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50">Respondido</button>
                             ) : (
-                              <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all">Responder</button>
+                              <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="btn btn-emerald px-4 py-1.5 text-xs">Responder</button>
                             )
                           )}
 

@@ -470,7 +470,7 @@ export default function Configuracion() {
                     <button 
                       type="submit" 
                       disabled={loading || !newPassword || !confirmPassword} 
-                      className={`w-full flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-black text-sm transition-all shadow-lg active:scale-[0.98] ${loading || !newPassword || !confirmPassword ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/30'}`}
+                      className={`btn btn-primary w-full py-4 ${loading || !newPassword || !confirmPassword ? 'opacity-50 grayscale cursor-not-allowed shadow-none' : ''}`}
                     >
                       {loading ? (
                         <><span className="material-symbols-outlined text-[18px] animate-spin">refresh</span> Actualizando...</>
@@ -514,7 +514,7 @@ export default function Configuracion() {
                       </div>
                       <button 
                         onClick={openCreateModal}
-                        className="p-2 sm:px-4 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98] flex items-center gap-2 font-bold text-xs shrink-0"
+                        className="btn btn-primary px-4 py-2 text-xs shrink-0"
                       >
                         <span className="material-symbols-outlined text-[18px]">person_add</span>
                         <span className="hidden sm:inline">Crear Usuario</span>
@@ -725,7 +725,7 @@ export default function Configuracion() {
                   </div>
 
                   <div className="mt-4 flex flex-col sm:flex-row-reverse justify-end gap-2">
-                    <button type="submit" className="w-full sm:w-auto px-5 py-2 sm:px-8 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all text-sm active:scale-[0.98] outline-none" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar' : 'Crear')}</button>
+                    <button type="submit" className="btn btn-primary w-full sm:w-auto px-8" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar' : 'Crear')}</button>
                     <button type="button" className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]" onClick={closeModal} disabled={modalLoading}>Cancelar y Volver</button>
                   </div>
                 </form>
@@ -764,7 +764,7 @@ export default function Configuracion() {
           <div className="modal-scrollable-content p-5 overflow-y-auto">
             <p className="text-sm text-slate-600 dark:text-slate-300 mb-5">¿Confirmas que deseas cambiar tu contraseña? Esta acción no se puede deshacer.</p>
             <div className="flex flex-col sm:flex-row-reverse gap-3 justify-end">
-              <button type="button" onClick={doChangePassword} className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2 sm:px-8 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/30 transition-all text-sm active:scale-[0.98]">Sí, cambiar</button>
+              <button type="button" onClick={doChangePassword} className="btn btn-primary w-full sm:w-auto px-8">Sí, cambiar</button>
               <button type="button" onClick={() => setConfirmPwdOpen(false)} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">Cancelar y Volver</button>
             </div>
           </div>

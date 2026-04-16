@@ -535,8 +535,8 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
                       }}
                       className={`
                         group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300
-                        ${n.read ? 'bg-slate-100/40 opacity-60' : 'bg-white shadow-xl shadow-slate-200/20'} 
-                        border border-white hover:bg-white hover:shadow-2xl hover:shadow-primary/10 hover:scale-[1.02]
+                        ${n.read ? 'bg-slate-50 border-slate-100 shadow-sm' : 'bg-white shadow-xl shadow-slate-200/20'} 
+                        border hover:bg-white hover:shadow-2xl hover:shadow-primary/10 hover:scale-[1.02]
                         cursor-pointer active:scale-[0.98] overflow-hidden
                       `}
                     >
@@ -550,7 +550,7 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
                                 {typeLabel}
                              </span>
                              {statusLabel && (
-                               <span className={`text-[7.5px] font-black px-1.5 py-0.5 rounded ${isResponded ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'} border border-current opacity-90`}>
+                               <span className={`text-[7.5px] font-black px-1.5 py-0.5 rounded ${isResponded ? 'bg-green-600 text-white' : 'bg-amber-500 text-white'} border border-transparent shadow-sm`}>
                                  {statusLabel}
                                </span>
                              )}
@@ -562,7 +562,7 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
                         <h4 className="text-[13px] font-black text-slate-800 dark:text-slate-100 truncate pr-2 tracking-tight group-hover:text-primary transition-colors mb-0">
                            {n.title?.replace('Nueva encuesta:', '').trim() || 'Aviso de sistema'}
                         </h4>
-                        <div className="text-[10px] text-slate-500 font-bold dark:text-slate-400 line-clamp-1 opacity-60 italic font-inter leading-tight">
+                        <div className="text-[10px] text-slate-500 font-bold dark:text-slate-400 line-clamp-1 italic font-inter leading-tight">
                           {n.message || 'Pulsa para participar.'}
                         </div>
                       </div>

@@ -480,9 +480,9 @@ export default function Reports(): JSX.Element {
                               navigate('/profesor/encuestas/reports/' + String(su.id));
                             }, 400);
                           }}
-                          className={`relative overflow-hidden w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${isProject ? 'group-hover:border-indigo-600 focus:ring-indigo-500 shadow-indigo-600/20 active:border-indigo-600' : 'group-hover:border-emerald-600 focus:ring-emerald-500 shadow-emerald-600/20 active:border-emerald-600'}`}
+                          className="relative overflow-hidden w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 group-hover:border-slate-900 focus:ring-slate-500 shadow-slate-900/10 active:border-slate-900"
                         >
-                          <div className={`absolute inset-0 w-full h-full origin-left scale-x-0 group-hover:scale-x-100 group-active:scale-x-100 transition-transform duration-500 ease-out z-0 ${isProject ? 'bg-indigo-600' : 'bg-emerald-600'}`} />
+                          <div className="absolute inset-0 w-full h-full origin-left scale-x-0 group-hover:scale-x-100 group-active:scale-x-100 transition-transform duration-500 ease-out z-0 bg-slate-900" />
                           <div className="relative z-10 flex items-center justify-center gap-2 group-hover:text-white group-active:text-white transition-colors duration-500">
                             Ver informe detallado
                             <span className="material-symbols-outlined text-[18px]">arrow_right_alt</span>
