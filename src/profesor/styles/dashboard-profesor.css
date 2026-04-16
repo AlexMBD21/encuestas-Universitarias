@@ -20,6 +20,53 @@
     width: 100%;
 }
 
+/* =============================== */
+/*  CUSTOM SCROLLBAR (PREMIUM GLOBAL) */
+/* =============================== */
+/* Reglas globales sin restricciones de contenedor para alcanzar Modales y Portales */
+
+::-webkit-scrollbar {
+    width: 8px; /* Ancho total (incluyendo margen invisible) */
+    height: 8px;
+}
+
+.custom-scrollbar-sm::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb,
+.modal-scrollable-content::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.5) !important; /* Pizarra suave traslúcida */
+    border: 2px solid transparent; /* Crea un margen de 2px alrededor para que parezca flotar */
+    background-clip: padding-box;
+    border-radius: 10px;
+}
+
+/* Hover persistente y sólido */
+::-webkit-scrollbar-thumb:hover,
+.modal-scrollable-content::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(15, 23, 42, 0.8) !important;
+}
+
+/* Modo oscuro y Paneles Oscuros (Calendario) */
+.dark ::-webkit-scrollbar-thumb,
+.cal-panel ::-webkit-scrollbar-thumb,
+.dark .modal-scrollable-content::-webkit-scrollbar-thumb,
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+.cal-panel ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4) !important;
+}
+
 /* ========================= */
 /*  TOPBAR (barra superior)   */
 /* ========================= */

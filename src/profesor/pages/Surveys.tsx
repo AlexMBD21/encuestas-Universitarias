@@ -1005,7 +1005,7 @@ export default function Surveys(): JSX.Element {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className={`bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
+              className={`bg-slate-50 dark:bg-slate-900 rounded-t-[20px] sm:rounded-[20px] shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
               style={{
                 overscrollBehaviorY: 'contain',
                 ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
@@ -1031,9 +1031,9 @@ export default function Surveys(): JSX.Element {
                     onClick={() => closeModal()} 
                     aria-label="Cerrar" 
                     title="Cerrar" 
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors shadow-sm"
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-[#0f172a] text-white hover:bg-[#1e293b] transition-all active:scale-95 shadow-sm group"
                   >
-                    <span className="material-symbols-outlined text-[20px]">close</span>
+                    <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
                   </button>
                 </div>
               </div>

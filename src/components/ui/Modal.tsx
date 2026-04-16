@@ -12,9 +12,10 @@ export interface ModalProps {
   scrollableBody?: boolean;
   hideCloseButton?: boolean;
   noHeaderShadow?: boolean;
+  closeButtonVariant?: 'default' | 'premium';
 }
 
-export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true, hideCloseButton = false, noHeaderShadow = false }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true, hideCloseButton = false, noHeaderShadow = false, closeButtonVariant = 'premium' }: ModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const [pullDownY, setPullDownY] = useState(0);
@@ -94,8 +95,8 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
       <div 
         ref={modalRef}
         className={`relative w-full ${maxWidth} bg-white dark:bg-slate-900 
-          ${fullHeightOnMobile ? 'h-[90vh] sm:h-auto sm:max-h-[90vh]' : 'max-h-[90vh]'} 
-          rounded-t-[2rem] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden 
+          ${fullHeightOnMobile ? 'h-[90vh] sm:h-auto sm:max-h-[85vh]' : 'max-h-[90vh]'} 
+          rounded-t-[20px] sm:rounded-[20px] shadow-2xl flex flex-col overflow-hidden 
           transition-all duration-300 ease-[cubic-bezier(0.2,0.9,0.3,1.1)]
           ${isVisible ? 'translate-y-0 opacity-100 sm:scale-100' : 'translate-y-full opacity-0 sm:translate-y-8 sm:scale-95'}`}
         style={{
@@ -129,10 +130,14 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
               <button 
                 type="button"
                 onClick={handleClose} 
-                className="hidden sm:flex w-10 h-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors shadow-sm"
+                className={`hidden sm:flex w-10 h-10 items-center justify-center rounded-full transition-all active:scale-95 shadow-sm group ${
+                  closeButtonVariant === 'premium' 
+                    ? 'bg-[#0f172a] text-white hover:bg-[#1e293b]' 
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100'
+                }`}
                 aria-label="Cerrar"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
               </button>
             )}
           </div>

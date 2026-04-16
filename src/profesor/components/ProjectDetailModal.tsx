@@ -102,7 +102,7 @@ export default function ProjectDetailModal({
 
         {/* Overall score card */}
         {ps.overall !== null && (
-          <div className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200/80 hover:border-slate-300 hover:shadow-slate-500/10 transition-all flex flex-wrap items-center gap-4 sm:gap-6 shadow-sm font-sans relative overflow-hidden">
+          <div className="p-5 sm:p-6 rounded-[20px] bg-white border border-slate-200/80 hover:border-slate-300 hover:shadow-slate-500/10 transition-all flex flex-wrap items-center gap-4 sm:gap-6 shadow-sm font-sans relative overflow-hidden">
             <div className="text-center shrink-0 relative z-10 w-24">
               <div className="text-5xl font-black text-slate-800 tracking-tighter">{ps.overall.toFixed(2)}</div>
               <div className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mt-1.5 flex items-center justify-center gap-1">
@@ -128,7 +128,7 @@ export default function ProjectDetailModal({
         )}
 
         {ps.project.description && (
-          <div className="text-sm sm:text-base text-slate-700 leading-relaxed bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-sm relative">
+          <div className="text-sm sm:text-base text-slate-700 leading-relaxed bg-white p-5 sm:p-6 rounded-[20px] border border-slate-200/80 shadow-sm relative">
             <span className="absolute top-4 left-4 text-4xl text-slate-100 font-serif leading-none rotate-180">"</span>
             <div className="relative z-10 pl-2">
               {ps.project.description}
@@ -138,7 +138,7 @@ export default function ProjectDetailModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           {membersArr && membersArr.length > 0 && (
-            <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm hover:border-slate-300 transition-colors">
+            <div className="bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-sm hover:border-slate-300 transition-colors">
               <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-[16px]">groups</span> Integrantes
               </div>
@@ -154,7 +154,7 @@ export default function ProjectDetailModal({
           )}
 
           {advisor && (
-            <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm hover:border-slate-300 transition-colors h-fit">
+            <div className="bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-sm hover:border-slate-300 transition-colors h-fit">
               <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-[16px]">school</span> Profesor asesor
               </div>
@@ -172,7 +172,7 @@ export default function ProjectDetailModal({
         </div>
 
         {/* ── Evaluadores que calificaron este proyecto ── */}
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-[20px] border border-slate-200/80 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
@@ -265,7 +265,7 @@ export default function ProjectDetailModal({
               const hasScore = c.avg !== null && c.avg !== undefined
               const pct = toPercentNum(c.avg)
               return (
-                <div key={c.id} className={`p-5 rounded-3xl border transition-all ${hasScore ? 'bg-white border-slate-200/80 hover:border-slate-300 shadow-sm' : 'bg-slate-50 border-slate-200 border-dashed'}`}>
+                <div key={c.id} className={`p-5 rounded-[20px] border transition-all ${hasScore ? 'bg-white border-slate-200/80 hover:border-slate-300 shadow-sm' : 'bg-slate-50 border-slate-200 border-dashed'}`}>
                   <div className="text-sm font-semibold text-slate-800 mb-3.5 leading-snug pr-2 flex items-center justify-between break-words">
                     {c.text}
                     {!hasScore && c.texts && c.texts.length > 0 && (

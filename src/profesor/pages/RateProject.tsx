@@ -212,7 +212,7 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
             const isRatingDisabled = !isScoreKind && !commentValue.trim() && !readonlyMode;
             
             return (
-              <div key={q.id} className="p-5 sm:p-6 border border-slate-200 dark:border-slate-700/80 rounded-2xl bg-white dark:bg-slate-800/50 shadow-sm transition-colors">
+              <div key={q.id} className="p-5 sm:p-6 border border-slate-200 dark:border-slate-700/80 rounded-[20px] bg-white dark:bg-slate-800/50 shadow-sm transition-colors">
                 <div className="flex gap-3 mb-4">
                   <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-primary-100, rgba(0,98,141,0.1))', color: 'var(--color-primary)' }}>
                     {i + 1}
@@ -299,7 +299,7 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
         )}
         </div> {/* close scrollable container */}
         
-        <div className="shrink-0 p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-b-[1.5rem] flex flex-col-reverse sm:flex-row justify-end gap-3 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
+        <div className="shrink-0 p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-b-[20px] flex flex-col-reverse sm:flex-row justify-end gap-3 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
           <button type="button" onClick={() => { if (onClose) onClose() }} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">{readonlyMode ? 'Volver' : 'Cancelar y Volver'}</button>
           {!readonlyMode && (
             <button type="submit" disabled={saving || already} className="w-full sm:w-auto px-5 py-2 sm:px-8 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:cursor-not-allowed outline-none">
