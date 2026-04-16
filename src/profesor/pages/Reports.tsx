@@ -439,8 +439,8 @@ export default function Reports(): JSX.Element {
                       className="group bg-white rounded-2xl border border-slate-200 hover:border-blue-300 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden flex flex-col relative"
                       style={{ animationDelay: `${i * 30 + 150}ms` }}
                     >
-                      {/* Acento superior de color idéntico a Surveys.tsx */}
-                      <div className={`absolute top-0 left-0 right-0 h-1.5 ${isProject ? 'bg-indigo-600' : 'bg-emerald-600'}`} />
+                      {/* Acento superior de color Premium */}
+                      <div className={`absolute top-0 left-0 right-0 h-[5px] ${isProject ? 'bg-gradient-to-r from-indigo-500 to-indigo-800 shadow-[0_2px_10px_rgba(99,102,241,0.3)]' : 'bg-gradient-to-r from-emerald-500 to-emerald-800 shadow-[0_2px_10px_rgba(16,185,129,0.3)]'}`} />
                       
                       <div className="p-5 md:p-6 flex-1 flex flex-col">
                         <div className="flex items-start justify-between gap-3 mb-4 mt-1">

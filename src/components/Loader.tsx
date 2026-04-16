@@ -14,8 +14,8 @@ export default function Loader({
   size = 80, 
   className = '', 
   fullScreen = false,
-  innerColor = '#0ea5e9',
-  outerColor = '#00628d'
+  innerColor = '#6366f1',
+  outerColor = '#0f172a'
 }: LoaderProps) {
   const content = (
     <div className={`flex flex-col items-center justify-center gap-6 ${className}`}>
