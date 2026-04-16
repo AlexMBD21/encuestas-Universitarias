@@ -392,7 +392,7 @@ export default function Surveys(): JSX.Element {
         <div id="surveys-header-inner" className="px-5 sm:px-8 pt-8 pb-12 md:pt-12 md:pb-16 max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-8">
           <div className="animate-fade-in-up" id="surveys-header-text">
             <div id="surveys-header-title-row" className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20 text-white shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/20 text-white shrink-0">
                 <span className="material-symbols-outlined text-xl">assignment</span>
               </div>
               <h1 className="text-slate-900 dark:text-slate-50 text-2xl md:text-3xl font-black leading-tight tracking-[-0.033em]" style={{ margin: 0 }}>Encuestas</h1>
