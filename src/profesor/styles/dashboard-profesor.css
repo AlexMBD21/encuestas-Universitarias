@@ -214,9 +214,9 @@
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1.5px solid rgba(255, 255, 255, 0.22);
-    color: #ffffff;
+    background: rgba(15, 23, 42, 0.04);
+    border: 1.5px solid rgba(15, 23, 42, 0.08);
+    color: var(--color-text);
     cursor: pointer;
     padding: 0;
     flex-shrink: 0;
@@ -237,29 +237,29 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.18) 0%, transparent 70%);
+    background: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.05) 0%, transparent 70%);
     opacity: 0;
     transition: opacity 200ms ease;
 }
 
 .topbar-hamburger:hover {
-    background: rgba(255, 255, 255, 0.22);
-    border-color: rgba(255, 255, 255, 0.40);
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.10), 0 4px 16px rgba(0,0,0,0.18);
+    background: rgba(15, 23, 42, 0.08);
+    border-color: rgba(15, 23, 42, 0.15);
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.04), 0 4px 16px rgba(0,0,0,0.08);
     animation: none;   /* pause idle pulse on hover */
 }
 .topbar-hamburger:hover::before { opacity: 1; }
 
 .topbar-hamburger:active {
     transform: scale(0.90);
-    box-shadow: 0 0 0 2px rgba(255,255,255,0.22);
+    box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
 }
 
 /* State: open — replace idle animation with open glow */
 .topbar-hamburger.is-open {
-    background: rgba(255, 255, 255, 0.18);
-    border-color: rgba(255, 255, 255, 0.38);
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.12);
+    background: rgba(15, 23, 42, 0.06);
+    border-color: rgba(15, 23, 42, 0.12);
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.04);
     animation: none;
 }
 
@@ -280,7 +280,7 @@
     width: 20px;
     height: 2px;
     border-radius: 2px;
-    background: #ffffff;
+    background: var(--color-text);
     position: absolute;
     left: 0;
     transform-origin: center;
@@ -312,8 +312,8 @@
 
 /* ----- Idle glow pulse ----- */
 @keyframes hambGlowIdle {
-    0%,  100% { box-shadow: 0 0 0 0px rgba(255,255,255,0.0); }
-    50%        { box-shadow: 0 0 0 3px rgba(255,255,255,0.08); }
+    0%,  100% { box-shadow: 0 0 0 0px rgba(15, 23, 42, 0.0); }
+    50%        { box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.04); }
 }
 
 /* Show on mobile only */
