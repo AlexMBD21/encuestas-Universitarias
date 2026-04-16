@@ -10,99 +10,7 @@ import ProjectDetailModal from '../components/ProjectDetailModal'
 import PrintConfigModal, { PrintConfig } from '../components/PrintConfigModal'
 import PrintLayout from '../components/PrintLayout'
 import { toast } from '../../components/ui/Toast'
-
-const CategoryDropdown = ({ value, options, onChange }: { value: string, options: string[], onChange: (val: string) => void }) => {
-  const [isOpen, setIsOpen] = React.useState(false)
-  const [rect, setRect] = React.useState<DOMRect | null>(null)
-  const containerRef = React.useRef<HTMLDivElement>(null)
-  const buttonRef = React.useRef<HTMLButtonElement>(null)
-
-  React.useEffect(() => {
-    if (!isOpen) return
-
-    const updatePosition = () => {
-      if (buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
-    }
-
-    updatePosition()
-    window.addEventListener('scroll', updatePosition, true)
-    window.addEventListener('resize', updatePosition)
-
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        const menus = document.querySelectorAll('.portal-dropdown-menu')
-        for (const m of Array.from(menus)) {
-          if (m.contains(event.target as Node)) return
-        }
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('touchstart', handleClickOutside)
-
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true)
-      window.removeEventListener('resize', updatePosition)
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('touchstart', handleClickOutside)
-    }
-  }, [isOpen])
-
-  return (
-    <div ref={containerRef} className="relative flex-1 w-full max-w-[340px]">
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={() => {
-          if (!isOpen && buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
-          setIsOpen(!isOpen)
-        }}
-        className={`w-full bg-white border ${isOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200'} text-slate-700 font-bold text-sm rounded-xl outline-none cursor-pointer shadow-sm transition-all hover:border-slate-300 active:scale-[0.98]`}
-        style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: '12px', padding: '12px 16px', textAlign: 'left' }}
-      >
-        <span className="material-symbols-outlined text-indigo-500 text-[20px] shrink-0">category</span>
-        <span className="truncate">{value === 'Todas' ? 'Todas las Categorías' : value}</span>
-        <span className={`material-symbols-outlined text-slate-400 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}>expand_more</span>
-      </button>
-
-      {isOpen && rect && ReactDOM.createPortal(
-        <div 
-          className="portal-dropdown-menu fixed py-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-[99999] animate-fade-in-down origin-top overflow-hidden"
-          style={{
-            top: rect.bottom + 8,
-            left: rect.left,
-            minWidth: Math.max(200, rect.width),
-            width: rect.width
-          }}
-        >
-          <div className="max-h-[280px] overflow-y-auto overscroll-contain">
-            <button
-              type="button"
-              onClick={() => { onChange('Todas'); setIsOpen(false) }}
-              className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold transition-all cursor-pointer ${value === 'Todas' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-600'}`}
-            >
-              <span>Mostrar Todas</span>
-              {value === 'Todas' && <span className="material-symbols-outlined text-[18px]">check</span>}
-            </button>
-            <div className="h-px bg-slate-100 mx-3 my-1" />
-            {options.map(cat => (
-              <button
-                type="button"
-                key={cat}
-                onClick={() => { onChange(cat); setIsOpen(false) }}
-                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold transition-all cursor-pointer ${value === cat ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-600'}`}
-              >
-                <span className="truncate">{cat}</span>
-                {value === cat && <span className="material-symbols-outlined text-[18px]">check</span>}
-              </button>
-            ))}
-          </div>
-        </div>,
-        document.body
-      )}
-    </div>
-  )
-}
+import Dropdown from '../../components/ui/Dropdown'
 
 export default function ReportDetail(): JSX.Element {
   const navigate = useNavigate()
@@ -319,7 +227,7 @@ export default function ReportDetail(): JSX.Element {
           {/* Breadcrumb glassmorphic */}
           <nav className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/80 backdrop-blur-sm border border-slate-200/50 text-xs font-medium text-slate-600 mb-6">
             <button 
-              className="flex items-center gap-1.5 hover:text-blue-600 transition-colors" 
+              className="flex items-center gap-1.5 hover:text-slate-900 transition-colors" 
               onClick={() => navigate('/profesor/encuestas/reports')}
             >
               <span className="material-symbols-outlined text-[16px]">bar_chart</span>
@@ -420,15 +328,15 @@ export default function ReportDetail(): JSX.Element {
           <div className="animate-fade-in-up" style={{ animationDelay: '50ms' }}>
             
             {report.totalResponses === 0 && (
-              <div className="mb-6 bg-blue-50/50 border border-blue-100 p-5 rounded-2xl flex items-center gap-4">
-                <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+              <div className="mb-6 bg-slate-50 border border-slate-200 p-5 rounded-2xl flex items-center gap-4">
+                <div className="w-10 h-10 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center shrink-0">
                   <span className="material-symbols-outlined">inbox</span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-blue-900">
+                  <h4 className="font-bold text-slate-900">
                     {survey?.type === 'project' ? 'Aún no hay calificaciones' : 'Aún no hay respuestas'}
                   </h4>
-                  <p className="text-sm text-blue-700">
+                  <p className="text-sm text-slate-600">
                     {survey?.type === 'project' 
                       ? 'Este proyecto aún no ha sido evaluado. Asigna evaluadores desde el menú de la encuesta para comenzar a recibir resultados.' 
                       : 'Esta encuesta está vacía. ¡Comparte el enlace para empezar a recibir datos!'}
@@ -534,9 +442,14 @@ export default function ReportDetail(): JSX.Element {
                                   <span className="text-sm font-bold text-slate-500 flex items-center gap-1.5 ml-1 shrink-0 hidden md:flex">
                                     <span className="material-symbols-outlined text-[18px]">filter_list</span> Filtrar
                                   </span>
-                                  <CategoryDropdown 
+                                  <Dropdown 
                                     value={selectedCategory} 
-                                    options={uniqueCats} 
+                                    label="Todas las Categorías"
+                                    icon="category"
+                                    options={[
+                                      { id: 'Todas', label: 'Todas las Categorías' },
+                                      ...uniqueCats.map(cat => ({ id: cat, label: cat }))
+                                    ]} 
                                     onChange={setSelectedCategory} 
                                   />
                                 </div>
@@ -679,7 +592,7 @@ export default function ReportDetail(): JSX.Element {
                                                         : []
                                                       setModalProject({ ...ps, _rawResponses: projectRaw })
                                                     }}
-                                                    className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all shadow-sm group-hover:scale-105"
+                                                    className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-slate-400 hover:bg-slate-50 transition-all shadow-sm group-hover:scale-105"
                                                     title="Ver detalle"
                                                   >
                                                     <span className="material-symbols-outlined text-[18px]">visibility</span>

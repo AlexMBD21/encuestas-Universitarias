@@ -12,10 +12,10 @@ export interface DropdownProps {
   options: DropdownOption[];
   onChange: (val: string) => void;
   icon: string;
-  color?: 'blue' | 'indigo' | 'emerald' | 'red';
+  color?: 'blue' | 'indigo' | 'emerald' | 'red' | 'slate';
 }
 
-export function Dropdown({ value, label, options, onChange, icon, color = 'blue' }: DropdownProps) {
+export function Dropdown({ value, label, options, onChange, icon, color = 'slate' }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -57,6 +57,15 @@ export function Dropdown({ value, label, options, onChange, icon, color = 'blue'
       textSelected: 'text-red-700',
       hoverBg: 'hover:bg-red-50/50',
       hoverText: 'hover:text-red-600'
+    },
+    slate: {
+      border: 'border-slate-400',
+      ring: 'ring-slate-500/10',
+      icon: 'text-slate-800',
+      bgSelected: 'bg-slate-100',
+      textSelected: 'text-slate-900',
+      hoverBg: 'hover:bg-slate-50',
+      hoverText: 'hover:text-slate-800'
     }
   }[color];
 

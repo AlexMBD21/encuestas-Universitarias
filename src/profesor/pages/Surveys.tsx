@@ -426,7 +426,7 @@ export default function Surveys(): JSX.Element {
           {/* Buscador */}
           <div className="relative flex-1 min-w-0">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+              <svg className="h-5 w-5 text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
             </div>
             <input
               type="text"
@@ -449,7 +449,7 @@ export default function Surveys(): JSX.Element {
 
             {/* Checkbox Sin calificar */}
             <label id="surveys-filter-pending" className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2.5 cursor-pointer transition-colors whitespace-nowrap shadow-sm">
-              <input type="checkbox" checked={showOnlyPending} onChange={e => setShowOnlyPending(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-600 w-4 h-4 cursor-pointer" />
+              <input type="checkbox" checked={showOnlyPending} onChange={e => setShowOnlyPending(e.target.checked)} className="rounded text-slate-800 focus:ring-slate-600 w-4 h-4 cursor-pointer" />
               Sin calificar
             </label>
 
@@ -511,7 +511,7 @@ export default function Surveys(): JSX.Element {
 
                   setManageCategoriesId('sys_settings_project_categories');
                 }}
-                className="shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 text-sm font-bold rounded-xl transition-all whitespace-nowrap shadow-sm active:scale-[0.98]"
+                className="btn btn-black shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl transition-all whitespace-nowrap shadow-sm active:scale-[0.98]"
                 title="Gestionar categorías de proyectos"
               >
                 <span className="material-symbols-outlined text-[18px]">category</span>
@@ -548,7 +548,7 @@ export default function Surveys(): JSX.Element {
             <SurveyGridSkeleton count={6} />
           ) : surveys.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/20 border-2 border-dashed border-slate-300 dark:border-slate-700">
-              <div className="w-20 h-20 mb-6 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shadow-inner">
+              <div className="w-20 h-20 mb-6 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-full flex items-center justify-center shadow-inner">
                 <span className="material-symbols-outlined text-4xl">inventory_2</span>
               </div>
               <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Aún no tienes encuestas</h3>
@@ -976,7 +976,6 @@ export default function Surveys(): JSX.Element {
         )
       })()}
 
-      {/* ── Categories Manager Modal ── */}
       {/* ── Categories Manager Modal ── */}
       <ManageCategoriesModal 
         isOpen={manageCategoriesId !== null}
@@ -1540,7 +1539,6 @@ export default function Surveys(): JSX.Element {
                         value={reportUserFilter}
                         label="Todos los usuarios"
                         icon="person_alert"
-                        color="red"
                         options={[
                           { id: 'all', label: 'Todos los usuarios' },
                           ...uniqueUsers.map(u => ({ id: u, label: u }))
@@ -1552,13 +1550,13 @@ export default function Surveys(): JSX.Element {
                 })()}
                 {/* Text search */}
                 <div className="relative flex-1">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none text-[18px]">search</span>
                   <input
                     type="text"
                     placeholder="Buscar por usuario o mensaje..."
                     value={reportSearch ?? ''}
                     onChange={e => setReportSearch(e.target.value)}
-                    className="w-full pl-9 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20 text-slate-700 dark:text-slate-300 placeholder:text-slate-400 transition-all"
+                    className="w-full pl-9 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 text-slate-700 dark:text-slate-300 placeholder:text-slate-400 transition-all"
                   />
                   {reportSearch && (
                     <button type="button" onClick={() => setReportSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">

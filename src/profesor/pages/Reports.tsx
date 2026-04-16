@@ -5,94 +5,7 @@ import reportHelpers from '../services/reportHelpers'
 import supabaseClient from '../../services/supabaseClient'
 import { ReportCardsSkeleton } from '../../components/ui/ReportCardsSkeleton'
 import { toast } from '../../components/ui/Toast'
-
-const FilterDropdown = ({ value, label, options, onChange, icon }: { value: string, label: string, options: Array<{id:string, label:string}>, onChange: (val: string) => void, icon: string }) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [rect, setRect] = useState<DOMRect | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const buttonRef = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-
-    const updatePosition = () => {
-      if (buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
-    }
-
-    updatePosition()
-    window.addEventListener('scroll', updatePosition, true)
-    window.addEventListener('resize', updatePosition)
-
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        // Safe check: if the click is on the portal menu itself, ignore
-        const menus = document.querySelectorAll('.portal-dropdown-menu')
-        for (const m of Array.from(menus)) {
-          if (m.contains(event.target as Node)) return
-        }
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('touchstart', handleClickOutside)
-
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true)
-      window.removeEventListener('resize', updatePosition)
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('touchstart', handleClickOutside)
-    }
-  }, [isOpen])
-
-  const selectedOption = options.find(o => String(o.id) === String(value))
-  const displayLabel = selectedOption ? selectedOption.label : label
-
-  return (
-    <div ref={containerRef} className="relative shrink-0 w-full sm:w-auto">
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={() => {
-          if (!isOpen && buttonRef.current) setRect(buttonRef.current.getBoundingClientRect())
-          setIsOpen(!isOpen)
-        }}
-        className={`w-full bg-slate-50 border ${isOpen ? 'border-blue-500 ring-4 ring-blue-500/10' : 'border-slate-200'} text-slate-700 text-xs sm:text-sm font-bold rounded-xl hover:border-slate-300 transition-all outline-none cursor-pointer active:scale-[0.98] shadow-sm`}
-        style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: '10px', padding: '12px 16px', textAlign: 'left' }}
-      >
-        <span className="material-symbols-outlined text-[18px] text-blue-600 shrink-0">{icon}</span>
-        <span className="truncate">{displayLabel}</span>
-        <span className={`material-symbols-outlined text-slate-400 text-[18px] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}>expand_more</span>
-      </button>
-
-      {isOpen && rect && ReactDOM.createPortal(
-        <div 
-          className="portal-dropdown-menu fixed py-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-[99999] animate-fade-in-down origin-top overflow-hidden"
-          style={{
-            top: rect.bottom + 8,
-            left: rect.left,
-            minWidth: Math.max(180, rect.width),
-            width: rect.width
-          }}
-        >
-          <div className="max-h-[280px] overflow-y-auto overscroll-contain custom-scrollbar-sm">
-            {options.map(o => (
-              <button
-                key={o.id}
-                type="button"
-                onClick={() => { onChange(o.id); setIsOpen(false) }}
-                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold transition-all cursor-pointer ${String(value) === String(o.id) ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-blue-50/50 hover:text-blue-600'}`}
-              >
-                <span className="truncate">{o.label}</span>
-                {String(value) === String(o.id) && <span className="material-symbols-outlined text-[18px]">check</span>}
-              </button>
-            ))}
-          </div>
-        </div>,
-        document.body
-      )}
-    </div>
-  )
-}
+import Dropdown from '../../components/ui/Dropdown'
 
 
 export default function Reports(): JSX.Element {
@@ -340,14 +253,14 @@ export default function Reports(): JSX.Element {
           {/* Buscador */}
           <div className="relative flex-1 min-w-0">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <svg className="h-5 w-5 text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             </div>
             <input
               type="text"
               value={titleSearch}
               onChange={e => setTitleSearch(e.target.value)}
               placeholder="Buscar reporte por título..."
-              className="block w-full pl-11 pr-10 py-3 bg-slate-50/50 border-0 text-slate-900 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors sm:text-sm shadow-inner"
+              className="block w-full pl-11 pr-10 py-3 bg-slate-50/50 border-0 text-slate-900 rounded-xl focus:ring-2 focus:ring-slate-500/20 focus:bg-white transition-colors sm:text-sm shadow-inner"
             />
             {titleSearch && (
               <button type="button" onClick={() => setTitleSearch('')} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
@@ -360,7 +273,7 @@ export default function Reports(): JSX.Element {
 
           {/* Filtros Dropdown Modernos - Ahora apilados en móvil */}
           <div id="reports-filter-chips" className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 w-full md:w-auto pb-0">
-            <FilterDropdown 
+            <Dropdown 
               value={view} 
               label="Todos los tipos"
               icon="filter_list"
@@ -373,7 +286,7 @@ export default function Reports(): JSX.Element {
             />
 
             {/* Always render owner filter to prevent layout jump, unless we are absolutely sure there are no other owners */}
-            <FilterDropdown 
+            <Dropdown 
               value={filterOwner ?? ''} 
               label="Cualquier propietario"
               icon="person"
@@ -403,12 +316,12 @@ export default function Reports(): JSX.Element {
             {(loading || allSurveysSummary === null) ? 'Tus reportes listos' : (filterOwner ? `Reportes de ${((availableOwners||[]).find(o=>o.id===filterOwner)||{label:filterOwner}).label}` : 'Tus reportes listos')}
           </h3>
           {!loading && allSurveysSummary !== null && allSurveysSummary.length > 0 && (
-            <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full border border-blue-200">
+            <span className="text-xs font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full border border-slate-200">
               {(() => { const c = allSurveysSummary.filter(su => !titleSearch.trim() || su.title.toLowerCase().includes(titleSearch.trim().toLowerCase())).length; return `${c} EN TOTAL` })()}
             </span>
           )}
           {(loading || allSurveysSummary === null) && (
-            <div className="h-6 w-24 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-800/30 animate-pulse" />
+            <div className="h-6 w-24 bg-slate-50 dark:bg-slate-800/50 rounded-full border border-slate-100 dark:border-slate-700/50 animate-pulse" />
           )}
         </div>
 
@@ -436,7 +349,7 @@ export default function Reports(): JSX.Element {
                   return (
                     <div 
                       key={su.id} 
-                      className="group bg-white rounded-2xl border border-slate-200 hover:border-blue-300 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden flex flex-col relative"
+                      className="group bg-white rounded-2xl border border-slate-200 hover:border-slate-400 shadow-sm hover:shadow-xl hover:shadow-slate-500/10 transition-all duration-300 overflow-hidden flex flex-col relative"
                       style={{ animationDelay: `${i * 30 + 150}ms` }}
                     >
                       {/* Acento superior de color Premium */}
