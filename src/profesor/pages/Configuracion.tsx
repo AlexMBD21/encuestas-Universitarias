@@ -645,29 +645,16 @@ export default function Configuracion() {
       </div>
       {/* Modal overlay — bottom-sheet en mobile, centrado en desktop */}
       {isAdmin && (
-        <Modal isOpen={modalOpen} onClose={closeModal} maxWidth="max-w-lg" hideMobileIndicator={true} scrollableBody={false}>
-          <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl">
-            {/* Drag handle for mobile */}
-            <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={closeModal}>
-              <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700" />
-            </div>
+        <Modal 
+          isOpen={modalOpen} 
+          onClose={closeModal} 
+          title={modalType === 'edit' ? 'Editar usuario' : (modalType === 'delete' ? 'Confirmar eliminación' : 'Crear usuario')}
+          maxWidth="max-w-lg" 
+          hideMobileIndicator={false} 
+          scrollableBody={false}
+        >
+          <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-white dark:bg-slate-900">
 
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-3xl sm:rounded-[1.5rem] sm:rounded-b-none pt-7 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-              <div className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 truncate tracking-tight">
-                {modalType === 'edit' ? 'Editar usuario' : (modalType === 'delete' ? 'Confirmar eliminación' : 'Crear usuario')}
-              </div>
-              <div className="hidden sm:block">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors outline-none shadow-sm"
-                  aria-label="Cerrar"
-                >
-                  <span className="material-symbols-outlined text-[20px]">close</span>
-                </button>
-              </div>
-            </div>
 
             {/* Content */}
             <div className="modal-scrollable-content p-6 flex-1 overflow-y-auto">
@@ -738,27 +725,16 @@ export default function Configuracion() {
         </Modal>
       )} 
       {/* Confirm password change modal — bottom-sheet pattern */}
-      <Modal isOpen={confirmPwdOpen} onClose={() => setConfirmPwdOpen(false)} maxWidth="max-w-sm" hideMobileIndicator={true} scrollableBody={false}>
-        <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl">
-          {/* Drag handle */}
-          <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => setConfirmPwdOpen(false)}>
-            <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700" />
-          </div>
+      <Modal 
+        isOpen={confirmPwdOpen} 
+        onClose={() => setConfirmPwdOpen(false)} 
+        title="Confirmar cambio"
+        maxWidth="max-w-sm" 
+        hideMobileIndicator={false} 
+        scrollableBody={false}
+      >
+        <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden bg-white dark:bg-slate-900">
 
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-3xl sm:rounded-[1.5rem] sm:rounded-b-none pt-7 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-            <span className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 tracking-tight">Confirmar cambio</span>
-            <div className="hidden sm:block">
-              <button 
-                type="button" 
-                onClick={() => setConfirmPwdOpen(false)} 
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors outline-none shadow-sm"
-                aria-label="Cerrar"
-              >
-                <span className="material-symbols-outlined text-[20px]">close</span>
-              </button>
-            </div>
-          </div>
 
           {/* Content */}
           <div className="modal-scrollable-content p-5 overflow-y-auto">
