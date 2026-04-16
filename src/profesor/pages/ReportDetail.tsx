@@ -349,9 +349,9 @@ export default function ReportDetail(): JSX.Element {
               <div className="flex shrink-0 gap-2">
                 <button
                   onClick={() => setShowPrintModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl transition-all shadow-md shadow-slate-900/10 active:scale-[0.98]"
+                  className={`btn ${survey?.type === 'project' ? 'btn-indigo' : 'btn-emerald'} px-8`}
                 >
-                  <span className="material-symbols-outlined text-[18px]">print</span>
+                  <span className="material-symbols-outlined text-[20px]">print</span>
                   Visualizar / Imprimir
                 </button>
               </div>
@@ -446,7 +446,7 @@ export default function ReportDetail(): JSX.Element {
                 {report.questionStats && (
                   <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-5 sm:p-6 lg:p-8">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${survey?.type === 'project' ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'}`}>
                         <span className="material-symbols-outlined text-[18px]">analytics</span>
                       </div>
                       <h3 className="text-xl font-bold text-slate-800 tracking-tight">Desglose por pregunta</h3>
@@ -454,7 +454,16 @@ export default function ReportDetail(): JSX.Element {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {report.questionStats.map((q: any, i: number) => (
-                        <QuestionStatCard key={i} question={q.question} counts={q.counts} answered={q.answered} options={q.options || []} texts={q.texts} questionType={q.questionType} />
+                        <QuestionStatCard 
+                          key={i} 
+                          question={q.question} 
+                          counts={q.counts} 
+                          answered={q.answered} 
+                          options={q.options || []} 
+                          texts={q.texts} 
+                          questionType={q.questionType} 
+                          variant={survey?.type === 'project' ? 'project' : 'simple'}
+                        />
                       ))}
                     </div>
                   </div>

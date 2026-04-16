@@ -8,20 +8,26 @@ type Props = {
   options?: string[]
   texts?: string[]
   questionType?: string
+  variant?: 'project' | 'simple'
 }
 
-export default function QuestionStatCard({ question, counts, answered, options, texts, questionType }: Props) {
+export default function QuestionStatCard({ question, counts, answered, options, texts, questionType, variant = 'simple' }: Props) {
   const isText = questionType === 'text' || ((!options || options.length === 0) && !!texts)
   const entries = Object.entries(counts || {})
   const total = answered || entries.reduce((s, [,c]) => s + (Number(c) || 0), 0)
+  
+  const isProject = variant === 'project'
+  const primaryColor = isProject ? '#6366f1' : '#10b981' // Indigo-500 : Emerald-500
+  const bgClass = isProject ? 'hover:border-indigo-200/60' : 'hover:border-emerald-200/60'
+  const badgeClass = isProject ? 'text-indigo-600 bg-indigo-100/50 border-indigo-100' : 'text-emerald-600 bg-emerald-100/50 border-emerald-100'
 
   return (
-    <div className="p-4 sm:p-5 rounded-2xl border border-slate-200/70 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:shadow-slate-200/40 hover:border-emerald-200/60 transition-all duration-300">
+    <div className={`p-4 sm:p-5 rounded-2xl border border-slate-200/70 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:shadow-slate-200/40 ${bgClass} transition-all duration-300`}>
       <div className="flex items-start justify-between gap-3 mb-4">
         <h4 className="font-bold text-slate-800 text-sm sm:text-base leading-snug flex-1">
           {question}
         </h4>
-        <div className="shrink-0 text-[10px] font-bold tracking-widest text-emerald-600 bg-emerald-100/50 px-2.5 py-1 rounded-full border border-emerald-100">
+        <div className={`shrink-0 text-[10px] font-bold tracking-widest px-2.5 py-1 rounded-full border ${badgeClass}`}>
           {total} RESPUESTAS
         </div>
       </div>
@@ -71,8 +77,8 @@ export default function QuestionStatCard({ question, counts, answered, options, 
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex-1 min-w-0">
-                        {/* We pass an emerald gradient for Simple Surveys */}
-                        <ProgressBar value={pct} height={8} showPercent={false} color="#10b981" />
+                        {/* We pass the dynamic color based on the survey type */}
+                        <ProgressBar value={pct} height={8} showPercent={false} color={primaryColor} />
                       </div>
                       <div className="shrink-0 text-[10px] font-medium text-slate-400 w-10 text-right tabular-nums">
                         {n} val.

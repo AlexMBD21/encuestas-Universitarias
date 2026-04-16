@@ -545,7 +545,7 @@ export default function Surveys(): JSX.Element {
         <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           {/* Ocultamos el título "Encuestas guardadas" porque ya está explícito en la página y limpiamos el contenedor principal de la cuadrícula */}
           {!surveysLoaded ? (
-            <SurveyGridSkeleton count={8} />
+            <SurveyGridSkeleton count={6} />
           ) : surveys.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/20 border-2 border-dashed border-slate-300 dark:border-slate-700">
               <div className="w-20 h-20 mb-6 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shadow-inner">
@@ -565,7 +565,7 @@ export default function Surveys(): JSX.Element {
               </div>
             </div>
           ) : (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {(() => {
                 const filteredSurveys = surveys.filter(s => {
                   // filter by pending (Sin calificar)
