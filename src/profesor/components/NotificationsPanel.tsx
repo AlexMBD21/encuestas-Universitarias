@@ -436,30 +436,30 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
     <div
       id="notifications-panel"
       ref={rootRef}
-      className={`fixed right-0 z-[1000] w-full max-w-md shadow-[0_20px_50px_rgba(0,0,0,0.18)] border-l border-white/30 rounded-b-3xl flex flex-col ${cls}`}
+      className={`fixed right-0 z-[1000] w-full max-w-md shadow-[-20px_0_50px_rgba(0,0,0,0.1)] border-l border-white/30 rounded-b-3xl flex flex-col ${cls}`}
       style={{ 
         top: topPx != null ? `${topPx}px` : '76px', 
         maxHeight: topPx != null ? `calc(100vh - ${topPx}px)` : 'calc(100vh - 76px)', 
         minHeight: 0, 
-        backgroundColor: 'rgba(241, 245, 249, 0.97)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)'
+        backgroundColor: 'rgba(255, 255, 255, 0.75)',
+        backdropFilter: 'blur(30px)',
+        WebkitBackdropFilter: 'blur(30px)'
       }}
     >
       <div className="flex flex-col h-full overflow-hidden">
         {/* Header con estilo premium */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/50 bg-slate-50/50 shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-              <span className="material-symbols-outlined text-primary text-xl font-bold">notifications_active</span>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200/40 bg-white/20 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-primary text-2xl font-bold">notifications_active</span>
             </div>
-            <h3 className="font-black text-slate-800 dark:text-white tracking-tight uppercase text-xs">Centro de Avisos</h3>
+            <h3 className="font-black text-slate-800 tracking-tighter uppercase text-xs">Centro de Avisos</h3>
           </div>
           {notifications.length > 0 && (
             <button
               type="button"
               onClick={handleLimpiar}
-              className="group flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-black text-primary hover:bg-primary/10 transition-all duration-300 active:scale-95 uppercase tracking-widest"
+              className="group flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black text-primary hover:bg-primary/10 transition-all duration-300 active:scale-95 uppercase tracking-widest bg-white/50 border border-white/60 shadow-sm"
             >
               <span className="material-symbols-outlined text-sm font-bold">done_all</span>
               Limpiar
@@ -534,14 +534,14 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
                         onClose && onClose()
                       }}
                       className={`
-                        group relative flex items-center gap-3 p-3 rounded-2xl transition-all duration-300
-                        ${n.read ? 'bg-slate-200/40' : 'bg-white'} 
-                        border border-slate-200/50 dark:border-white/10 shadow-sm hover:shadow-lg hover:scale-[1.005] hover:bg-slate-100/80
-                        cursor-pointer active:scale-95 overflow-hidden
+                        group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300
+                        ${n.read ? 'bg-slate-100/40 opacity-60' : 'bg-white shadow-xl shadow-slate-200/20'} 
+                        border border-white hover:bg-white hover:shadow-2xl hover:shadow-primary/10 hover:scale-[1.02]
+                        cursor-pointer active:scale-[0.98] overflow-hidden
                       `}
                     >
                       {/* Indicador lateral sutil con glow */}
-                      <div className={`absolute top-0 left-0 w-1.5 h-full ${colorClass} opacity-100 shadow-[0_0_10px_rgba(0,0,0,0.05)]`} />
+                      <div className={`absolute top-0 left-0 w-2 h-full ${colorClass} opacity-100`} />
                       
                       <div className="flex-1 min-w-0 pl-0.5">
                         <div className="flex items-center justify-between mb-0.5">
@@ -577,10 +577,10 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
         {/* Bottom handle: interactive and adds to the folding theme */}
         <div 
           onClick={onClose}
-          className="px-6 py-4 bg-slate-100/50 flex justify-center border-t border-slate-200/40 cursor-pointer hover:bg-slate-200/50 transition-colors group/pill"
+          className="px-6 py-6 bg-slate-50/20 flex justify-center border-t border-slate-200/20 cursor-pointer hover:bg-slate-100/40 transition-all group/pill"
           title="Cerrar panel"
         >
-            <div className="w-16 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full opacity-30 shadow-inner group-hover/pill:opacity-60 group-hover/pill:bg-primary/40 transition-all duration-300" />
+            <div className="w-16 h-1 bg-slate-300 rounded-full opacity-40 group-hover/pill:opacity-100 group-hover/pill:bg-primary transition-all duration-300" />
         </div>
       </div>
     </div>,
