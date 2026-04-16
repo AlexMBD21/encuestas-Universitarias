@@ -196,10 +196,10 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
               type="button"
               onClick={onClose || onCancel}
               disabled={saving}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors outline-none shadow-sm"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-[#0f172a] text-white hover:bg-[#1e293b] active:scale-95 transition-all duration-300 outline-none shadow-sm group"
               aria-label="Cerrar"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
             </button>
           </div>
         </div>

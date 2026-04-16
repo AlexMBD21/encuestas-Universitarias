@@ -1520,9 +1520,9 @@ export default function Surveys(): JSX.Element {
                   type="button"
                   onClick={() => closeReportsModal()}
                   aria-label="Cerrar"
-                  className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center justify-center hover:bg-slate-200 hover:text-slate-800 dark:hover:bg-slate-700 transition-colors"
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-[#0f172a] text-white hover:bg-[#1e293b] active:scale-95 transition-all duration-300 outline-none shadow-sm group"
                 >
-                  <span className="material-symbols-outlined text-[20px]">close</span>
+                  <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
                 </button>
               </div>
             </div>
@@ -1675,10 +1675,10 @@ export default function Surveys(): JSX.Element {
                     type="button" 
                     onClick={() => closeConfirmReportModal()} 
                     disabled={confirmReporting} 
-                    className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100 transition-colors hidden sm:flex shadow-sm"
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-[#0f172a] text-white hover:bg-[#1e293b] active:scale-95 transition-all duration-300 outline-none shadow-sm group hidden sm:flex"
                     aria-label="Cerrar"
                   >
-                    <span className="material-symbols-outlined text-[20px]">close</span>
+                    <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
                   </button>
                 </div>
                 
