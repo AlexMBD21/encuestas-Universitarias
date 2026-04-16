@@ -30,16 +30,16 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
   });
 
   const Toggle = ({ title, subtitle, checked, onChange, disabled = false }: any) => (
-    <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${checked && !disabled ? 'border-blue-100 bg-blue-50/50 shadow-sm' : 'border-slate-100 bg-white'} ${disabled ? 'opacity-50 grayscale' : 'hover:border-slate-200'}`}>
+    <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${checked && !disabled ? 'border-slate-300 bg-slate-50/50 shadow-sm' : 'border-slate-100 bg-white'} ${disabled ? 'opacity-50 grayscale' : 'hover:border-slate-200'}`}>
       <div className="flex-1 pr-4">
-        <h4 className={`text-sm font-bold ${checked && !disabled ? 'text-blue-900' : 'text-slate-800'}`}>{title}</h4>
-        {subtitle && <p className="text-xs text-slate-500 mt-1 leading-relaxed">{subtitle}</p>}
+        <h4 className={`text-sm font-bold ${checked && !disabled ? 'text-slate-900' : 'text-slate-800'}`}>{title}</h4>
+        {subtitle && <p className="text-xs text-slate-500 mt-1 font-medium leading-relaxed">{subtitle}</p>}
       </div>
       <button
         type="button"
         disabled={disabled}
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked && !disabled ? 'bg-blue-600' : 'bg-slate-200'}`}
+        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked && !disabled ? 'bg-[#0f172a]' : 'bg-slate-200'}`}
       >
         <span
           className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${checked && !disabled ? 'translate-x-5' : 'translate-x-0'}`}
@@ -53,9 +53,9 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
       <div className="flex flex-col flex-1 min-h-0">
         <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-2 shrink-0 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
           {/* Helper alert */}
-          <div className="bg-blue-50/50 border border-blue-100 text-blue-800 text-sm px-4 py-3 rounded-xl flex items-start gap-3">
-            <span className="material-symbols-outlined text-blue-500 text-[20px] shrink-0 mt-0.5">info</span>
-            <p>Selecciona qué secciones deseas incluir en el reporte PDF. Los saltos de página se ajustarán automáticamente.</p>
+          <div className="bg-slate-50 border border-slate-200 text-slate-600 text-xs px-4 py-3 rounded-xl flex items-start gap-3">
+            <span className="material-symbols-outlined text-slate-400 text-[18px] shrink-0 mt-0.5">info</span>
+            <p className="font-medium">Selecciona qué secciones deseas incluir en el reporte PDF. Los saltos de página se ajustarán automáticamente.</p>
           </div>
         </div>
 
@@ -78,10 +78,10 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
               />
               
               {config.includeRanking && (
-                <div className="ml-4 pl-4 border-l-2 border-blue-100 space-y-3">
+                <div className="ml-4 pl-4 border-l-2 border-slate-200 space-y-3">
                   {categories.length > 0 && (
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-600">Filtrar por Categoría</label>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-0.5">Filtrar por Categoría</label>
                       <div className="[&>div]:!w-full relative z-20">
                         <Dropdown
                           value={config.categoryFilter}
@@ -92,7 +92,7 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
                           ]}
                           onChange={(val) => setConfig({...config, categoryFilter: val})}
                           icon="category"
-                          color="blue"
+                          color="indigo"
                         />
                       </div>
                     </div>
