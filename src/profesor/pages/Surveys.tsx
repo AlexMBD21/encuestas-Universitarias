@@ -511,7 +511,7 @@ export default function Surveys(): JSX.Element {
 
                   setManageCategoriesId('sys_settings_project_categories');
                 }}
-                className="btn btn-black shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl transition-all whitespace-nowrap shadow-sm active:scale-[0.98]"
+                className="btn btn-primary shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl transition-all whitespace-nowrap shadow-sm active:scale-[0.98]"
                 title="Gestionar categorías de proyectos"
               >
                 <span className="material-symbols-outlined text-[18px]">category</span>
@@ -1467,7 +1467,7 @@ export default function Surveys(): JSX.Element {
                       }
                     } catch (e) { console.error(e) }
                     finally { setConfirmPublishing(false); setConfirmPublish(null) }
-                  }} disabled={confirmPublishing} className="btn btn-black px-10">
+                  }} disabled={confirmPublishing} className="btn btn-primary px-10">
                     {confirmPublishing ? 'Procesando...' : (confirmPublish.action === 'publish' ? 'Publicar Ahora' : 'Confirmar Retiro')}
                   </button>
                 )}

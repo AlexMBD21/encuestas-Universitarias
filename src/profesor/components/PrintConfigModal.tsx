@@ -138,7 +138,7 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
             onClick={() => {
               onPrint(config);
             }}
-            className="btn btn-black px-12"
+            className="btn btn-primary px-12"
           >
             <span className="material-symbols-outlined text-[22px]">print</span> 
             Generar PDF

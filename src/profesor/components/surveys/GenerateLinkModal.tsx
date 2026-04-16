@@ -77,7 +77,7 @@ export const GenerateLinkModal = ({ isOpen, onClose, survey, dataClientNow, onSa
               <button disabled={saving} type="button" onClick={onClose} className="btn btn-ghost px-8">
                 Cancelar y Volver
               </button>
-              <button disabled={saving} type="submit" className="btn btn-black px-10">
+              <button disabled={saving} type="submit" className="btn btn-primary px-10">
                 {saving ? <span className="material-symbols-outlined text-[20px] animate-spin">refresh</span> : <span className="material-symbols-outlined text-[20px]">save</span>}
                 {saving ? 'Guardando...' : 'Guardar Fecha'}
               </button>
