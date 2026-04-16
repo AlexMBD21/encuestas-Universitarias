@@ -142,7 +142,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
                 }
               }}
               disabled={!newCategoryInput.trim()}
-              className="btn btn-primary h-[40px] px-6 !rounded-xl text-sm"
+              className="btn btn-black h-[40px] px-6 !rounded-xl text-sm"
               style={{ padding: '0 16px' }}
             >
               <span className="material-symbols-outlined text-[20px]">add</span> Añadir
@@ -164,7 +164,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
             type="button"
             disabled={saving}
             onClick={handleSave}
-            className="btn btn-primary w-full sm:w-auto px-10"
+            className="btn btn-black w-full sm:w-auto px-10"
           >
             {saving ? (
               <span className="animate-spin material-symbols-outlined">refresh</span>

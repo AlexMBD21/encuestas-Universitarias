@@ -322,7 +322,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
              onSave(updatedSurvey);
            } catch(e) { console.error(e) }
            finally { setSaving(false); }
-        }} className="btn btn-primary px-10">
+        }} className="btn btn-black px-10">
           {saving ? <span className="material-symbols-outlined text-[20px] animate-spin">refresh</span> : <span className="material-symbols-outlined text-[20px]">save</span>}
           {saving ? 'Guardando...' : 'Guardar Cambios'}
         </button>

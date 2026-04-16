@@ -394,7 +394,7 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
         {!submitted ? (
           <>
             <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">Cancelar y Volver</button>
-            <button type="submit" form={`view-survey-form-${survey.id}`} className="w-full sm:w-auto px-5 py-2 sm:px-8 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all flex items-center justify-center gap-2 active:scale-[0.98] outline-none">
+            <button type="submit" form={`view-survey-form-${survey.id}`} className="btn btn-black px-10">
               <span className="material-symbols-outlined text-[20px]">send</span> Enviar respuestas
             </button>
           </>

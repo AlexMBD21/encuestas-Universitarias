@@ -166,14 +166,14 @@ h2 { font-size: var(--h2-size); margin: 0 0 var(--space-sm) 0; }
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
     pointer-events: none;
 }
 
 .btn-emerald:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(15, 23, 42, 0.45);
-    filter: brightness(1.05);
+    filter: brightness(1.1);
 }
 
 .btn-emerald:active {
@@ -193,7 +193,7 @@ h2 { font-size: var(--h2-size); margin: 0 0 var(--space-sm) 0; }
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
     pointer-events: none;
 }
 
@@ -231,6 +231,60 @@ h2 { font-size: var(--h2-size); margin: 0 0 var(--space-sm) 0; }
 }
 
 .btn-black:active {
+    transform: translateY(0);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-danger::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.5);
+    filter: brightness(1.1);
+}
+
+.btn-danger:active {
+    transform: translateY(0);
+}
+
+.btn-amber {
+    background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 15px rgba(217, 119, 6, 0.35);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-amber::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.btn-amber:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(217, 119, 6, 0.5);
+    filter: brightness(1.1);
+}
+
+.btn-amber:active {
     transform: translateY(0);
 }
 

@@ -206,7 +206,7 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
         <div className="flex flex-col sm:flex-row-reverse gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
           <button 
             type="button"
-            className={`btn btn-primary flex-1 ${!name.trim() || saving ? 'opacity-60 cursor-not-allowed shadow-none' : ''}`}
+            className={`btn btn-black flex-1 ${!name.trim() || saving ? 'opacity-60 cursor-not-allowed shadow-none' : ''}`}
             onClick={handleSave} 
             disabled={!name.trim() || saving}
           >

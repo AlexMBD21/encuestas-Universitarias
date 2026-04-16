@@ -556,10 +556,10 @@ export default function Surveys(): JSX.Element {
                 Comienza a recopilar información valiosa. Crea tu primera campaña, ya sea una encuesta simple para recabar opiniones o un proyecto de calificación avanzada.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
-                <button type="button" onClick={() => handleCreate()} className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/30 transition duration-200">
+                <button type="button" onClick={() => handleCreate()} className="btn btn-emerald px-6">
                   <span className="material-symbols-outlined text-lg">add_circle</span> Encuesta Simple
                 </button>
-                <button type="button" onClick={() => { setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true) }} className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/30 transition duration-200">
+                <button type="button" onClick={() => { setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true) }} className="btn btn-indigo px-6">
                   <span className="material-symbols-outlined text-lg">fact_check</span> Proyecto
                 </button>
               </div>
@@ -1307,7 +1307,7 @@ export default function Surveys(): JSX.Element {
                 setConfirmDeleting(false)
                 setConfirmDeleteId(null)
               }
-            }} disabled={confirmDeleting} className="btn btn-primary flex-1 !bg-red-600 hover:!bg-red-700 !shadow-red-600/20">
+            }} disabled={confirmDeleting} className="btn btn-danger flex-1">
               {confirmDeleting ? 'Eliminando...' : 'Eliminar Definivamente'}
             </button>
           </div>
@@ -1468,7 +1468,7 @@ export default function Surveys(): JSX.Element {
                       }
                     } catch (e) { console.error(e) }
                     finally { setConfirmPublishing(false); setConfirmPublish(null) }
-                  }} disabled={confirmPublishing} className="btn btn-primary px-10">
+                  }} disabled={confirmPublishing} className="btn btn-black px-10">
                     {confirmPublishing ? 'Procesando...' : (confirmPublish.action === 'publish' ? 'Publicar Ahora' : 'Confirmar Retiro')}
                   </button>
                 )}
@@ -1765,7 +1765,7 @@ export default function Surveys(): JSX.Element {
                       } catch (e) { console.error(e) }
                       finally { setConfirmReporting(false) }
                     }} 
-                    className={`btn btn-primary px-10 ${confirmReporting ? 'opacity-60 cursor-not-allowed' : '!bg-red-600 hover:!bg-red-700 !shadow-red-600/30'}`}
+                    className={`btn btn-danger px-10 ${confirmReporting ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     {confirmReporting ? (
                       <><span className="material-symbols-outlined text-[18px] animate-spin">refresh</span> Procesando...</>
@@ -1933,7 +1933,7 @@ export default function Surveys(): JSX.Element {
                   setTimeout(() => setToastMessage(null), 3000);
                 }
               }} 
-              className="btn btn-primary flex-1 !bg-amber-600 hover:!bg-amber-700 !shadow-amber-600/30"
+              className="btn btn-amber flex-1"
             >
               Sí, desactivar
             </button>

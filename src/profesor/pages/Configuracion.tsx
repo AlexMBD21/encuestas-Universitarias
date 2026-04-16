@@ -514,7 +514,7 @@ export default function Configuracion() {
                       </div>
                       <button 
                         onClick={openCreateModal}
-                        className="btn btn-primary px-4 py-2 text-xs shrink-0"
+                        className="btn btn-black px-4 py-2 text-xs shrink-0"
                       >
                         <span className="material-symbols-outlined text-[18px]">person_add</span>
                         <span className="hidden sm:inline">Crear Usuario</span>
@@ -712,7 +712,7 @@ export default function Configuracion() {
                   </div>
 
                   <div className="mt-4 flex flex-col sm:flex-row-reverse justify-end gap-2">
-                    <button type="submit" className="btn btn-primary w-full sm:w-auto px-8" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar' : 'Crear')}</button>
+                    <button type="submit" className="btn btn-black w-full sm:w-auto px-8" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar' : 'Crear')}</button>
                     <button type="button" className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]" onClick={closeModal} disabled={modalLoading}>Cancelar y Volver</button>
                   </div>
                 </form>
@@ -740,7 +740,7 @@ export default function Configuracion() {
           <div className="modal-scrollable-content p-5 overflow-y-auto">
             <p className="text-sm text-slate-600 dark:text-slate-300 mb-5">¿Confirmas que deseas cambiar tu contraseña? Esta acción no se puede deshacer.</p>
             <div className="flex flex-col sm:flex-row-reverse gap-3 justify-end">
-              <button type="button" onClick={doChangePassword} className="btn btn-primary w-full sm:w-auto px-8">Sí, cambiar</button>
+              <button type="button" onClick={doChangePassword} className="btn btn-black w-full sm:w-auto px-8">Sí, cambiar</button>
               <button type="button" onClick={() => setConfirmPwdOpen(false)} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">Cancelar y Volver</button>
             </div>
           </div>
