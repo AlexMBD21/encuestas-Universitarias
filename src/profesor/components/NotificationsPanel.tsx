@@ -94,7 +94,7 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
       timeout = setTimeout(() => setAnimState('open'), 20)
     } else {
       setAnimState('closing')
-      timeout = setTimeout(() => { setRendered(false) }, 360)
+      timeout = setTimeout(() => { setRendered(false) }, 410)
       // clear transient toasts when closing
       try {
         setToastMap({})
@@ -526,7 +526,7 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
                       data-notif-item
                       key={`${n.id || 'notif'}-${i}`}
                       onClick={() => {
-                        if (status === 'responded' || !n.surveyId) return
+                        if (!n.surveyId) return
                         markNotificationRead(n.id)
                         const kind = isProject ? 'projects' : 'view'
                         navigate('/profesor/encuestas', { state: { openSurveyId: String(n.surveyId), openSurveyKind: kind } })
@@ -574,9 +574,13 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
           </>)}
         </div>
         
-        {/* Footer sutil */}
-        <div className="px-6 py-4 bg-slate-100/50 flex justify-center border-t border-slate-200/40">
-            <div className="w-16 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full opacity-30 shadow-inner" />
+        {/* Bottom handle: interactive and adds to the folding theme */}
+        <div 
+          onClick={onClose}
+          className="px-6 py-4 bg-slate-100/50 flex justify-center border-t border-slate-200/40 cursor-pointer hover:bg-slate-200/50 transition-colors group/pill"
+          title="Cerrar panel"
+        >
+            <div className="w-16 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full opacity-30 shadow-inner group-hover/pill:opacity-60 group-hover/pill:bg-primary/40 transition-all duration-300" />
         </div>
       </div>
     </div>,
