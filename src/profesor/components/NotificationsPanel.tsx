@@ -534,35 +534,37 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
                         onClose && onClose()
                       }}
                       className={`
-                        group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300
-                        ${n.read ? 'bg-slate-50 border-slate-100 shadow-sm' : 'bg-white shadow-xl shadow-slate-200/20'} 
-                        border hover:bg-white hover:shadow-2xl hover:shadow-primary/10 hover:scale-[1.02]
-                        cursor-pointer active:scale-[0.98] overflow-hidden
+                        group relative flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-500
+                        ${n.read ? 'bg-slate-50/80 border-slate-200' : 'bg-white shadow-[0_15px_30px_-10px_rgba(0,0,0,0.08)] border-slate-200'} 
+                        border hover:bg-white hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.12)] 
+                        hover:scale-[1.015] cursor-pointer active:scale-[0.99] overflow-hidden
                       `}
                     >
-                      {/* Indicador lateral sutil con glow */}
-                      <div className={`absolute top-0 left-0 w-2 h-full ${colorClass} opacity-100`} />
+                      {/* Viñeta Premium con degradado y resplandor */}
+                      <div className={`absolute top-0 left-0 w-[5px] h-full ${isProject ? 'bg-gradient-to-b from-indigo-500 to-indigo-800 shadow-[2px_0_10px_rgba(99,102,241,0.3)]' : 'bg-gradient-to-b from-emerald-500 to-emerald-800 shadow-[2px_0_10px_rgba(16,185,129,0.3)]'}`} />
                       
-                      <div className="flex-1 min-w-0 pl-0.5">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <div className="flex items-center gap-1.5">
-                             <span className={`text-[8.5px] font-black uppercase tracking-[0.06em] ${isProject ? 'text-indigo-600' : 'text-green-600'}`}>
-                                {typeLabel}
-                             </span>
+                      <div className="flex-1 min-w-0 pl-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                             <div className={`flex items-center gap-1.5 px-3 py-0.5 rounded-full ${isProject ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'} border`}>
+                                <span className="text-[9px] font-black uppercase tracking-wider">
+                                   {typeLabel}
+                                </span>
+                             </div>
                              {statusLabel && (
-                               <span className={`text-[7.5px] font-black px-1.5 py-0.5 rounded ${isResponded ? 'bg-green-600 text-white' : 'bg-amber-500 text-white'} border border-transparent shadow-sm`}>
+                               <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${isResponded ? 'bg-green-600' : 'bg-amber-500'} text-white shadow-sm ring-2 ring-white`}>
                                  {statusLabel}
                                </span>
                              )}
                           </div>
-                          <span className="text-[8px] font-bold text-slate-400">
+                          <span className="text-[10px] font-bold text-slate-400">
                              {n.createdAt ? new Date(n.createdAt).toLocaleDateString() : ''}
                           </span>
                         </div>
-                        <h4 className="text-[13px] font-black text-slate-800 dark:text-slate-100 truncate pr-2 tracking-tight group-hover:text-primary transition-colors mb-0">
+                        <h4 className="text-[14px] font-extrabold text-slate-800 dark:text-slate-100 truncate pr-4 tracking-tight group-hover:text-primary transition-colors mb-0.5">
                            {n.title?.replace('Nueva encuesta:', '').trim() || 'Aviso de sistema'}
                         </h4>
-                        <div className="text-[10px] text-slate-500 font-bold dark:text-slate-400 line-clamp-1 italic font-inter leading-tight">
+                        <div className="text-[11px] text-slate-500 font-medium dark:text-slate-400 line-clamp-1 italic font-inter leading-relaxed">
                           {n.message || 'Pulsa para participar.'}
                         </div>
                       </div>
