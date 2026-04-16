@@ -78,16 +78,16 @@
     width: 100% !important;
     max-width: 100% !important;
     height: var(--topbar-height);
-    background: rgba(241, 245, 249, 0.88) !important;
+    background: rgba(13, 20, 37, 0.96) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
-    color: var(--color-text) !important;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.12) !important;
+    color: rgba(255,255,255,0.92) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
     padding: 0 24px !important;
     display: flex;
     align-items: center;
     gap: 0 !important;
-    box-shadow: 0 4px 20px -5px rgba(15, 23, 42, 0.05) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25) !important;
     z-index: 100001 !important;
     overflow: hidden !important;
 }
@@ -102,7 +102,7 @@
 #top-bar .user-menu-button .chev,
 #top-bar #user-avatar,
 #top-bar .user-avatar {
-    color: var(--color-text) !important;
+    color: rgba(255,255,255,0.85) !important;
 }
 
 /* Brand en topbar */
@@ -135,8 +135,8 @@
     }
 }
 .topbar-brand:hover { background: rgba(255,255,255,0.10); }
-.topbar-brand-icon { font-size: 24px; color: var(--color-primary); }
-.topbar-brand-name { font-size: 1.15rem; font-weight: 900; color: var(--color-text); letter-spacing: var(--letter-spacing-tighter); text-transform: uppercase; }
+.topbar-brand-icon { font-size: 24px; color: #60a5fa; }
+.topbar-brand-name { font-size: 1.15rem; font-weight: 900; color: #ffffff; letter-spacing: var(--letter-spacing-tighter); text-transform: uppercase; }
 
 /* Acciones derechas del topbar */
 .topbar-actions {
@@ -154,14 +154,14 @@
     height: 40px;
     border-radius: 12px;
     background: transparent;
-    color: var(--color-text);
+    color: rgba(255,255,255,0.70);
     border: none;
     cursor: pointer;
     transition: all 180ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
 }
 .topbar-action-btn:hover {
-    background: rgba(15, 23, 42, 0.05) !important;
-    color: var(--color-primary);
+    background: rgba(255,255,255,0.10) !important;
+    color: #ffffff;
     transform: translateY(-1px);
 }
 .topbar-action-btn .material-symbols-outlined { font-size: 24px; color: inherit !important; }
@@ -173,16 +173,16 @@
     gap: 10px;
     padding: 6px 14px 6px 6px;
     border-radius: 9999px;
-    background: rgba(15, 23, 42, 0.04);
-    border: 1.5px solid rgba(15, 23, 42, 0.06);
-    color: var(--color-text);
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.90);
     cursor: pointer;
     transition: all 220ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
 }
 .user-chip:hover {
-    background: rgba(15, 23, 42, 0.08);
+    background: rgba(255,255,255,0.14);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 .user-chip-name {
     font-size: 0.85rem;
@@ -192,11 +192,12 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     letter-spacing: var(--letter-spacing-tight);
+    color: rgba(255,255,255,0.90);
 }
-.user-chip-edit { font-size: 16px !important; color: var(--color-text); }
-.user-chip-chevron { font-size: 17px !important; color: var(--color-text); transition: transform 200ms ease; }
+.user-chip-edit { font-size: 16px !important; color: rgba(255,255,255,0.70); }
+.user-chip-chevron { font-size: 17px !important; color: rgba(255,255,255,0.70); transition: transform 200ms ease; }
 .user-chip-chevron.open { transform: rotate(180deg); }
-.user-avatar-photo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.user-avatar-photo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
 
 /* Mobile: ocultar nombre, solo foto + flecha */
 @media (max-width: 640px) {
@@ -555,14 +556,14 @@
     left: 0;
     bottom: 0;
     width: var(--sidebar-width);
-    background: #0f172a; /* Deep slate for premium look */
-    border-right: 1px solid rgba(15, 23, 42, 0.05);
+    background: #0d1425; /* Rich deep navy-indigo */
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
     z-index: 100000;
     transition: width var(--sidebar-transition), transform var(--sidebar-transition);
     overflow: hidden;
-    box-shadow: 4px 0 24px -10px rgba(15, 23, 42, 0.15);
+    box-shadow: 4px 0 24px -10px rgba(0, 0, 0, 0.4);
 }
 .app-sidebar.collapsed {
     width: var(--sidebar-collapsed-width);
