@@ -168,14 +168,14 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
           <button 
             type="button" 
             onClick={confirmLogout} 
-            className="flex-1 py-3.5 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-lg shadow-red-600/20 transition-all active:scale-95"
+            className="btn btn-primary flex-1 !bg-red-600 hover:!bg-red-700 !shadow-red-600/30"
           >
             Cerrar sesión
           </button>
           <button 
             type="button" 
             onClick={() => setShowLogoutConfirm(false)} 
-            className="flex-1 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
+            className="btn btn-ghost flex-1"
           >
             Cancelar y Volver
           </button>

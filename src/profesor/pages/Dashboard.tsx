@@ -1063,16 +1063,20 @@ export default function Dashboard() {
         <div className="fixed right-0 z-[200] flex items-center" style={{ top: 'calc(var(--topbar-height) + 24px)' }}>
           <button
             onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-            className="group flex items-center justify-center pl-3 pr-4 py-3 text-white shadow-[-8px_0_20px_rgba(0,0,0,0.12)] rounded-l-2xl transition-all duration-500 ease-in-out border-y border-l border-white/20 active:scale-95"
+            className="group flex items-center justify-center pl-4 pr-5 py-3.5 text-white shadow-[-12px_0_30px_rgba(0,0,0,0.25)] rounded-l-3xl transition-all duration-500 ease-in-out border-y border-l border-white/10 active:scale-95 hover:pl-6"
             style={{ 
-              background: 'var(--color-primary)',
-              backdropFilter: 'blur(8px)'
+              background: '#0f172a',
+              backdropFilter: 'blur(12px)',
+              boxShadow: '-10px 0 40px -10px rgba(15, 23, 42, 0.4)'
             }}
             title="Abrir Calendario"
           >
-            <span className="material-symbols-outlined text-xl drop-shadow-sm">calendar_month</span>
-            <span className="overflow-hidden whitespace-nowrap max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-semibold text-sm tracking-wide">
-              Calendario
+            <div className="relative">
+              <span className="material-symbols-outlined text-white text-2xl drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">calendar_month</span>
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-ping opacity-75"></div>
+            </div>
+            <span className="overflow-hidden whitespace-nowrap max-w-0 opacity-0 group-hover:max-w-[140px] group-hover:opacity-100 group-hover:ml-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-black text-xs uppercase tracking-widest text-slate-100">
+              Ver Calendario
             </span>
           </button>
         </div>,

@@ -1254,8 +1254,8 @@ export default function Surveys(): JSX.Element {
           </div>
           <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Eliminar esta encuesta?</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Esta acción es irreversible. ¿Deseas eliminarla definitivamente?</p>
-          <div className="flex flex-col-reverse gap-2 mt-auto sm:mt-0">
-            <button type="button" onClick={() => setConfirmDeleteId(null)} disabled={confirmDeleting} className="w-full py-2 sm:py-2.5 px-4 sm:px-6 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">
+          <div className="flex flex-col-reverse sm:flex-row gap-3 mt-auto sm:mt-0">
+            <button type="button" onClick={() => setConfirmDeleteId(null)} disabled={confirmDeleting} className="btn btn-ghost flex-1">
               Cancelar y Volver
             </button>
             <button type="button" onClick={async () => {
@@ -1307,8 +1307,8 @@ export default function Surveys(): JSX.Element {
                 setConfirmDeleting(false)
                 setConfirmDeleteId(null)
               }
-            }} disabled={confirmDeleting} className="w-full py-2 sm:py-2.5 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-lg shadow-red-600/20 transition-all text-sm active:scale-[0.98]">
-              {confirmDeleting ? 'Eliminando...' : 'Eliminar'}
+            }} disabled={confirmDeleting} className="btn btn-primary flex-1 !bg-red-600 hover:!bg-red-700 !shadow-red-600/20">
+              {confirmDeleting ? 'Eliminando...' : 'Eliminar Definivamente'}
             </button>
           </div>
         </div>
@@ -1385,7 +1385,7 @@ export default function Surveys(): JSX.Element {
               </div>
 
               <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
-                <button type="button" onClick={() => setConfirmPublish(null)} disabled={confirmPublishing} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">
+                <button type="button" onClick={() => setConfirmPublish(null)} disabled={confirmPublishing} className="btn btn-ghost px-8">
                   Cancelar y Volver
                 </button>
                 {(confirmPublish.action !== 'publish' || missing.length === 0) && (
@@ -1468,7 +1468,7 @@ export default function Surveys(): JSX.Element {
                       }
                     } catch (e) { console.error(e) }
                     finally { setConfirmPublishing(false); setConfirmPublish(null) }
-                  }} disabled={confirmPublishing} className="w-full sm:w-auto px-5 py-2 sm:px-8 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all active:scale-[0.98]">
+                  }} disabled={confirmPublishing} className="btn btn-primary px-10">
                     {confirmPublishing ? 'Procesando...' : (confirmPublish.action === 'publish' ? 'Publicar Ahora' : 'Confirmar Retiro')}
                   </button>
                 )}
@@ -1701,7 +1701,7 @@ export default function Surveys(): JSX.Element {
                     type="button" 
                     onClick={() => closeConfirmReportModal()} 
                     disabled={confirmReporting} 
-                    className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]"
+                    className="btn btn-ghost px-8"
                   >
                     Cancelar y Volver
                   </button>
@@ -1765,7 +1765,7 @@ export default function Surveys(): JSX.Element {
                       } catch (e) { console.error(e) }
                       finally { setConfirmReporting(false) }
                     }} 
-                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2 sm:px-8 sm:py-2.5 font-black rounded-2xl shadow-lg transition-all text-sm active:scale-[0.98] ${confirmReporting ? 'bg-red-200 text-red-500 cursor-not-allowed dark:bg-red-900/40 dark:text-red-400/50' : 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30'}`}
+                    className={`btn btn-primary px-10 ${confirmReporting ? 'opacity-60 cursor-not-allowed' : '!bg-red-600 hover:!bg-red-700 !shadow-red-600/30'}`}
                   >
                     {confirmReporting ? (
                       <><span className="material-symbols-outlined text-[18px] animate-spin">refresh</span> Procesando...</>
@@ -1907,11 +1907,11 @@ export default function Surveys(): JSX.Element {
           </div>
           <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Desactivar enlace?</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Esta acción invalidará el link de inscripción inmediatamente. No podrás deshacer este cambio.</p>
-          <div className="flex flex-col-reverse gap-2 mt-auto sm:mt-0">
+          <div className="flex flex-col-reverse sm:flex-row gap-3 mt-auto sm:mt-0">
             <button 
               type="button" 
               onClick={() => setConfirmDeactivateLinkSurveyId(null)} 
-              className="w-full py-2 sm:py-2.5 px-4 sm:px-6 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]"
+              className="btn btn-ghost flex-1"
             >
               Cancelar y Volver
             </button>
@@ -1933,7 +1933,7 @@ export default function Surveys(): JSX.Element {
                   setTimeout(() => setToastMessage(null), 3000);
                 }
               }} 
-              className="w-full py-2 sm:py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-2xl shadow-lg shadow-amber-600/20 transition-all active:scale-[0.98]"
+              className="btn btn-primary flex-1 !bg-amber-600 hover:!bg-amber-700 !shadow-amber-600/30"
             >
               Sí, desactivar
             </button>

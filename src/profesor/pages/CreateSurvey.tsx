@@ -528,9 +528,9 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
         )}
         </div>
 
-        <div className={`shrink-0 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 flex-wrap ${isModal ? 'p-4 sm:p-5 bg-white dark:bg-slate-900 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]' : 'pt-6 mt-10'}`}>
-          <button type="button" onClick={onCancel} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">Cancelar y Volver</button>
-          <button type="submit" disabled={saving} className="w-full sm:w-auto justify-center px-5 py-2 sm:px-8 sm:py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border border-blue-600 hover:border-blue-700 disabled:opacity-60 text-white font-black rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_4px_14px_0_rgba(37,99,235,0.3)] transition-all flex items-center gap-2 active:scale-[0.98] outline-none">
+        <div className={`shrink-0 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-4 flex-wrap ${isModal ? 'p-4 sm:p-6 bg-white dark:bg-slate-900 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.08)]' : 'pt-6 mt-10'}`}>
+          <button type="button" onClick={onCancel} className="btn btn-ghost px-8">Cancelar y Volver</button>
+          <button type="submit" disabled={saving} className="btn btn-primary px-10">
              {saving ? (
                <>
                  <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path></svg>
@@ -573,7 +573,8 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                   await handleFinalSave(pendingCleanup);
                 }
               }}
-              className="flex-1 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+              className="btn btn-primary flex-1 bg-red-600 hover:bg-red-700 shadow-red-600/30"
+              style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)' }}
             >
               <span className="material-symbols-outlined text-[20px]">delete_forever</span>
               Confirmar Borrado
@@ -581,7 +582,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
             <button 
               type="button" 
               onClick={() => { setShowCleanupConfirm(false); setSaving(false); }}
-              className="flex-1 px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]"
+              className="btn btn-ghost flex-1"
             >
               Cancelar y Volver
             </button>

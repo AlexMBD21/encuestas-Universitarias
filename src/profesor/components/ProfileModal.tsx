@@ -206,7 +206,7 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
         <div className="flex flex-col sm:flex-row-reverse gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
           <button 
             type="button"
-            className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-black text-sm transition-all shadow-lg active:scale-[0.98] ${!name.trim() || saving ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/30'}`}
+            className={`btn btn-primary flex-1 ${!name.trim() || saving ? 'opacity-60 cursor-not-allowed shadow-none' : ''}`}
             onClick={handleSave} 
             disabled={!name.trim() || saving}
           >
@@ -214,7 +214,7 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
           </button>
           <button 
             type="button"
-            className="flex-1 px-6 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all text-sm border border-slate-200 dark:border-slate-700"
+            className="btn btn-ghost flex-1"
             onClick={onClose} 
             disabled={saving}
           >
