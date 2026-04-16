@@ -349,7 +349,7 @@ export default function ReportDetail(): JSX.Element {
               <div className="flex shrink-0 gap-2">
                 <button
                   onClick={() => setShowPrintModal(true)}
-                  className={`btn ${survey?.type === 'project' ? 'btn-indigo' : 'btn-emerald'} px-8`}
+                  className="btn btn-black px-8"
                 >
                   <span className="material-symbols-outlined text-[20px]">print</span>
                   Visualizar / Imprimir

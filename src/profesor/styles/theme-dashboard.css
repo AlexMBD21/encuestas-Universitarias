@@ -207,6 +207,33 @@ h2 { font-size: var(--h2-size); margin: 0 0 var(--space-sm) 0; }
     transform: translateY(0);
 }
 
+.btn-black {
+    background: linear-gradient(135deg, #334155 0%, #0f172a 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-black::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.btn-black:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    filter: brightness(1.1);
+}
+
+.btn-black:active {
+    transform: translateY(0);
+}
+
 .btn-ghost {
     background: rgba(15, 23, 42, 0.05);
     border: 1px solid rgba(15, 23, 42, 0.1);
