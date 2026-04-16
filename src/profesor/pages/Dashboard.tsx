@@ -1009,9 +1009,11 @@ export default function Dashboard() {
 
         
 
-        {/* Accesos Directos (rediseñado) */}
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-lg flex flex-col lg:row-start-1">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4 flex items-center gap-2"><span className="material-symbols-outlined text-primary">quick_reference_all</span> Accesos rápidos</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4 flex items-center gap-2">
+            <span className="material-symbols-outlined text-slate-800 dark:text-slate-200">quick_reference_all</span> 
+            Accesos rápidos
+          </h3>
           <div className="flex flex-col gap-3 quick-actions">
             <button
               type="button"

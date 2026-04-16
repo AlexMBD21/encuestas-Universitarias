@@ -14,7 +14,7 @@ export default function Loader({
   size = 80, 
   className = '', 
   fullScreen = false,
-  innerColor = '#6366f1',
+  innerColor = '#3b82f6',
   outerColor = '#0f172a'
 }: LoaderProps) {
   const content = (
