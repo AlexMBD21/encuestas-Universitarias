@@ -874,7 +874,7 @@ export default function Dashboard() {
       <div className="px-4 pt-2">
         <div className="bg-white/90 dark:bg-slate-900/90 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 md:p-10 shadow-lg transition-shadow duration-300 w-full max-w-full">
           <div className="flex items-center gap-3 mb-6">
-            <span className="material-symbols-outlined text-blue-500 text-2xl">bar_chart_4_bars</span>
+            <span className="material-symbols-outlined text-slate-800 dark:text-slate-200 text-2xl">bar_chart_4_bars</span>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Resumen rápido</h2>
           </div>
           {summaryLoading ? (
@@ -889,7 +889,7 @@ export default function Dashboard() {
               </div>
               <div className="stat-badge">ESTADÍSTICAS</div>
               <div className="stat-subs">
-                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#0ea5e9'}}></span><span>Tus activas: <strong>{myActiveCount}</strong></span></div>
+                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#0f172a'}}></span><span>Tus activas: <strong>{myActiveCount}</strong></span></div>
               </div>
             </li>
             <li className="stat-card">
@@ -900,8 +900,8 @@ export default function Dashboard() {
               </div>
               <div className="stat-badge">GLOBAL</div>
               <div className="stat-subs">
-                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#3b82f6'}}></span><span>Encuestas calificadas: <strong>{myTotalResponses}</strong></span></div>
-                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#0ea5e9'}}></span><span>Tus encuestas calificadas: <strong>{surveyResponseSurveyCounts.mine}</strong></span></div>
+                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#1e293b'}}></span><span>Encuestas calificadas: <strong>{myTotalResponses}</strong></span></div>
+                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#0f172a'}}></span><span>Tus encuestas calificadas: <strong>{surveyResponseSurveyCounts.mine}</strong></span></div>
               </div>
             </li>
             <li className="stat-card">
