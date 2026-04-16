@@ -137,7 +137,7 @@ export default function Login() {
   if (loading) return <Loader fullScreen text="Cargando sesión..." />
 
   return (
-    <div className="login-root fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-[#00628d] to-[#004a6b] overflow-hidden font-outfit">
+    <div className="login-root fixed inset-0 z-[100] flex items-center justify-center bg-[#0f172a] overflow-hidden font-outfit">
       {/* Toast Notification */}
       {message && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] animate-fade-in-down">
@@ -165,13 +165,8 @@ export default function Login() {
         </div>
       )}
 
-      {/* Decorative Blobs - Optimized for Primary Blue Background */}
-      <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-white/10 rounded-full blur-[120px] animate-pulse"></div>
-      <div className="absolute bottom-[-10%] left-[-5%] w-[700px] h-[700px] bg-blue-400/10 rounded-full blur-[140px] animate-pulse" style={{ animationDelay: '2s' }}></div>
-      <div className="absolute top-[20%] left-[10%] w-[400px] h-[400px] bg-sky-200/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
-
       <div className="w-full max-w-[400px] relative z-10 animate-fade-in-up p-4">
-        <div className="bg-white/10 backdrop-blur-3xl border border-white/20 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] rounded-[48px] p-6 md:p-8 overflow-hidden relative">
+        <div className="bg-slate-900/40 backdrop-blur-3xl border border-slate-700/50 shadow-[0_64px_128px_-16px_rgba(0,0,0,0.8)] rounded-[48px] p-6 md:p-8 overflow-hidden relative">
           
           <div className="text-center mb-6">
             <div className="relative inline-flex items-center justify-center w-24 h-24 mb-6 animate-bounce-slow">
@@ -189,39 +184,39 @@ export default function Login() {
                 fact_check
               </span>
             </div>
-            <h1 className="text-5xl font-black bg-gradient-to-b from-white to-blue-200 bg-clip-text text-transparent leading-none mb-3">
+            <h1 className="text-5xl font-black bg-gradient-to-b from-white via-white to-slate-400 bg-clip-text text-transparent leading-none mb-3">
               Encuestas
             </h1>
-            <p className="text-[10px] font-bold text-sky-200 uppercase tracking-[0.3em] opacity-100">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] opacity-100">
               Gestión Universitaria
             </p>
           </div>
 
           <div className="mb-6">
-            <div className="bg-white p-1.5 rounded-[24px] flex items-center relative gap-1 border border-white/10 shadow-inner">
+            <div className="bg-slate-950/50 p-1.5 rounded-[24px] flex items-center relative gap-1 border border-white/5 shadow-inner">
               <button 
                 onClick={() => setRole('student')}
-                className={`flex-1 py-3 px-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative z-10 ${role === 'student' ? 'text-white' : 'text-slate-500 hover:text-[#00628d]'}`}
+                className={`flex-1 py-3 px-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative z-10 ${role === 'student' ? 'text-white' : 'text-slate-500 hover:text-white'}`}
               >
                 Estudiante
               </button>
               <button 
                 onClick={() => setRole('profesor')}
-                className={`flex-1 py-3 px-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative z-10 ${role === 'profesor' ? 'text-white' : 'text-slate-500 hover:text-[#00628d]'}`}
+                className={`flex-1 py-3 px-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative z-10 ${role === 'profesor' ? 'text-white' : 'text-slate-500 hover:text-white'}`}
               >
                 Profesor
               </button>
               <div 
-                className={`absolute inset-y-1.5 bg-[#00628d] shadow-sm rounded-[18px] transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${role === 'student' ? 'left-1.5 w-[calc(50%-8px)]' : 'left-[calc(50%+2px)] w-[calc(50%-8px)]'}`}
+                className={`absolute inset-y-1.5 bg-indigo-600 shadow-md rounded-[18px] transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${role === 'student' ? 'left-1.5 w-[calc(50%-8px)]' : 'left-[calc(50%+2px)] w-[calc(50%-8px)]'}`}
               ></div>
             </div>
           </div>
 
           <form onSubmit={onSubmit} className="space-y-3">
             <div className="space-y-2 group">
-              <label className="text-[10px] font-black text-blue-100 uppercase tracking-[0.2em] ml-2">Correo Electrónico</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Correo Electrónico</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-[#00628d]/40 group-focus-within:text-[#00628d] transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
                   <span className="material-symbols-outlined text-[22px]">alternate_email</span>
                 </div>
                 <input 
@@ -229,16 +224,16 @@ export default function Login() {
                   type="email" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-white border-2 border-white/50 focus:border-[#00628d]/30 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-[#00628d] placeholder:text-slate-400 shadow-sm"
+                  className="w-full bg-slate-900/50 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-800 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-inner"
                   placeholder="nombre@ejemplo.com"
                 />
               </div>
             </div>
 
             <div className="space-y-2 group">
-              <label className="text-[10px] font-black text-blue-100 uppercase tracking-[0.2em] ml-2">Contraseña</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Contraseña</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-[#00628d]/40 group-focus-within:text-[#00628d] transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
                   <span className="material-symbols-outlined text-[22px]">lock</span>
                 </div>
                 <input 
@@ -246,13 +241,13 @@ export default function Login() {
                   type={showPassword ? "text" : "password"} 
                   value={password} 
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-white border-2 border-white/50 focus:border-[#00628d]/30 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-[#00628d] placeholder:text-slate-400 shadow-sm"
+                  className="w-full bg-slate-900/50 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-800 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-inner"
                   placeholder="••••••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-400 hover:text-[#00628d] transition-colors"
+                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-500 hover:text-indigo-400 transition-colors"
                 >
                   <span className="material-symbols-outlined text-xl">
                     {showPassword ? 'visibility_off' : 'visibility'}
@@ -265,11 +260,11 @@ export default function Login() {
                 <button 
                   type="submit" 
                   disabled={isValidating || isLoggingIn || isSuccess}
-                  className="w-full bg-gradient-to-r from-[#007cb2] to-[#00628d] text-white font-black py-4 rounded-[22px] shadow-lg hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-widest text-xs border border-white/30"
+                  className="w-full bg-white text-slate-950 font-black py-4 rounded-[22px] shadow-[0_20px_40px_-15px_rgba(255,255,255,0.15)] hover:bg-slate-50 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-widest text-xs"
                 >
                   {isValidating || isLoggingIn || isSuccess? (
                     <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="w-5 h-5 border-2 border-slate-900/20 border-t-slate-950 rounded-full animate-spin"></div>
                       <span>{isSuccess ? 'Entrando...' : 'Validando...'}</span>
                     </>
                   ) : (
