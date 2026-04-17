@@ -1075,7 +1075,6 @@ export default function Dashboard() {
           >
             <div className="relative">
               <span className="material-symbols-outlined text-white text-2xl drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">calendar_month</span>
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-ping opacity-75"></div>
             </div>
             <span className="overflow-hidden whitespace-nowrap max-w-0 opacity-0 group-hover:max-w-[140px] group-hover:opacity-100 group-hover:ml-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-black text-xs uppercase tracking-widest text-slate-100">
               Ver Calendario
