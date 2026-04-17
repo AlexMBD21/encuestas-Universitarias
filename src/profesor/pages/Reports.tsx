@@ -383,20 +383,18 @@ export default function Reports(): JSX.Element {
                         </div>
                       </div>
                       
-                      <div className="p-2 bg-slate-50/80 border-t border-slate-100">
+                      <div className={`p-2 border-t ${isProject ? 'bg-indigo-50/60 border-indigo-100' : 'bg-emerald-50/60 border-emerald-100'}`}>
                         <button
                           onClick={(e) => {
                             e.preventDefault();
-                            // Delay de 400ms para permitir que la animación de "carga" se aprecie correctamente en mobile
                             setTimeout(() => {
                               window.scrollTo(0, 0);
                               navigate('/profesor/encuestas/reports/' + String(su.id));
                             }, 400);
                           }}
-                          className={`relative overflow-hidden w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${isProject ? 'group-hover:border-indigo-600 focus:ring-indigo-500 shadow-indigo-900/10 active:border-indigo-700' : 'group-hover:border-emerald-600 focus:ring-emerald-500 shadow-emerald-900/10 active:border-emerald-700'}`}
+                          className={`relative overflow-hidden w-full px-4 py-2.5 text-white text-sm font-bold rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.98] ${isProject ? 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500' : 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500'}`}
                         >
-                          <div className={`absolute inset-0 w-full h-full origin-left scale-x-0 group-hover:scale-x-100 group-active:scale-x-100 transition-transform duration-500 ease-out z-0 ${isProject ? 'bg-indigo-600' : 'bg-emerald-600'}`} />
-                          <div className="relative z-10 flex items-center justify-center gap-2 group-hover:text-white group-active:text-white transition-colors duration-500">
+                          <div className="flex items-center justify-center gap-2">
                             Ver informe detallado
                             <span className="material-symbols-outlined text-[18px]">arrow_right_alt</span>
                           </div>

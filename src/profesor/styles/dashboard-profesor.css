@@ -1999,26 +1999,25 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     align-items: flex-start;
     gap: 16px;
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 22px 22px 18px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(15, 23, 42, 0.07);
     position: relative;
     overflow: hidden;
-    transition: box-shadow 0.2s, transform 0.2s;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 .stat-card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 3px;
-    border-radius: 16px 16px 0 0;
-    background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
-    opacity: 1;
+    height: 4px;
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%);
 }
 .stat-card:hover { 
-    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12); 
-    transform: translateY(-2px); 
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.10); 
+    transform: translateY(-3px); 
 }
 .dark .stat-card { background: #0f172a; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 28px rgba(2,6,23,0.2); }
 .dark .stat-card:hover { box-shadow: 0 4px 20px rgba(15, 23, 42, 0.3); }
@@ -2029,20 +2028,20 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     display:flex; 
     align-items:center; 
     justify-content:center; 
-    background: rgba(15, 23, 42, 0.05); 
+    background: rgba(37, 99, 235, 0.08);
     flex-shrink: 0; 
     margin-top: 2px; 
 }
-.stat-icon { font-size: 26px; color: #334155; }
+.stat-icon { font-size: 26px; color: #2563eb; }
 .stat-body { display:flex; flex-direction:column; flex: 1; min-width: 0; }
-.stat-value { font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; line-height: 1.1; }
+.stat-value { font-size: 28px; font-weight: 900; color: #0f172a; letter-spacing: -1px; line-height: 1.1; }
 .dark .stat-value { color: #e6eef8; }
-.stat-label { font-size: 12.5px; font-weight: 600; color: #64748b; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-label { font-size: 12px; font-weight: 700; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
 .stat-sub { font-size: 0.875rem; color: #475569; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
-.stat-sub-dot { width: 6px; height: 6px; border-radius: 50%; background: #334155; display: inline-block; flex-shrink: 0; }
+.stat-sub-dot { width: 7px; height: 7px; border-radius: 50%; background: #2563eb; display: inline-block; flex-shrink: 0; }
 .stat-sub + .stat-sub { margin-top: 4px; }
 .dark .stat-sub { color: #94a3b8; }
-.stat-badge { background: rgba(15, 23, 42, 0.06); color: #334155; padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size: 10px; letter-spacing: 0.06em; white-space: nowrap; flex-shrink: 0; margin-top: 2px; border: 1px solid rgba(15, 23, 42, 0.1); }
+.stat-badge { background: rgba(37, 99, 235, 0.07); color: #2563eb; padding: 4px 10px; border-radius: 999px; font-weight: 800; font-size: 10px; letter-spacing: 0.06em; white-space: nowrap; flex-shrink: 0; margin-top: 2px; border: 1px solid rgba(37, 99, 235, 0.15); }
 .dark .stat-badge { background: rgba(255, 255, 255, 0.05); color: #94a3b8; border-color: rgba(255, 255, 255, 0.1); }
 .stat-card + .stat-card { margin-left: 0; }
 
