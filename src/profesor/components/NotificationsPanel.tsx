@@ -450,8 +450,8 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
         {/* Header con estilo premium */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-white/5 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
-              <span className="material-symbols-outlined text-blue-400 text-2xl font-bold">notifications_active</span>
+            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10">
+              <span className="material-symbols-outlined text-white text-2xl font-bold">notifications_active</span>
             </div>
             <h3 className="font-black text-white tracking-widest uppercase text-[10px] opacity-90">Centro de Avisos</h3>
           </div>
@@ -459,9 +459,9 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
             <button
               type="button"
               onClick={handleLimpiar}
-              className="group flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black text-blue-400 hover:text-white hover:bg-blue-600 transition-all duration-300 active:scale-95 uppercase tracking-widest bg-white/5 border border-white/10 shadow-sm"
+              className="group flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black text-white hover:bg-white/10 transition-all duration-300 active:scale-95 uppercase tracking-widest bg-white/5 border border-white/10 shadow-sm"
             >
-              <span className="material-symbols-outlined text-sm font-bold">done_all</span>
+              <span className="material-symbols-outlined text-sm font-bold text-white">done_all</span>
               Limpiar
             </button>
           )}
