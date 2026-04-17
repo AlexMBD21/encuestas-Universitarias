@@ -11,8 +11,10 @@ export default function Configuracion() {
   const navigate = useNavigate();
   const supabaseEnabledNow = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
   const dataClientNow: any = supabaseClient
+  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -39,9 +41,10 @@ export default function Configuracion() {
   // modal state for create/edit/delete
   const [modalOpen, setModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'create' | 'edit' | 'delete' | null>(null)
-  const [modalData, setModalData] = useState<any>({ email: '', role: 'profesor', password: '', asignatura: '' })
+  const [modalData, setModalData] = useState<any>({ email: '', role: 'profesor', password: '', asignatura: '', adminPassword: '' })
   const [modalLoading, setModalLoading] = useState(false)
   const [modalShowPassword, setModalShowPassword] = useState(false)
+  const [modalShowAdminPassword, setModalShowAdminPassword] = useState(false)
   const [modalMsg, setModalMsg] = useState<string | null>(null)
   const [modalMsgType, setModalMsgType] = useState<'success' | 'error'>('success')
   // confirm password-change modal
@@ -95,9 +98,9 @@ export default function Configuracion() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setMessage(null)
-    if (!newPassword || !confirmPassword) {
+    if (!currentPassword || !newPassword || !confirmPassword) {
       setMsgType('error')
-      setMessage('Complete las contraseñas')
+      setMessage('Complete todos los campos')
       return
     }
     if (newPassword !== confirmPassword) {
@@ -114,12 +117,13 @@ export default function Configuracion() {
     setLoading(true)
     setMessage(null)
     try {
-      await (dataClientNow as any).changePassword('', newPassword)
+      await (dataClientNow as any).changePassword(currentPassword, newPassword)
       setMsgType('success')
       setMessage('Contraseña actualizada correctamente')
       try { showToast('Contraseña actualizada correctamente', 'edit', true) } catch (e) {}
       setNewPassword('')
       setConfirmPassword('')
+      setCurrentPassword('')
     } catch (err: any) {
       const em = (err && err.message) ? String(err.message) : 'Error al cambiar contraseña'
       const toastText = translateErrorForToast(em)
@@ -139,7 +143,7 @@ export default function Configuracion() {
   }
 
   const openCreateModal = () => {
-    setModalData({ email: '', role: 'profesor', password: '', confirmPassword: '' })
+    setModalData({ email: '', role: 'profesor', password: '', confirmPassword: '', adminPassword: '' })
     setModalType('create')
     setModalShowPassword(false)
     setModalMsg(null)
@@ -148,7 +152,7 @@ export default function Configuracion() {
   }
 
   const openEditModal = (u: any) => {
-    setModalData({ id: u.id, email: u.email, role: u.role || 'profesor', password: '' })
+    setModalData({ id: u.id, email: u.email, role: u.role || 'profesor', password: '', adminPassword: '' })
     setModalType('edit')
     setModalShowPassword(false)
     setModalMsg(null)
@@ -167,9 +171,10 @@ export default function Configuracion() {
   const closeModal = () => {
     setModalOpen(false)
     setModalType(null)
-    setModalData({ email: '', role: 'profesor', password: '' })
+    setModalData({ email: '', role: 'profesor', password: '', adminPassword: '' })
     setModalLoading(false)
     setModalShowPassword(false)
+    setModalShowAdminPassword(false)
   }
 
   const confirmModalSave = async () => {
@@ -178,6 +183,23 @@ export default function Configuracion() {
     setModalMsg(null)
     setModalMsgType('success')
     try {
+      // Security: if creating, editing or deleting a user, require the admin's own password to confirm the action
+      if (modalType === 'create' || modalType === 'edit' || modalType === 'delete') {
+        if (!modalData.adminPassword) {
+          throw new Error('Debe proporcionar su contraseña de administrador para confirmar esta acción.')
+        }
+        // Verify admin password
+        try {
+          const adminEmail = (currentUser && (currentUser as any).email) || (user && user.email)
+          if (adminEmail) {
+            const { error: sudoError } = await (supabaseClient as any).auth.signInWithPassword({ email: adminEmail, password: modalData.adminPassword })
+            if (sudoError) throw new Error('Contraseña de administrador incorrecta')
+          }
+        } catch (e: any) {
+          throw new Error(e.message || 'Error de verificación de identidad')
+        }
+      }
+
       if (modalType === 'create') {
         if (!modalData.email || !modalData.email.includes('@')) throw new Error('Email inválido')
         const pwd = modalData.password && String(modalData.password).trim()
@@ -411,6 +433,30 @@ export default function Configuracion() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Contraseña actual</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                        <span className="material-symbols-outlined text-[20px]">lock</span>
+                      </div>
+                      <input 
+                        autoComplete="current-password" 
+                        type={showCurrentPassword ? 'text' : 'password'} 
+                        value={currentPassword} 
+                        onChange={(e) => setCurrentPassword(e.target.value)} 
+                        className="w-full bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl pl-11 pr-12 py-3.5 text-sm font-semibold transition-all outline-none text-slate-700 dark:text-slate-200"
+                        placeholder="••••••••"
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => setShowCurrentPassword(s => !s)} 
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-blue-500 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">{showCurrentPassword ? 'visibility_off' : 'visibility'}</span>
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="space-y-1.5">
                     <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Nueva contraseña</label>
                     <div className="relative group">
@@ -660,8 +706,14 @@ export default function Configuracion() {
             {modalType === 'delete' ? (
               <div>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 font-medium">¿Eliminar usuario <strong>{modalData.email}</strong>? Esta acción no se puede deshacer.</p>
-                <div className="flex flex-col sm:flex-row-reverse justify-end gap-3">
-                  <button className="btn btn-danger w-full sm:w-auto px-8" onClick={confirmModalSave} disabled={modalLoading}>{modalLoading ? 'Eliminando...' : 'Eliminar'}</button>
+                <div className="flex flex-col sm:flex-row-reverse justify-end gap-3 mt-4">
+                  <button 
+                    className={`btn btn-danger w-full sm:w-auto px-8 ${(modalLoading || !modalData.adminPassword) ? 'opacity-50 grayscale cursor-not-allowed shadow-none' : ''}`} 
+                    onClick={confirmModalSave} 
+                    disabled={modalLoading || !modalData.adminPassword}
+                  >
+                    {modalLoading ? 'Eliminando...' : 'Eliminar'}
+                  </button>
                   <button className="btn btn-ghost w-full sm:w-auto px-6" onClick={closeModal} disabled={modalLoading}>Cancelar y Volver</button>
                 </div>
               </div>
@@ -670,7 +722,14 @@ export default function Configuracion() {
                 <input type="text" name="username" autoComplete="username" value={modalData.email || ''} readOnly aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }} />
                 <div className="space-y-1.5">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Correo Electrónico</label>
-                  <input name="newUserEmail" autoComplete="email" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all outline-none text-slate-700 dark:text-slate-200" value={modalData.email} onChange={e => setModalData({...modalData, email: e.target.value})} />
+                  <input 
+                    name="newUserEmail" 
+                    autoComplete="email" 
+                    className={`w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all outline-none text-slate-700 dark:text-slate-200 ${modalType === 'edit' ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-900' : ''}`} 
+                    value={modalData.email} 
+                    onChange={e => setModalData({...modalData, email: e.target.value})} 
+                    readOnly={modalType === 'edit'}
+                  />
                 </div>
                 {modalType === 'create' && (
                   <div className="space-y-1.5">
@@ -709,8 +768,38 @@ export default function Configuracion() {
                   />
                 </div>
 
+                 {/* Sudo check for sensitive actions (Creation, Edition and Deletion) */}
+                {(modalType === 'create' || modalType === 'edit' || modalType === 'delete') && (
+                  <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-2xl animate-in zoom-in-95 duration-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="material-symbols-outlined text-amber-600 text-sm">security</span>
+                      <p className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">Confirmación de Seguridad</p>
+                    </div>
+                    <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1.5 ml-1">Para confirmar, ingresa <span className="text-amber-700 dark:text-amber-300 font-black">TU</span> contraseña de administrador:</label>
+                    <div className="relative group">
+                      <input 
+                        type={modalShowAdminPassword ? 'text' : 'password'} 
+                        autoComplete="off"
+                        placeholder="Contraseña de administrador" 
+                        className="w-full bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-900/50 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all outline-none text-slate-700 dark:text-slate-200"
+                        value={modalData.adminPassword || ''} 
+                        onChange={e => setModalData({...modalData, adminPassword: e.target.value})} 
+                      />
+                      <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-600 transition-colors" onClick={() => setModalShowAdminPassword(s => !s)}>
+                        <span className="material-symbols-outlined text-[18px]">{modalShowAdminPassword ? 'visibility_off' : 'visibility'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex flex-col sm:flex-row-reverse justify-end gap-3 pt-4">
-                  <button type="submit" className="btn btn-primary w-full sm:w-auto px-8" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar Cambios' : 'Crear Usuario')}</button>
+                  <button 
+                    type="submit" 
+                    className={`btn btn-primary w-full sm:w-auto px-8 ${(modalLoading || !modalData.adminPassword) ? 'opacity-50 grayscale cursor-not-allowed shadow-none' : ''}`} 
+                    disabled={modalLoading || !modalData.adminPassword}
+                  >
+                    {modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar Cambios' : 'Crear Usuario')}
+                  </button>
                   <button type="button" className="btn btn-ghost w-full sm:w-auto px-6" onClick={closeModal} disabled={modalLoading}>Cancelar</button>
                 </div>
               </form>

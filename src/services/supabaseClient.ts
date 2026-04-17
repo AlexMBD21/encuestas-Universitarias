@@ -129,11 +129,24 @@ export async function firebaseSignIn(email: string, password: string) {
 }
 
 export async function changePassword(currentPassword: string, newPassword: string) {
-  // Supabase requires session to update password; try to update directly
   ensureClient()
   if (!supabase) throw new Error('Supabase not configured')
   try {
-    const { data, error } = await supabase.auth.updateUser({ password: String(newPassword) } as any)
+    const userResult = await supabase.auth.getUser()
+    const email = userResult.data.user?.email
+    if (!email) throw new Error('No se encontró el email del usuario actual')
+
+    // Verify current password by attempting a sign-in
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: currentPassword })
+    if (signInError) {
+      if (signInError.message.includes('Invalid login credentials')) {
+        throw new Error('La contraseña actual es incorrecta')
+      }
+      throw signInError
+    }
+
+    // Now update to the new password
+    const { error } = await supabase.auth.updateUser({ password: String(newPassword) } as any)
     if (error) throw error
     return true
   } catch (e) { throw e }
