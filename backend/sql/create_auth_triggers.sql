@@ -17,9 +17,9 @@ BEGIN
 
   INSERT INTO public.app_users (legacy_key, email, role, created_at)
   VALUES (
-    COALESCE(NEW.raw_user_meta_data ->> 'legacy_key', NEW.id::text),
+    COALESCE(NEW.raw_app_meta_data ->> 'legacy_key', NEW.raw_user_meta_data ->> 'legacy_key', NEW.id::text),
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data ->> 'role', 'profesor'),
+    COALESCE(NEW.raw_app_meta_data ->> 'role', NEW.raw_user_meta_data ->> 'role', 'profesor'),
     NOW()
   )
   ON CONFLICT (legacy_key) DO UPDATE
@@ -94,10 +94,10 @@ USING (
 -- 4) Backfill existing auth.users into app_users (run once)
 INSERT INTO public.app_users (legacy_key, email, role, created_at)
 SELECT
-  COALESCE(raw_user_meta_data ->> 'legacy_key', id::text) AS legacy_key,
+  COALESCE(raw_app_meta_data ->> 'legacy_key', raw_user_meta_data ->> 'legacy_key', id::text) AS legacy_key,
   email,
-  COALESCE(raw_user_meta_data ->> 'role', 'profesor') AS role,
-  COALESCE((raw_user_meta_data ->> 'created_at')::timestamptz, created_at, NOW()) AS created_at
+  COALESCE(raw_app_meta_data ->> 'role', raw_user_meta_data ->> 'role', 'profesor') AS role,
+  COALESCE((raw_app_meta_data ->> 'created_at')::timestamptz, (raw_user_meta_data ->> 'created_at')::timestamptz, created_at, NOW()) AS created_at
 FROM auth.users u
     WHERE email IS NOT NULL
   AND NOT EXISTS (

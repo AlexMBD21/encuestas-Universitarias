@@ -38,7 +38,8 @@ module.exports = async function (req, res) {
         email: String(email),
         password: String(password),
         email_confirm: true,
-        app_metadata: { role, asignatura }
+        app_metadata: { role, asignatura },
+        user_metadata: { role, asignatura }
       })
       if (error) {
         // if user exists, try to find by email and set metadata
@@ -47,11 +48,11 @@ module.exports = async function (req, res) {
           return res.status(500).json({ error: error.message || error })
         }
         const uid = q.data.id
-        try { await admin.auth.admin.updateUserById(uid, { app_metadata: { role, asignatura } }) } catch (e) { /* ignore */ }
+        try { await admin.auth.admin.updateUserById(uid, { app_metadata: { role, asignatura }, user_metadata: { role, asignatura } }) } catch (e) { /* ignore */ }
       } else {
         const newId = (data && data.user && data.user.id) || (data && data.id) || null
         if (newId) {
-          try { await admin.auth.admin.updateUserById(newId, { app_metadata: { role, asignatura } }) } catch (e) { /* ignore */ }
+          try { await admin.auth.admin.updateUserById(newId, { app_metadata: { role, asignatura }, user_metadata: { role, asignatura } }) } catch (e) { /* ignore */ }
         }
       }
     } catch (e) {

@@ -83,8 +83,15 @@ module.exports = async function (req, res) {
     const payload = {}
     if (role || asignatura) {
       payload.app_metadata = {}
-      if (role) payload.app_metadata.role = String(role)
-      if (asignatura) payload.app_metadata.asignatura = String(asignatura)
+      payload.user_metadata = {}
+      if (role) {
+        payload.app_metadata.role = String(role)
+        payload.user_metadata.role = String(role)
+      }
+      if (asignatura) {
+        payload.app_metadata.asignatura = String(asignatura)
+        payload.user_metadata.asignatura = String(asignatura)
+      }
     }
     if (password) payload.password = String(password)
     if (Object.keys(payload).length === 0) return res.status(400).json({ error: 'Nothing to update' })
