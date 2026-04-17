@@ -903,14 +903,13 @@
 }
 
 .app-sidebar.collapsed .sidebar-nav-item.active {
-    background: #4f46e5;
-    /* Indigo 600 */
-    box-shadow: none;
+    background: rgba(255, 255, 255, 0.06); /* Fondo más tenue para fundirse mejor */
+    color: #818cf8; /* Indigo 400 (más claro y brillante) para iluminar el ícono */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .app-sidebar.collapsed .sidebar-nav-item.active::before {
-    display: none;
-    /* Removed the small line for a cleaner pill/box look */
+    display: block; /* Mantiene la misma línea indicadora sutil */
 }
 
 /* Logout button refinement for collapsed state */
