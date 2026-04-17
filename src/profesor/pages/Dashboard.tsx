@@ -873,9 +873,11 @@ export default function Dashboard() {
       {/* Stats Cards */}
       <div className="px-4 pt-2">
         <div className="bg-white/90 dark:bg-slate-900/90 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 md:p-10 shadow-lg transition-shadow duration-300 w-full max-w-full">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="material-symbols-outlined text-slate-800 dark:text-slate-200 text-2xl">bar_chart_4_bars</span>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Resumen rápido</h2>
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
+              <span className="material-symbols-outlined text-slate-700 dark:text-slate-300 text-2xl font-bold">query_stats</span>
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight">Resumen rápido</h2>
           </div>
           {summaryLoading ? (
             <DashboardStatCardsSkeleton />
@@ -924,11 +926,15 @@ export default function Dashboard() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-4 mt-4">
-        {/* Avisos Importantes */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-lg flex flex-col lg:col-span-2">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="material-symbols-outlined text-rose-500 text-2xl">assignment_late</span>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50">Reportes de seguimiento</h2>
+        {/* Reportes de seguimiento */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xl flex flex-col lg:col-span-2">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                <span className="material-symbols-outlined text-rose-600 dark:text-rose-400 text-2xl font-bold">assignment_late</span>
+              </div>
+              <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">Reportes de seguimiento</h2>
+            </div>
           </div>
 
           <div ref={noticesRef} className="flex flex-col gap-2 mb-4 notices-scroll custom-scrollbar">
@@ -1009,11 +1015,13 @@ export default function Dashboard() {
 
         
 
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-lg flex flex-col lg:row-start-1">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-slate-800 dark:text-slate-200">quick_reference_all</span> 
-            Accesos rápidos
-          </h3>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xl flex flex-col lg:row-start-1">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
+              <span className="material-symbols-outlined text-slate-700 dark:text-slate-300 text-2xl font-bold">bolt</span> 
+            </div>
+            <h3 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">Accesos rápidos</h3>
+          </div>
           <div className="flex flex-col gap-3 quick-actions">
             <button
               type="button"
