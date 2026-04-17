@@ -277,7 +277,7 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
                          </span>
                       </div>
                       <textarea 
-                        className={`w-full p-4 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-xl text-slate-700 dark:text-slate-200 outline-none transition-all placeholder:text-slate-400 resize-y min-h-[100px] ${readonlyMode ? 'opacity-80 cursor-default' : 'focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/20'}`} 
+                        className={`w-full p-4 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-xl text-slate-700 dark:text-slate-200 outline-none transition-all placeholder:text-slate-400 resize-y min-h-[100px] ${readonlyMode ? 'opacity-80 cursor-default' : 'focus:border-primary-400 focus:ring-4 focus:ring-primary-400/20'}`} 
                         placeholder="Escribe aquí tu análisis o respuesta a la pregunta..."
                         value={commentValue} 
                         onChange={e => { if (!readonlyMode) setComment(q.id, e.target.value) }} 
