@@ -903,13 +903,14 @@
 }
 
 .app-sidebar.collapsed .sidebar-nav-item.active {
-    background: rgba(255, 255, 255, 0.06); /* Fondo más tenue para fundirse mejor */
+    background: rgba(99, 102, 241, 0.12); /* Glass tintado en índigo */
+    border: 1px solid rgba(99, 102, 241, 0.3); /* Borde sutil para definir la forma */
     color: #818cf8; /* Indigo 400 (más claro y brillante) para iluminar el ícono */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .app-sidebar.collapsed .sidebar-nav-item.active::before {
-    display: block; /* Mantiene la misma línea indicadora sutil */
+    display: block; /* Restauramos el indicador a petición del usuario */
 }
 
 /* Logout button refinement for collapsed state */
