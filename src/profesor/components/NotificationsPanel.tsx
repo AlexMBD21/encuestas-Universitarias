@@ -546,13 +546,13 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
                       <div className="flex-1 min-w-0 pl-1">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                             <div className={`flex items-center gap-1.5 px-3 py-0.5 rounded-full ${isProject ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'} border`}>
+                             <div className={`flex items-center gap-1.5 px-3 py-0.5 rounded-full ${isProject ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'} border`}>
                                 <span className="text-[9px] font-black uppercase tracking-wider">
                                    {typeLabel}
                                 </span>
                              </div>
                              {statusLabel && (
-                               <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${isResponded ? 'bg-green-500' : 'bg-amber-500'} text-white shadow-sm ring-1 ring-white/20`}>
+                               <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${isResponded ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'} border border-opacity-30 shadow-sm`}>
                                  {statusLabel}
                                </span>
                              )}
