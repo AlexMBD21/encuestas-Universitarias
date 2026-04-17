@@ -225,20 +225,22 @@ export default function ReportDetail(): JSX.Element {
         
         <div className="px-5 sm:px-8 py-6 md:py-8 relative z-10 max-w-7xl mx-auto">
           {/* Breadcrumb glassmorphic */}
-          <nav className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/80 backdrop-blur-sm border border-slate-200/50 text-xs font-medium text-slate-600 mb-6">
+          {/* Encapsulated Breadcrumb in a more visible Gray Pill */}
+          <nav className="inline-flex items-center p-1 rounded-2xl bg-slate-200/80 backdrop-blur-sm border border-slate-300/50 transition-all mb-8 shadow-sm">
             <button 
-              className="flex items-center gap-1.5 hover:text-slate-900 transition-colors" 
               onClick={() => navigate('/profesor/encuestas/reports')}
+              className="group flex items-center gap-2 px-4 py-1.5 rounded-xl bg-transparent border border-slate-900/40 dark:border-white/30 text-slate-800 dark:text-slate-200 font-bold hover:bg-white/40 dark:hover:bg-slate-800/40 transition-all duration-300 active:scale-95"
             >
-              <span className="material-symbols-outlined text-[16px]">bar_chart</span>
+              <span className="material-symbols-outlined text-[18px]">bar_chart</span>
               Reportes
             </button>
-            <span className="material-symbols-outlined text-[14px] text-slate-400">chevron_right</span>
-            {loading ? (
-              <div className="w-32 h-4 bg-slate-200/70 rounded-md animate-pulse" />
-            ) : (
-              <span className="text-slate-800 truncate max-w-[150px] sm:max-w-xs">{surveyTitle}</span>
-            )}
+            
+            <div className="flex items-center gap-2.5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <span className="material-symbols-outlined text-[14px] text-slate-300 dark:text-slate-600">chevron_right</span>
+              <span className="text-slate-800 dark:text-slate-300 truncate max-w-[120px] sm:max-w-xs">
+                {loading ? '...' : surveyTitle}
+              </span>
+            </div>
           </nav>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 animate-fade-in-up">
