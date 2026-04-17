@@ -862,7 +862,7 @@ export default function Dashboard() {
             {profileName ? (
               <>
                 ¡Bienvenido de nuevo,{' '}
-                <span className="block sm:inline text-indigo-600 dark:text-indigo-400">{profileName}!</span>
+                <span className="block sm:inline text-blue-600 dark:text-blue-400">{profileName}!</span>
               </>
             ) : '¡Bienvenido de nuevo!'}
           </h1>
