@@ -185,7 +185,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
       <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden">
         {/* Drag handle for mobile */}
         <div className="w-full flex justify-center pt-2 pb-2 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={onClose || onCancel}>
-          <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+          <div className="w-12 h-1.5 rounded-full bg-slate-900/40 dark:bg-white/30"></div>
         </div>
 
         {/* Header — clean premium */}

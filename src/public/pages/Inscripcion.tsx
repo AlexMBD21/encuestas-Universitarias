@@ -362,7 +362,7 @@ export default function Inscripcion() {
       <Modal isOpen={!!modalError} onClose={() => setModalError(null)} maxWidth="max-w-md" hideMobileIndicator={true}>
         <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl">
           <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => setModalError(null)}>
-            <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700" />
+            <div className="w-12 h-1.5 rounded-full bg-slate-900/40 dark:bg-white/30" />
           </div>
           <div className="p-8 text-center flex-1 overflow-y-auto">
             <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6">

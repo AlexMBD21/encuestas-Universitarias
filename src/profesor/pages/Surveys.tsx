@@ -1019,7 +1019,7 @@ export default function Surveys(): JSX.Element {
               }}>
               {/* Drag handle for mobile */}
               <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => closeModal()}>
-                <div className="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                <div className="w-12 h-1.5 rounded-full bg-slate-900/40 dark:bg-white/30"></div>
               </div>
               {/* Header (sticky) */}
               <div className="sticky top-0 z-10 border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between bg-white dark:bg-slate-900 flex-shrink-0 pt-7 sm:pt-4 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]" style={{ borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
@@ -1500,7 +1500,7 @@ export default function Surveys(): JSX.Element {
             }}>
             {/* Drag handle */}
             <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => closeReportsModal()}>
-              <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+              <div className="w-12 h-1.5 rounded-full bg-slate-900/40 dark:bg-white/30"></div>
             </div>
             {/* Header */}
             <div className="px-5 py-3.5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]" style={{ touchAction: 'none' }}>
@@ -1662,7 +1662,7 @@ export default function Surveys(): JSX.Element {
             <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 flex flex-col max-h-[85vh]">
               {/* Drag handle for mobile */}
               <div className="w-full flex justify-center pt-2 pb-1 sm:hidden cursor-pointer shrink-0" style={{ touchAction: 'none' }} onClick={() => !confirmReporting && closeConfirmReportModal()}>
-                <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+                <div className="w-12 h-1.5 rounded-full bg-slate-900/40 dark:bg-white/30"></div>
               </div>
 
               <div className="px-6 py-5 sm:p-8 overflow-y-auto overscroll-contain">

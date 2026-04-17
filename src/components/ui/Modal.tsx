@@ -115,8 +115,8 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
       >
         {/* Mobile Drag Indicator */}
         {!hideMobileIndicator && (
-          <div className="w-full flex justify-center py-3 sm:hidden shrink-0 touch-none active:bg-slate-50 dark:active:bg-slate-800 transition-colors" onClick={handleClose}>
-            <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full" />
+          <div className="w-full flex justify-center py-4 sm:hidden shrink-0 touch-none active:bg-slate-50 dark:active:bg-slate-800 transition-colors" onClick={handleClose}>
+            <div className="w-12 h-1.5 bg-slate-900/40 dark:bg-white/30 rounded-full" />
           </div>
         )}
 

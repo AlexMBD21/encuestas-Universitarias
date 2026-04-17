@@ -10,7 +10,7 @@ export const GenerateLinkModal = ({ isOpen, onClose, survey, dataClientNow, onSa
       <div className="bg-white dark:bg-slate-900 rounded-t-[2rem] sm:rounded-2xl flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden">
         {/* Drag handle for mobile */}
         <div className="w-full flex justify-center pt-2 pb-1 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={onClose}>
-          <div className="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+          <div className="w-12 h-1.5 rounded-full bg-slate-900/40 dark:bg-white/30"></div>
         </div>
 
         <div className="modal-scrollable-content px-6 py-5 sm:p-8 flex-1 overflow-y-auto overscroll-contain pb-10">
