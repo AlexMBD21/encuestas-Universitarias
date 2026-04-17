@@ -652,75 +652,71 @@ export default function Configuracion() {
           maxWidth="max-w-lg" 
           hideMobileIndicator={false} 
           scrollableBody={false}
+          noHeaderShadow={true}
         >
-          <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-white dark:bg-slate-900">
-
-
-            {/* Content */}
-            <div className="modal-scrollable-content p-6 flex-1 overflow-y-auto">
-              {modalType === 'delete' ? (
-                <div>
-                  <p>¿Eliminar usuario <strong>{modalData.email}</strong>?</p>
-                  <div className="mt-4 flex flex-col sm:flex-row-reverse justify-end gap-2">
-                    <button className="w-full sm:w-auto px-5 py-2 sm:px-8 sm:py-2.5 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-lg shadow-red-600/30 transition-all active:scale-[0.98]" onClick={confirmModalSave} disabled={modalLoading}>{modalLoading ? 'Eliminando...' : 'Eliminar'}</button>
-                    <button className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]" onClick={closeModal} disabled={modalLoading}>Cancelar y Volver</button>
-                  </div>
+          <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-white dark:bg-slate-900 px-6 pb-6 pt-2">
+            {/* Content WITHOUT wrapping modal-scrollable-content to avoid gray bg if not needed */}
+            {modalType === 'delete' ? (
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 font-medium">¿Eliminar usuario <strong>{modalData.email}</strong>? Esta acción no se puede deshacer.</p>
+                <div className="flex flex-col sm:flex-row-reverse justify-end gap-3">
+                  <button className="btn btn-danger w-full sm:w-auto px-8" onClick={confirmModalSave} disabled={modalLoading}>{modalLoading ? 'Eliminando...' : 'Eliminar'}</button>
+                  <button className="btn btn-ghost w-full sm:w-auto px-6" onClick={closeModal} disabled={modalLoading}>Cancelar y Volver</button>
                 </div>
-              ) : (
-                <form onSubmit={async (e) => { e.preventDefault(); await confirmModalSave(); }} className="space-y-3">
-                  <input type="text" name="username" autoComplete="username" value={modalData.email || ''} readOnly aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }} />
-                  <div>
-                    <label className="block text-sm">Correo</label>
-                    <input name="newUserEmail" autoComplete="email" className="w-full border px-3 py-2 rounded" value={modalData.email} onChange={e => setModalData({...modalData, email: e.target.value})} />
-                  </div>
-                  {modalType === 'create' && (
-                    <div>
-                      <label className="block text-sm">Contraseña</label>
-                      <div className="relative">
-                        <input name="newUserPassword" autoComplete="new-password" className="w-full border px-3 py-2 rounded" type={modalShowPassword ? 'text' : 'password'} value={modalData.password || ''} onChange={e => setModalData({...modalData, password: e.target.value})} />
-                        <button type="button" className={`password-toggle ${modalShowPassword ? 'active' : ''}`} onClick={() => setModalShowPassword(s => !s)} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }} aria-pressed={modalShowPassword} aria-label={modalShowPassword ? 'Ocultar' : 'Mostrar'}>
-                          <i className={`fas ${modalShowPassword ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true"></i>
-                        </button>
-                      </div>
+              </div>
+            ) : (
+              <form onSubmit={async (e) => { e.preventDefault(); await confirmModalSave(); }} className="space-y-4">
+                <input type="text" name="username" autoComplete="username" value={modalData.email || ''} readOnly aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }} />
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Correo Electrónico</label>
+                  <input name="newUserEmail" autoComplete="email" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all outline-none text-slate-700 dark:text-slate-200" value={modalData.email} onChange={e => setModalData({...modalData, email: e.target.value})} />
+                </div>
+                {modalType === 'create' && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Contraseña</label>
+                    <div className="relative group">
+                      <input name="newUserPassword" autoComplete="new-password" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all outline-none text-slate-700 dark:text-slate-200" type={modalShowPassword ? 'text' : 'password'} value={modalData.password || ''} onChange={e => setModalData({...modalData, password: e.target.value})} />
+                      <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" onClick={() => setModalShowPassword(s => !s)}>
+                        <span className="material-symbols-outlined text-[20px]">{modalShowPassword ? 'visibility_off' : 'visibility'}</span>
+                      </button>
                     </div>
-                  )}
-                  {modalType === 'edit' && (
-                    <div>
-                      <label className="block text-sm">Cambiar contraseña (opcional)</label>
-                      <div className="relative">
-                        <input name="editUserPassword" autoComplete="new-password" className="w-full border px-3 py-2 rounded" type={modalShowPassword ? 'text' : 'password'} value={modalData.password || ''} onChange={e => setModalData({...modalData, password: e.target.value})} />
-                        <button type="button" className={`password-toggle ${modalShowPassword ? 'active' : ''}`} onClick={() => setModalShowPassword(s => !s)} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }} aria-pressed={modalShowPassword} aria-label={modalShowPassword ? 'Ocultar' : 'Mostrar'}>
-                          <i className={`fas ${modalShowPassword ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true"></i>
-                        </button>
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">La nueva contraseña se aplica desde un proceso seguro del servidor.</div>
-                    </div>
-                  )}
-                  <div className="space-y-1.5 relative z-50">
-                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Rol</label>
-                    <Dropdown 
-                      value={modalData.role}
-                      label="Seleccione un rol"
-                      options={[
-                        { id: 'profesor', label: 'Profesor' },
-                        { id: 'admin', label: 'Administrador' }
-                      ]}
-                      onChange={(val) => setModalData({...modalData, role: val})}
-                      icon="badge"
-                      color="blue"
-                    />
                   </div>
+                )}
+                {modalType === 'edit' && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Cambiar contraseña (opcional)</label>
+                    <div className="relative group">
+                      <input name="editUserPassword" autoComplete="new-password" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all outline-none text-slate-700 dark:text-slate-200" type={modalShowPassword ? 'text' : 'password'} value={modalData.password || ''} onChange={e => setModalData({...modalData, password: e.target.value})} />
+                      <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" onClick={() => setModalShowPassword(s => !s)}>
+                        <span className="material-symbols-outlined text-[20px]">{modalShowPassword ? 'visibility_off' : 'visibility'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-1.5 relative z-50">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Rol de Acceso</label>
+                  <Dropdown 
+                    value={modalData.role}
+                    label="Seleccione un rol"
+                    options={[
+                      { id: 'profesor', label: 'Profesor' },
+                      { id: 'admin', label: 'Administrador' }
+                    ]}
+                    onChange={(val) => setModalData({...modalData, role: val})}
+                    icon="badge"
+                    color="blue"
+                  />
+                </div>
 
-                  <div className="mt-4 flex flex-col sm:flex-row-reverse justify-end gap-2">
-                    <button type="submit" className="btn btn-primary w-full sm:w-auto px-8" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar' : 'Crear')}</button>
-                    <button type="button" className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]" onClick={closeModal} disabled={modalLoading}>Cancelar y Volver</button>
-                  </div>
-                </form>
-              )}
-              {modalMsg && (
-                <div className={`mt-4 p-3 rounded text-sm ${modalMsgType === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{modalMsg}</div>
-              )}
-            </div>
+                <div className="flex flex-col sm:flex-row-reverse justify-end gap-3 pt-4">
+                  <button type="submit" className="btn btn-primary w-full sm:w-auto px-8" disabled={modalLoading}>{modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar Cambios' : 'Crear Usuario')}</button>
+                  <button type="button" className="btn btn-ghost w-full sm:w-auto px-6" onClick={closeModal} disabled={modalLoading}>Cancelar</button>
+                </div>
+              </form>
+            )}
+            {modalMsg && (
+              <div className={`mt-4 p-3 rounded-xl border text-xs font-bold uppercase tracking-wider text-center ${modalMsgType === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'}`}>{modalMsg}</div>
+            )}
           </div>
         </Modal>
       )} 
@@ -732,17 +728,13 @@ export default function Configuracion() {
         maxWidth="max-w-sm" 
         hideMobileIndicator={false} 
         scrollableBody={false}
+        noHeaderShadow={true}
       >
-        <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden bg-white dark:bg-slate-900">
-
-
-          {/* Content */}
-          <div className="modal-scrollable-content p-5 overflow-y-auto">
-            <p className="text-sm text-slate-600 dark:text-slate-300 mb-5">¿Confirmas que deseas cambiar tu contraseña? Esta acción no se puede deshacer.</p>
-            <div className="flex flex-col sm:flex-row-reverse gap-3 justify-end">
-              <button type="button" onClick={doChangePassword} className="btn btn-primary w-full sm:w-auto px-8">Sí, cambiar</button>
-              <button type="button" onClick={() => setConfirmPwdOpen(false)} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">Cancelar y Volver</button>
-            </div>
+        <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden bg-white dark:bg-slate-900 p-6 pt-2">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 font-medium">¿Confirmas que deseas cambiar tu contraseña? Esta acción no se puede deshacer.</p>
+          <div className="flex flex-col sm:flex-row-reverse gap-3 justify-end">
+            <button type="button" onClick={doChangePassword} className="btn btn-primary w-full sm:w-auto px-8">Sí, cambiar</button>
+            <button type="button" onClick={() => setConfirmPwdOpen(false)} className="btn btn-ghost w-full sm:w-auto px-6">Cancelar y Volver</button>
           </div>
         </div>
       </Modal>

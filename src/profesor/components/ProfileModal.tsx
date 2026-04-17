@@ -129,6 +129,8 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
       onClose={onClose}
       title="Mi perfil"
       maxWidth="max-w-md"
+      noHeaderShadow={true}
+      scrollableBody={false}
     >
       <div className="p-6">
         {/* Avatar */}

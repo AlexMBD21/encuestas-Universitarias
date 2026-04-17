@@ -1246,6 +1246,8 @@ export default function Surveys(): JSX.Element {
         onClose={() => { if (!confirmDeleting) setConfirmDeleteId(null) }}
         maxWidth="max-w-sm"
         hideCloseButton={true}
+        noHeaderShadow={true}
+        scrollableBody={false}
       >
         <div className="p-6 text-center bg-white dark:bg-slate-900 flex-1 flex flex-col justify-center">
           <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-4 shadow-sm">
@@ -1342,6 +1344,8 @@ export default function Surveys(): JSX.Element {
             onClose={() => { if (!confirmPublishing) setConfirmPublish(null) }} 
             maxWidth="max-w-md"
             hideCloseButton={true}
+            noHeaderShadow={true}
+            scrollableBody={false}
             title={
               <div className="flex items-center gap-2">
                 <span className={`material-symbols-outlined ${confirmPublish.action === 'publish' ? 'text-indigo-500' : 'text-amber-500'}`}>
@@ -1898,6 +1902,8 @@ export default function Surveys(): JSX.Element {
         onClose={() => setConfirmDeactivateLinkSurveyId(null)}
         maxWidth="max-w-sm"
         hideCloseButton={true}
+        noHeaderShadow={true}
+        scrollableBody={false}
       >
         <div className="p-6 text-center bg-white dark:bg-slate-900 flex-1 flex flex-col justify-center">
           <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-4 shadow-sm">
