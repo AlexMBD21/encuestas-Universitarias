@@ -857,10 +857,10 @@
 }
 
 .sidebar-nav-item.active {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-    font-weight: 700;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: #2563eb; /* Azul Primario Sólido */
+    color: #ffffff; /* Texto e ícono en blanco brillante */
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); /* Sombra azulada como en el contraído */
 }
 
 .sidebar-nav-item.active::before {
@@ -870,8 +870,8 @@
     top: 25%;
     height: 50%;
     width: 3px;
-    background: #4f46e5;
-    /* Indigo 600 */
+    background: #ffffff;
+    /* Blanca como pediste */
     border-radius: 0 4px 4px 0;
 }
 
@@ -903,14 +903,14 @@
 }
 
 .app-sidebar.collapsed .sidebar-nav-item.active {
-    background: rgba(99, 102, 241, 0.12); /* Glass tintado en índigo */
-    border: 1px solid rgba(99, 102, 241, 0.3); /* Borde sutil para definir la forma */
-    color: #818cf8; /* Indigo 400 (más claro y brillante) para iluminar el ícono */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: #2563eb; /* Azul Primario Sólido (Blue 600) */
+    border: none;
+    color: #ffffff; /* Ícono blanco brillante */
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); /* Resplandor azulado */
 }
 
 .app-sidebar.collapsed .sidebar-nav-item.active::before {
-    display: block; /* Restauramos el indicador a petición del usuario */
+    display: block; /* Restaurada a petición del usuario! */
 }
 
 /* Logout button refinement for collapsed state */

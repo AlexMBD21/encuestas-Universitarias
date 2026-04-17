@@ -107,7 +107,7 @@ export const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events, onClose 
         {/* Header */}
         <div className="flex items-center justify-between px-6 sm:px-8 py-5 sm:py-6 border-b border-white/5 bg-white/[0.02]">
           <div className="flex items-center gap-3">
-             <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center shadow-inner shadow-white/5">
+             <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20">
                 <span className="material-symbols-outlined text-white text-2xl font-bold">calendar_month</span>
              </div>
              <div className="flex flex-col">
@@ -174,8 +174,8 @@ export const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events, onClose 
                     onClick={() => setSelectedDate(isSelected ? null : dateString)}
                     className={`
                       relative h-10 w-10 rounded-2xl flex items-center justify-center text-sm transition-all duration-300
-                      ${isSelected ? 'bg-white text-[#0f172a] font-extrabold shadow-xl shadow-white/10 scale-110 z-10' : ''}
-                      ${!isSelected && isToday ? 'border-2 border-white text-white font-black' : ''}
+                      ${isSelected ? 'bg-blue-600 text-white font-extrabold shadow-[0_0_20px_rgba(37,99,235,0.4)] scale-110 z-10' : ''}
+                      ${!isSelected && isToday ? 'border-2 border-blue-500/50 text-blue-400 font-black' : ''}
                       ${!isSelected && !isToday ? 'text-slate-300 font-bold hover:bg-white/10 hover:scale-105' : ''}
                     `}
                   >

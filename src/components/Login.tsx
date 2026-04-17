@@ -140,10 +140,10 @@ export default function Login() {
     <div className="login-root fixed inset-0 z-[100] flex flex-col md:flex-row bg-[#020617] overflow-hidden font-outfit">
       {/* Cosmic Background Layer (Behind everything) */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[radial-gradient(circle_at_20%_30%,_#0f172a_0%,_#020617_100%)]">
-        <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-indigo-500/30 rounded-full blur-[120px] animate-pulse-slow opacity-80"></div>
-        <div className="absolute bottom-[-20%] left-[10%] w-[700px] h-[700px] bg-blue-500/20 rounded-full blur-[150px] animate-pulse-slow opacity-60" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-[30%] left-[-5%] w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[100px] animate-pulse-slow opacity-40" style={{ animationDelay: '4s' }}></div>
-        <div className="absolute top-[10%] right-[30%] w-[300px] h-[300px] bg-indigo-400/10 rounded-full blur-[80px] animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-blue-600/30 rounded-full blur-[120px] animate-pulse-slow opacity-80"></div>
+        <div className="absolute bottom-[-20%] left-[10%] w-[700px] h-[700px] bg-sky-500/20 rounded-full blur-[150px] animate-pulse-slow opacity-60" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-[30%] left-[-5%] w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[100px] animate-pulse-slow opacity-40" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute top-[10%] right-[30%] w-[300px] h-[300px] bg-blue-400/10 rounded-full blur-[80px] animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
       </div>
 
       {/* Left Section: Branding & Welcome (Desktop only) */}
@@ -156,7 +156,7 @@ export default function Login() {
         </div>
 
         <div className="max-w-2xl animate-fade-in-up">
-          <h1 className="text-7xl lg:text-8xl font-black bg-gradient-to-br from-white via-indigo-100 to-indigo-400 bg-clip-text text-transparent leading-[0.9] mb-8 tracking-tighter">
+          <h1 className="text-7xl lg:text-8xl font-black text-white leading-[0.9] pb-2 mb-8 tracking-tight">
             Gestiona con <br /> Inteligencia.
           </h1>
           <p className="text-xl text-slate-400 font-medium max-w-lg leading-relaxed">
@@ -165,18 +165,18 @@ export default function Login() {
           <div className="flex gap-4 mt-10 opacity-80">
             <div className="flex flex-col">
               <span className="text-2xl font-black text-white">100%</span>
-              <span className="text-[10px] uppercase tracking-widest font-bold text-indigo-200/60">Seguro</span>
+              <span className="text-[10px] uppercase tracking-widest font-bold text-blue-200/60">Seguro</span>
             </div>
             <div className="w-[1px] h-10 bg-white/10 mx-4"></div>
             <div className="flex flex-col">
               <span className="text-2xl font-black text-white">24/7</span>
-              <span className="text-[10px] uppercase tracking-widest font-bold text-indigo-200/60">Disponible</span>
+              <span className="text-[10px] uppercase tracking-widest font-bold text-blue-200/60">Disponible</span>
             </div>
           </div>
         </div>
 
         <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] opacity-50">
-          © 2026 EduSurvey Core • Celestial Design System
+          © 2026 ENCUESTAS • PLATAFORMA UNIVERSITARIA
         </div>
       </div>
 
@@ -218,7 +218,7 @@ export default function Login() {
                 <div className="absolute inset-0 bg-white/10 rounded-full blur-2xl animate-pulse-slow"></div>
                 <span className="material-symbols-outlined text-[48px] text-white relative z-10">fact_check</span>
               </div>
-              <h1 className="text-4xl font-black bg-gradient-to-br from-white via-white to-indigo-400 bg-clip-text text-transparent leading-none mb-2 tracking-tighter">
+              <h1 className="text-4xl font-black text-white leading-none mb-2 tracking-tight pb-1">
                 Encuestas
               </h1>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gestión Universitaria</p>
@@ -245,7 +245,7 @@ export default function Login() {
                   Profesor
                 </button>
                 <div 
-                  className={`absolute inset-y-1 bg-indigo-600 rounded-full transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${role === 'student' ? 'left-1 w-[calc(50%-4px)]' : 'left-[calc(50%+1px)] w-[calc(50%-4px)]'}`}
+                  className={`absolute inset-y-1 bg-blue-600 rounded-full transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${role === 'student' ? 'left-1 w-[calc(50%-4px)]' : 'left-[calc(50%+1px)] w-[calc(50%-4px)]'}`}
                 ></div>
               </div>
             </div>
@@ -254,7 +254,7 @@ export default function Login() {
               <div className="space-y-2 group">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Correo Electrónico</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition-colors">
                     <span className="material-symbols-outlined text-[22px]">alternate_email</span>
                   </div>
                   <input 
@@ -262,7 +262,7 @@ export default function Login() {
                     type="email" 
                     value={email} 
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(79,70,229,0.15)]"
+                    className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-blue-50/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(37,99,235,0.15)] focus:border-blue-500/50"
                     placeholder="nombre@ejemplo.com"
                   />
                 </div>
@@ -271,7 +271,7 @@ export default function Login() {
               <div className="space-y-2 group">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Contraseña</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition-colors">
                     <span className="material-symbols-outlined text-[22px]">lock</span>
                   </div>
                   <input 
@@ -279,13 +279,13 @@ export default function Login() {
                     type={showPassword ? "text" : "password"} 
                     value={password} 
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(79,70,229,0.15)]"
+                    className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-blue-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(37,99,235,0.15)]"
                     placeholder="••••••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-500 hover:text-indigo-400 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-500 hover:text-blue-400 transition-colors"
                   >
                     <span className="material-symbols-outlined text-xl">
                       {showPassword ? 'visibility_off' : 'visibility'}
@@ -298,7 +298,7 @@ export default function Login() {
                   <button 
                     type="submit" 
                     disabled={isValidating || isLoggingIn || isSuccess}
-                    className="w-full bg-indigo-600 text-white font-black py-4 rounded-[22px] shadow-lg hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-widest text-xs border border-white/10"
+                    className="w-full bg-blue-600 text-white font-black py-4 rounded-[22px] shadow-lg hover:bg-blue-700 hover:-translate-y-0.5 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-widest text-xs border border-white/10"
                   >
                     {isValidating || isLoggingIn || isSuccess? (
                       <>
