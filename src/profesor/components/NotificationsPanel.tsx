@@ -516,7 +516,7 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
                   } catch (e) {}
 
                   const isProject = !!(survey && (survey.type === 'project' || survey.projects?.length > 0))
-                  const colorClass = isProject ? 'bg-indigo-600' : 'bg-green-600'
+                  const colorClass = isProject ? 'bg-blue-600' : 'bg-green-600'
                   const typeLabel = isProject ? 'PROYECTO' : 'NUEVA ENCUESTA'
                   const isResponded = status === 'responded'
                   const statusLabel = isResponded ? (isProject ? 'CALIFICADO' : 'RESPONDIDO') : (status === 'warning' ? 'CERRANDO' : null)
@@ -535,36 +535,35 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
                       }}
                       className={`
                         group relative flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-500
-                        ${n.read ? 'bg-white/5 border-white/5' : 'bg-white/[0.08] shadow-[0_15px_30px_rgba(0,0,0,0.2)] border-white/10'} 
-                        border hover:bg-white/[0.12] hover:border-white/20
+                        ${n.read ? 'bg-white/[0.04] border-white/5 opacity-80' : 'bg-white/10 shadow-[0_15px_30px_rgba(0,0,0,0.4)] border-white/20'} 
+                        border hover:bg-white/[0.15] hover:border-white/30
                         hover:scale-[1.015] cursor-pointer active:scale-[0.99] overflow-hidden
                       `}
                     >
-                      {/* Viñeta Premium con degradado y resplandor */}
-                      <div className={`absolute top-0 left-0 w-[5px] h-full ${isProject ? 'bg-gradient-to-b from-indigo-500 to-indigo-800 shadow-[2px_0_10px_rgba(99,102,241,0.3)]' : 'bg-gradient-to-b from-emerald-500 to-emerald-800 shadow-[2px_0_10px_rgba(16,185,129,0.3)]'}`} />
+                      <div className={`absolute top-0 left-0 w-[4px] h-full ${isProject ? 'bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.6)]' : 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]'}`} />
                       
                       <div className="flex-1 min-w-0 pl-1">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                             <div className={`flex items-center gap-1.5 px-3 py-0.5 rounded-full ${isProject ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'} border`}>
+                             <div className={`flex items-center gap-1.5 px-3 py-0.5 rounded-full ${isProject ? 'bg-indigo-500/20 text-indigo-200 border-indigo-500/30' : 'bg-emerald-500/20 text-emerald-200 border-emerald-500/30'} border shadow-sm`}>
                                 <span className="text-[9px] font-black uppercase tracking-wider">
                                    {typeLabel}
                                 </span>
                              </div>
                              {statusLabel && (
-                               <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${isResponded ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'} border border-opacity-30 shadow-sm`}>
+                               <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${isResponded ? 'bg-green-500/20 text-green-200 border-green-500/40' : 'bg-amber-500/20 text-amber-200 border-amber-500/40'} border shadow-sm`}>
                                  {statusLabel}
                                </span>
                              )}
                           </div>
-                          <span className="text-[10px] font-bold text-slate-400">
+                          <span className="text-[10px] font-bold text-slate-300">
                              {n.createdAt ? new Date(n.createdAt).toLocaleDateString() : ''}
                           </span>
                         </div>
-                        <h4 className="text-[14px] font-extrabold text-white truncate pr-4 tracking-tight group-hover:text-blue-400 transition-colors mb-0.5">
+                        <h4 className="text-[14px] font-extrabold text-white truncate pr-4 tracking-tight group-hover:text-blue-300 transition-colors mb-0.5">
                            {n.title?.replace('Nueva encuesta:', '').trim() || 'Aviso de sistema'}
                         </h4>
-                        <div className="text-[11px] text-slate-400 font-medium line-clamp-1 italic font-inter leading-relaxed opacity-80">
+                        <div className="text-[11px] text-slate-300 font-medium line-clamp-1 italic font-inter leading-relaxed opacity-90">
                           {n.message || 'Pulsa para participar.'}
                         </div>
                       </div>

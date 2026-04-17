@@ -18,12 +18,11 @@ function Bone({ className = '' }: { className?: string }) {
 
 export function SurveyCardSkeleton({ variant = 'project' }: { variant?: 'project' | 'simple' }) {
   const accentColor = variant === 'project'
-    ? 'bg-gradient-to-r from-indigo-100 to-indigo-200'
-    : 'bg-gradient-to-r from-emerald-100 to-emerald-200';
+    ? 'bg-indigo-100'
+    : 'bg-emerald-100';
 
   return (
     <div className="relative p-5 border border-slate-100 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 flex flex-col justify-between overflow-hidden shadow-sm">
-      {/* Acento superior Premium */}
       <div className={`absolute top-0 left-0 w-full h-[5px] ${accentColor}`} />
 
       <div className="flex-1 mt-1">
@@ -54,7 +53,7 @@ export function SurveyCardSkeleton({ variant = 'project' }: { variant?: 'project
               <Bone className="h-3 w-10" />
             </div>
             <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div className={`${shimmer} h-1.5 w-1/3 bg-gradient-to-r from-indigo-200 to-indigo-300 rounded-full`} />
+              <div className={`${shimmer} h-1.5 w-1/3 bg-indigo-200 rounded-full`} />
             </div>
           </div>
         )}

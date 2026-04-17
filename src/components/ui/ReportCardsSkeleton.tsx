@@ -31,9 +31,7 @@ export function ReportCardsSkeleton({ count = 6 }: { count?: number }) {
             key={i}
             className="bg-white rounded-2xl border border-slate-100 flex flex-col relative overflow-hidden shadow-sm"
           >
-            {/* Acento superior Premium — alterna indigo / emerald */}
-            <div className={`absolute top-0 left-0 right-0 h-[5px] ${i % 2 === 0 ? 'bg-gradient-to-r from-indigo-100 to-indigo-200' : 'bg-gradient-to-r from-emerald-100 to-emerald-200'}`} />
-
+            <div className={`absolute top-0 left-0 right-0 h-[5px] ${i % 2 === 0 ? 'bg-indigo-400' : 'bg-emerald-400'}`} />
             <div className="p-5 md:p-6 flex-1 flex flex-col">
               {/* Icono + badge */}
               <div className="flex items-start justify-between gap-3 mb-5 mt-1">
