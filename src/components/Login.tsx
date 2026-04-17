@@ -137,11 +137,48 @@ export default function Login() {
   if (loading) return <Loader fullScreen text="Cargando sesión..." />
 
   return (
-    <div className="login-root fixed inset-0 z-[100] flex items-center justify-center bg-[#020617] overflow-hidden font-outfit">
-      {/* Cosmic Background Elements */}
-      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse-slow"></div>
-      <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-      <div className="absolute top-[20%] left-[10%] w-[300px] h-[300px] bg-purple-600/10 rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
+    <div className="login-root fixed inset-0 z-[100] flex flex-col md:flex-row bg-[#020617] overflow-hidden font-outfit">
+      {/* Cosmic Background Layer (Behind everything) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[radial-gradient(circle_at_20%_30%,_#0f172a_0%,_#020617_100%)]">
+        <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-indigo-500/30 rounded-full blur-[120px] animate-pulse-slow opacity-80"></div>
+        <div className="absolute bottom-[-20%] left-[10%] w-[700px] h-[700px] bg-blue-500/20 rounded-full blur-[150px] animate-pulse-slow opacity-60" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-[30%] left-[-5%] w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[100px] animate-pulse-slow opacity-40" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute top-[10%] right-[30%] w-[300px] h-[300px] bg-indigo-400/10 rounded-full blur-[80px] animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+      </div>
+
+      {/* Left Section: Branding & Welcome (Desktop only) */}
+      <div className="hidden md:flex flex-1 relative z-10 p-12 lg:p-20 flex-col justify-between">
+        <div className="flex items-center gap-3 animate-fade-in-down">
+          <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-white text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>fact_check</span>
+          </div>
+          <span className="text-xl font-bold text-white tracking-widest uppercase opacity-80">EduSurvey</span>
+        </div>
+
+        <div className="max-w-2xl animate-fade-in-up">
+          <h1 className="text-7xl lg:text-8xl font-black bg-gradient-to-br from-white via-indigo-100 to-indigo-400 bg-clip-text text-transparent leading-[0.9] mb-8 tracking-tighter">
+            Gestiona con <br /> Inteligencia.
+          </h1>
+          <p className="text-xl text-slate-400 font-medium max-w-lg leading-relaxed">
+            Plataforma avanzada de gestión universitaria diseñada para simplificar el análisis y la toma de decisiones.
+          </p>
+          <div className="flex gap-4 mt-10 opacity-80">
+            <div className="flex flex-col">
+              <span className="text-2xl font-black text-white">100%</span>
+              <span className="text-[10px] uppercase tracking-widest font-bold text-indigo-200/60">Seguro</span>
+            </div>
+            <div className="w-[1px] h-10 bg-white/10 mx-4"></div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black text-white">24/7</span>
+              <span className="text-[10px] uppercase tracking-widest font-bold text-indigo-200/60">Disponible</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] opacity-50">
+          © 2026 EduSurvey Core • Celestial Design System
+        </div>
+      </div>
 
       {/* Toast Notification */}
       {message && (
@@ -170,122 +207,114 @@ export default function Login() {
         </div>
       )}
 
-      <div className="w-full max-w-[420px] relative z-10 animate-fade-in-up p-4">
-        <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/10 shadow-[0_64px_128px_-16px_rgba(0,0,0,0.8)] rounded-[48px] p-6 md:p-8 overflow-hidden relative group/card">
-          {/* Subtle Border Glow Effect */}
-          <div className="absolute inset-0 rounded-[48px] p-[1px] bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
-
+      {/* Right Section: Form Panel */}
+      <div className="w-full md:w-[480px] lg:w-[540px] h-full relative z-20 flex items-center justify-center">
+        <div className="w-full h-full bg-slate-950/40 backdrop-blur-3xl border-l border-white/10 flex flex-col justify-center p-8 lg:p-16 shadow-[-50px_0_100px_rgba(0,0,0,0.5)] relative overflow-y-auto">
           
-          <div className="text-center mb-6">
-            <div className="relative inline-flex items-center justify-center w-24 h-24 mb-6 animate-bounce-slow">
-              {/* Outer Glow Layer */}
-              <div className="absolute inset-0 bg-white/10 rounded-full blur-2xl"></div>
-              
-              {/* Glass Ring */}
-              <div className="absolute inset-2 border-2 border-white/30 rounded-full backdrop-blur-sm"></div>
-              
-              {/* The Icon */}
-              <span 
-                className="material-symbols-outlined text-[56px] text-white relative z-10 drop-shadow-lg"
-                style={{ fontVariationSettings: "'FILL' 1, 'wght' 900, 'GRAD' 0, 'opsz' 48" }}
-              >
-                fact_check
-              </span>
-            </div>
-            <h1 className="text-5xl font-black bg-gradient-to-br from-white via-indigo-200 to-indigo-400 bg-clip-text text-transparent leading-none mb-3 tracking-tighter">
-              Encuestas
-            </h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] opacity-100">
-              Gestión Universitaria
-            </p>
-          </div>
-
-          <div className="mb-6">
-            <div className="bg-slate-950/50 p-1.5 rounded-[24px] flex items-center relative gap-1 border border-white/5 shadow-inner">
-              <button 
-                onClick={() => setRole('student')}
-                className={`flex-1 py-3 px-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative z-10 ${role === 'student' ? 'text-white' : 'text-slate-500 hover:text-white'}`}
-              >
-                Estudiante
-              </button>
-              <button 
-                onClick={() => setRole('profesor')}
-                className={`flex-1 py-3 px-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative z-10 ${role === 'profesor' ? 'text-white' : 'text-slate-500 hover:text-white'}`}
-              >
-                Profesor
-              </button>
-              <div 
-                className={`absolute inset-y-1 bg-indigo-500 rounded-full transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${role === 'student' ? 'left-1 w-[calc(50%-4px)]' : 'left-[calc(50%+1px)] w-[calc(50%-4px)]'}`}
-              ></div>
-            </div>
-          </div>
-
-          <form onSubmit={onSubmit} className="space-y-3">
-            <div className="space-y-2 group">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Correo Electrónico</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
-                  <span className="material-symbols-outlined text-[22px]">alternate_email</span>
-                </div>
-                <input 
-                  required 
-                  type="email" 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(79,70,229,0.15)]"
-                  placeholder="nombre@ejemplo.com"
-                />
+          <div className="w-full max-w-[400px] mx-auto animate-fade-in-up py-10">
+            {/* Mobile Branding (only visible on small screens) */}
+            <div className="md:hidden text-center mb-10">
+               <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6">
+                <div className="absolute inset-0 bg-white/10 rounded-full blur-2xl animate-pulse-slow"></div>
+                <span className="material-symbols-outlined text-[48px] text-white relative z-10">fact_check</span>
               </div>
+              <h1 className="text-4xl font-black bg-gradient-to-br from-white via-white to-indigo-400 bg-clip-text text-transparent leading-none mb-2 tracking-tighter">
+                Encuestas
+              </h1>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gestión Universitaria</p>
             </div>
 
-            <div className="space-y-2 group">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Contraseña</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
-                  <span className="material-symbols-outlined text-[22px]">lock</span>
-                </div>
-                <input 
-                  required 
-                  type={showPassword ? "text" : "password"} 
-                  value={password} 
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(79,70,229,0.15)]"
-                  placeholder="••••••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-500 hover:text-indigo-400 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-xl">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
-                </button>
-              </div>
+            <div className="mb-10 hidden md:block">
+              <h2 className="text-3xl font-black text-white mb-2">Bienvenido</h2>
+              <p className="text-sm text-slate-400 font-medium leading-relaxed">Ingresa tus credenciales para acceder a la plataforma estratégica.</p>
             </div>
 
-            <div className="pt-2">
+            {/* Role Toggle */}
+            <div className="mb-8">
+              <div className="bg-white p-1.5 rounded-[24px] flex items-center relative gap-1 shadow-sm">
                 <button 
-                  type="submit" 
-                  disabled={isValidating || isLoggingIn || isSuccess}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black py-4 rounded-[22px] shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-widest text-xs border border-white/10"
+                  onClick={() => setRole('student')}
+                  className={`flex-1 py-3 px-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative z-10 ${role === 'student' ? 'text-white' : 'text-slate-400 hover:text-slate-600'}`}
                 >
-                  {isValidating || isLoggingIn || isSuccess? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-slate-900/20 border-t-slate-950 rounded-full animate-spin"></div>
-                      <span>{isSuccess ? 'Entrando...' : 'Validando...'}</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-xl font-bold">login</span>
-                      <span>Iniciar Sesión</span>
-                    </>
-                  )}
+                  Estudiante
                 </button>
+                <button 
+                  onClick={() => setRole('profesor')}
+                  className={`flex-1 py-3 px-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative z-10 ${role === 'profesor' ? 'text-white' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  Profesor
+                </button>
+                <div 
+                  className={`absolute inset-y-1 bg-indigo-600 rounded-full transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${role === 'student' ? 'left-1 w-[calc(50%-4px)]' : 'left-[calc(50%+1px)] w-[calc(50%-4px)]'}`}
+                ></div>
+              </div>
             </div>
 
-            {/* Forgot password link removed per user request */}
-          </form>
+            <form onSubmit={onSubmit} className="space-y-5">
+              <div className="space-y-2 group">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Correo Electrónico</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                    <span className="material-symbols-outlined text-[22px]">alternate_email</span>
+                  </div>
+                  <input 
+                    required 
+                    type="email" 
+                    value={email} 
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(79,70,229,0.15)]"
+                    placeholder="nombre@ejemplo.com"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 group">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Contraseña</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                    <span className="material-symbols-outlined text-[22px]">lock</span>
+                  </div>
+                  <input 
+                    required 
+                    type={showPassword ? "text" : "password"} 
+                    value={password} 
+                    onChange={e => setPassword(e.target.value)}
+                    className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(79,70,229,0.15)]"
+                    placeholder="••••••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-500 hover:text-indigo-400 transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-xl">
+                      {showPassword ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                  <button 
+                    type="submit" 
+                    disabled={isValidating || isLoggingIn || isSuccess}
+                    className="w-full bg-indigo-600 text-white font-black py-4 rounded-[22px] shadow-lg hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-widest text-xs border border-white/10"
+                  >
+                    {isValidating || isLoggingIn || isSuccess? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-slate-900/20 border-t-slate-950 rounded-full animate-spin"></div>
+                        <span>{isSuccess ? 'Entrando...' : 'Validando...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-xl font-bold">login</span>
+                        <span>Iniciar Sesión</span>
+                      </>
+                    )}
+                  </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
 

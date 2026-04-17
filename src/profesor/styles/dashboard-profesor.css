@@ -653,7 +653,7 @@
     top: 25%;
     height: 50%;
     width: 3px;
-    background: var(--color-primary);
+    background: #4f46e5; /* Indigo 600 */
     border-radius: 0 4px 4px 0;
 }
 .sidebar-nav-icon { font-size: 24px; flex-shrink: 0; line-height: 1; color: inherit; }
@@ -675,8 +675,8 @@
 }
 
 .app-sidebar.collapsed .sidebar-nav-item.active {
-    background: var(--color-primary);
-    box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.4);
+    background: #4f46e5; /* Indigo 600 */
+    box-shadow: none;
 }
 
 .app-sidebar.collapsed .sidebar-nav-item.active::before {
