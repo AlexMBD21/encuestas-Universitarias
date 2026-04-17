@@ -175,7 +175,7 @@ export const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events, onClose 
                     className={`
                       relative h-10 w-10 rounded-2xl flex items-center justify-center text-sm transition-all duration-300
                       ${isSelected ? 'bg-blue-600 text-white font-extrabold shadow-[0_0_20px_rgba(37,99,235,0.4)] scale-110 z-10' : ''}
-                      ${!isSelected && isToday ? 'border-2 border-blue-500/50 text-blue-400 font-black' : ''}
+                      ${!isSelected && isToday ? 'border-2 border-white/40 text-white font-black' : ''}
                       ${!isSelected && !isToday ? 'text-slate-300 font-bold hover:bg-white/10 hover:scale-105' : ''}
                     `}
                   >
