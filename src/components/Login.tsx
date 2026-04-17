@@ -137,7 +137,12 @@ export default function Login() {
   if (loading) return <Loader fullScreen text="Cargando sesión..." />
 
   return (
-    <div className="login-root fixed inset-0 z-[100] flex items-center justify-center bg-[#0f172a] overflow-hidden font-outfit">
+    <div className="login-root fixed inset-0 z-[100] flex items-center justify-center bg-[#020617] overflow-hidden font-outfit">
+      {/* Cosmic Background Elements */}
+      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse-slow"></div>
+      <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-[20%] left-[10%] w-[300px] h-[300px] bg-purple-600/10 rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
+
       {/* Toast Notification */}
       {message && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] animate-fade-in-down">
@@ -165,8 +170,11 @@ export default function Login() {
         </div>
       )}
 
-      <div className="w-full max-w-[400px] relative z-10 animate-fade-in-up p-4">
-        <div className="bg-slate-900/40 backdrop-blur-3xl border border-slate-700/50 shadow-[0_64px_128px_-16px_rgba(0,0,0,0.8)] rounded-[48px] p-6 md:p-8 overflow-hidden relative">
+      <div className="w-full max-w-[420px] relative z-10 animate-fade-in-up p-4">
+        <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/10 shadow-[0_64px_128px_-16px_rgba(0,0,0,0.8)] rounded-[48px] p-6 md:p-8 overflow-hidden relative group/card">
+          {/* Subtle Border Glow Effect */}
+          <div className="absolute inset-0 rounded-[48px] p-[1px] bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
+
           
           <div className="text-center mb-6">
             <div className="relative inline-flex items-center justify-center w-24 h-24 mb-6 animate-bounce-slow">
@@ -184,7 +192,7 @@ export default function Login() {
                 fact_check
               </span>
             </div>
-            <h1 className="text-5xl font-black bg-gradient-to-b from-white via-white to-slate-400 bg-clip-text text-transparent leading-none mb-3">
+            <h1 className="text-5xl font-black bg-gradient-to-br from-white via-indigo-200 to-indigo-400 bg-clip-text text-transparent leading-none mb-3 tracking-tighter">
               Encuestas
             </h1>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] opacity-100">
@@ -207,7 +215,7 @@ export default function Login() {
                 Profesor
               </button>
               <div 
-                className={`absolute inset-y-1.5 bg-indigo-600 shadow-md rounded-[18px] transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${role === 'student' ? 'left-1.5 w-[calc(50%-8px)]' : 'left-[calc(50%+2px)] w-[calc(50%-8px)]'}`}
+                className={`absolute inset-y-1 bg-indigo-500 rounded-full transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${role === 'student' ? 'left-1 w-[calc(50%-4px)]' : 'left-[calc(50%+1px)] w-[calc(50%-4px)]'}`}
               ></div>
             </div>
           </div>
@@ -224,7 +232,7 @@ export default function Login() {
                   type="email" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-slate-900/50 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-800 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-inner"
+                  className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(79,70,229,0.15)]"
                   placeholder="nombre@ejemplo.com"
                 />
               </div>
@@ -241,7 +249,7 @@ export default function Login() {
                   type={showPassword ? "text" : "password"} 
                   value={password} 
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-slate-900/50 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-800 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-inner"
+                  className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(79,70,229,0.15)]"
                   placeholder="••••••••••••"
                 />
                 <button
@@ -260,7 +268,7 @@ export default function Login() {
                 <button 
                   type="submit" 
                   disabled={isValidating || isLoggingIn || isSuccess}
-                  className="w-full bg-white text-slate-950 font-black py-4 rounded-[22px] shadow-[0_20px_40px_-15px_rgba(255,255,255,0.15)] hover:bg-slate-50 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-widest text-xs"
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black py-4 rounded-[22px] shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-widest text-xs border border-white/10"
                 >
                   {isValidating || isLoggingIn || isSuccess? (
                     <>
@@ -298,10 +306,16 @@ export default function Login() {
         .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
         
         @keyframes bounceSlow {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-10px) scale(1.02); }
         }
-        .animate-bounce-slow { animation: bounceSlow 3s ease-in-out infinite; }
+        .animate-bounce-slow { animation: bounceSlow 4s ease-in-out infinite; }
+
+        @keyframes pulseSlow {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.1); }
+        }
+        .animate-pulse-slow { animation: pulseSlow 8s ease-in-out infinite; }
       `}</style>
     </div>
   )
