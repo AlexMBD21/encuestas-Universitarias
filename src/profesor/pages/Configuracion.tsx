@@ -653,6 +653,7 @@ export default function Configuracion() {
           hideMobileIndicator={false} 
           scrollableBody={false}
           noHeaderShadow={true}
+          hideCloseButton={modalType === 'delete'}
         >
           <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-white dark:bg-slate-900 px-6 pb-6 pt-2">
             {/* Content WITHOUT wrapping modal-scrollable-content to avoid gray bg if not needed */}
@@ -729,6 +730,7 @@ export default function Configuracion() {
         hideMobileIndicator={false} 
         scrollableBody={false}
         noHeaderShadow={true}
+        hideCloseButton={true}
       >
         <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden bg-white dark:bg-slate-900 p-6 pt-2">
           <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 font-medium">¿Confirmas que deseas cambiar tu contraseña? Esta acción no se puede deshacer.</p>

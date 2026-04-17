@@ -132,7 +132,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
                 onClick={handleClose} 
                 className={`hidden sm:flex w-10 h-10 items-center justify-center rounded-full transition-all active:scale-95 shadow-sm group ${
                   closeButtonVariant === 'premium' 
-                    ? 'bg-[#0f172a] text-white hover:bg-[#1e293b]' 
+                    ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700' 
                     : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100'
                 }`}
                 aria-label="Cerrar"
