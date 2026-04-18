@@ -77,7 +77,8 @@ module.exports = async function handler(req, res) {
       description: projectData.description || '',
       category: projectData.category,
       members: projectData.members,
-      advisor: projectData.advisor || ''
+      advisor: projectData.advisor || '',
+      contact_email: (projectData.email || '').trim().toLowerCase()
     };
 
     const updatedProjects = [...currentProjects, newProject];

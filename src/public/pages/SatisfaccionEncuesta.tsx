@@ -47,9 +47,12 @@ export default function SatisfaccionEncuesta() {
   // PANTALLA DE IDENTIFICACIÓN: Si entramos por surveyId y no tenemos token aún
   if (urlSurveyId && !token) {
     return (
-      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6 relative overflow-hidden font-outfit">
-        <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]"></div>
-        <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.5)]">
+      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]">
+          <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-600/20 rounded-full blur-[120px] opacity-60"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] opacity-50"></div>
+        </div>
+        <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.5)]">
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 border border-white/20 mb-6">
               <span className="material-symbols-outlined text-white text-[28px]">mail</span>
@@ -66,7 +69,7 @@ export default function SatisfaccionEncuesta() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="tu@correo.com"
-                className="w-full bg-slate-950/50 border-2 border-slate-700/50 focus:border-blue-500/50 focus:bg-slate-900/80 rounded-2xl p-4 text-sm font-medium outline-none text-white transition-all"
+                className="w-full bg-slate-950/50 border-2 border-slate-700/50 focus:border-indigo-500/50 focus:bg-slate-900/80 rounded-2xl p-4 text-sm font-medium outline-none text-white transition-all"
               />
               {idError && <p className="text-rose-400 text-[10px] font-bold uppercase tracking-wider px-2">{idError}</p>}
             </div>
@@ -74,7 +77,7 @@ export default function SatisfaccionEncuesta() {
             <button 
               type="submit"
               disabled={!email.trim()}
-              className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg hover:bg-blue-500 transition-all active:scale-[0.98] disabled:opacity-50 uppercase tracking-widest text-[11px]"
+              className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-blue-500 hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all active:scale-[0.98] disabled:opacity-50 uppercase tracking-widest text-[11px] border border-blue-500"
             >
               Comenzar Encuesta
             </button>
@@ -125,15 +128,32 @@ export default function SatisfaccionEncuesta() {
   const isFormComplete = estrellas > 0 && nps !== null && aspecto !== '';
 
   return (
-    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6 relative overflow-hidden font-outfit">
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center py-10 px-6 relative overflow-hidden">
       
-      {/* Fondo estético tipo Celestial */}
+      {/* Fondo estético tipo Celestial - idéntico al de Proyecto */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]">
          <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-600/20 rounded-full blur-[120px] opacity-60"></div>
+         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] opacity-50"></div>
       </div>
 
-      <div className="relative z-10 w-full max-w-2xl bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.5)] animate-fade-in-up">
-        
+      <div className="relative z-10 w-full max-w-2xl bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[30px] shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden">
+
+        {/* Timer/Deadline Ribbon */}
+        {surveyData?.token_expires_at || surveyData?.satisfaccion_expires_at ? (
+          <div className="bg-white/5 border-b border-white/5 p-4 flex items-center justify-center gap-3">
+            <span className="material-symbols-outlined text-amber-500 text-[18px]">timer</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Cierre:</span>
+              <span className="text-amber-400 font-bold text-xs tracking-wider">
+                {new Date(surveyData.token_expires_at || surveyData.satisfaccion_expires_at).toLocaleDateString('es-ES', {
+                  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                })}
+              </span>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="p-8 md:p-12">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 mb-6">
             <span className="material-symbols-outlined text-white text-[28px]">rate_review</span>
@@ -233,10 +253,18 @@ export default function SatisfaccionEncuesta() {
           </div>
 
           <div className="pt-6">
+            {email && (
+              <div className="text-center mb-5">
+                <p className="text-xs text-slate-500 font-medium inline-flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[14px]">account_circle</span>
+                  Respondiendo como: <strong className="text-slate-300">{email}</strong>
+                </p>
+              </div>
+            )}
             <button 
               type="submit" 
               disabled={isSubmitting || !isFormComplete}
-              className="w-full bg-blue-600 text-white font-black py-5 rounded-[22px] shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:shadow-[0_0_40px_rgba(37,99,235,0.5)] hover:bg-blue-500 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-widest text-xs border border-white/10"
+              className="w-full bg-blue-600 text-white font-black py-5 rounded-[22px] shadow-xl hover:bg-blue-500 hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-3 uppercase tracking-widest text-xs border border-blue-500"
             >
               {isSubmitting ? (
                 <>
@@ -253,6 +281,13 @@ export default function SatisfaccionEncuesta() {
           </div>
 
         </form>
+        </div>{/* end padding wrapper */}
+
+        {/* Footer */}
+        <div className="bg-white/5 p-4 text-center border-t border-white/5">
+          <p className="text-slate-600 text-[10px] font-black uppercase tracking-widest">Encuestas Universitarias</p>
+        </div>
+
       </div>
 
     </div>
