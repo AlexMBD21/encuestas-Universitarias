@@ -183,7 +183,7 @@ export default function Login() {
       {/* Toast Notification */}
       {message && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] animate-fade-in-down">
-          <div className={`flex items-center gap-4 px-6 py-4 rounded-[24px] border backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] min-w-[320px] ${
+          <div className={`flex items-center gap-4 px-6 py-4 rounded-[24px] border backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-max max-w-[90vw] md:min-w-[320px] ${
             messageType === 'success' 
               ? 'bg-emerald-600 border-emerald-500 text-white' 
               : 'bg-red-500/20 border-red-500/30 text-red-50'
