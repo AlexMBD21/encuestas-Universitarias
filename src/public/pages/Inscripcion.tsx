@@ -277,7 +277,7 @@ export default function Inscripcion() {
 
   // --- MAIN CONTENT (Step 2) ---
   return (
-    <div className="min-h-screen bg-[#020617] flex flex-col items-center py-10 px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center py-8 px-3 sm:py-10 sm:px-4 relative overflow-hidden">
       
       {/* Fondo estético tipo Celestial */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]">
@@ -286,7 +286,7 @@ export default function Inscripcion() {
       </div>
 
       {/* Header Info */}
-      <div className="w-full max-w-2xl text-center mb-8 relative z-10">
+      <div className="w-full max-w-2xl text-center mb-6 relative z-10 px-2">
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 mb-6">
           <span className="material-symbols-outlined text-white text-[28px]">add_box</span>
         </div>
@@ -294,7 +294,7 @@ export default function Inscripcion() {
           <span className="material-symbols-outlined text-[16px]">event</span>
           <span className="text-[10px] font-black uppercase tracking-widest">Formulario de Inscripción</span>
         </div>
-        <h1 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 sm:mb-3 tracking-tight">
           Registro de Proyecto
         </h1>
         <p className="text-sm font-medium text-slate-400">
@@ -318,7 +318,7 @@ export default function Inscripcion() {
            </div>
         </div>
 
-        <div className="p-8 md:p-10">
+        <div className="p-5 sm:p-8 md:p-10">
           <form onSubmit={handleSubmit} className="space-y-8">
             
             {/* Informacion Principal */}

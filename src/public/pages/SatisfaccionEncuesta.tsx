@@ -128,7 +128,7 @@ export default function SatisfaccionEncuesta() {
   const isFormComplete = estrellas > 0 && nps !== null && aspecto !== '';
 
   return (
-    <div className="min-h-screen bg-[#020617] flex flex-col items-center py-10 px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center py-8 px-3 sm:py-10 sm:px-6 relative overflow-hidden">
       
       {/* Fondo estético tipo Celestial - idéntico al de Proyecto */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]">
@@ -137,7 +137,7 @@ export default function SatisfaccionEncuesta() {
       </div>
 
       {/* Header Info - OUTSIDE the card, same as Proyecto */}
-      <div className="w-full max-w-2xl text-center mb-8 relative z-10">
+      <div className="w-full max-w-2xl text-center mb-6 relative z-10 px-2">
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 mb-6">
           <span className="material-symbols-outlined text-white text-[28px]">rate_review</span>
         </div>
@@ -145,7 +145,7 @@ export default function SatisfaccionEncuesta() {
           <span className="material-symbols-outlined text-[16px]">star</span>
           <span className="text-[10px] font-black uppercase tracking-widest">Encuesta de Satisfacción</span>
         </div>
-        <h1 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">Valoración de Actividad</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 sm:mb-3 tracking-tight">Valoración de Actividad</h1>
         <p className="text-sm font-medium text-slate-400">
           Evaluando: <strong className="text-blue-300 ml-1">{surveyData?.surveys?.title || surveyData?.survey_title || 'Actividad Evaluada'}</strong>
         </p>
@@ -167,13 +167,13 @@ export default function SatisfaccionEncuesta() {
           </div>
         ) : null}
 
-        <div className="p-8 md:p-12">
+        <div className="p-5 sm:p-8 md:p-10">
         <form onSubmit={handleSubmit} className="space-y-10">
           
           {/* Pregunta 1: Estrellas (Reemplazado por Emojis) */}
           <div className="space-y-4">
             <label className="block text-sm font-bold text-white text-center">1. ¿Qué tan satisfecho/a estás con la actividad evaluada?</label>
-            <div className="flex justify-center gap-2 md:gap-4">
+            <div className="flex justify-center gap-1 sm:gap-2 md:gap-4 flex-wrap">
               {[1, 2, 3, 4, 5].map((cert, i) => {
                 const EMOJIS = ['😡', '🙁', '😐', '🙂', '🤩'];
                 const isActive = estrellas === cert;
@@ -182,13 +182,13 @@ export default function SatisfaccionEncuesta() {
                    key={cert}
                    type="button"
                    onClick={() => setEstrellas(cert)}
-                   className={`w-14 h-14 md:w-20 md:h-20 flex items-center justify-center rounded-3xl transition-all duration-300 transform ${
+                   className={`w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 flex items-center justify-center rounded-3xl transition-all duration-300 transform ${
                      isActive 
                        ? 'bg-white/10 shadow-[0_0_30px_rgba(255,255,255,0.1)] scale-[1.15]' 
                        : 'bg-transparent hover:bg-white/5 hover:scale-110'
                    }`}
                  >
-                   <span className={`text-[40px] md:text-[50px] transition-all duration-300 ${!isActive && estrellas > 0 ? 'opacity-40 grayscale-[0.8]' : 'opacity-100'}`}>
+                   <span className={`text-[34px] sm:text-[40px] md:text-[50px] transition-all duration-300 ${!isActive && estrellas > 0 ? 'opacity-40 grayscale-[0.8]' : 'opacity-100'}`}>
                      {EMOJIS[i]}
                    </span>
                  </button>
@@ -210,9 +210,7 @@ export default function SatisfaccionEncuesta() {
                    key={score}
                    type="button"
                    onClick={() => setNps(score)}
-                   className={`w-10 h-10 md:w-11 md:h-11 flex items-center justify-center border transition-all duration-300 ${
-                     score <= 6 ? 'rounded-[12px] md:rounded-[14px]' : score <= 8 ? 'rounded-[12px] md:rounded-[14px]' : 'rounded-[12px] md:rounded-[14px]'
-                   } ${
+                   className={`w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 text-xs sm:text-sm flex items-center justify-center border rounded-xl transition-all duration-300 ${
                      nps === score 
                      ? (score <= 6 ? 'bg-rose-500 border-rose-400 text-white shadow-[0_0_15px_rgba(244,63,94,0.4)] scale-110' : score <= 8 ? 'bg-amber-500 border-amber-400 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)] scale-110' : 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] scale-110')
                      : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
