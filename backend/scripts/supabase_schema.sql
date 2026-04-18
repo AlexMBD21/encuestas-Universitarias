@@ -628,3 +628,55 @@ CREATE TRIGGER auth_user_delete_after_delete
 AFTER DELETE ON auth.users
 FOR EACH ROW
 EXECUTE FUNCTION public.handle_auth_user_delete();
+
+-- ==============================================================================
+-- MIGRACIÓN: SISTEMA DE ENCUESTAS DE SATISFACCIÓN
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.encuestas_satisfaccion (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    encuesta_id TEXT NOT NULL,
+    participante_email TEXT NOT NULL,
+    participante_id UUID,
+    token UUID UNIQUE DEFAULT gen_random_uuid(),
+    respondida BOOLEAN DEFAULT FALSE,
+    respuestas_json JSONB DEFAULT '{}'::jsonb,
+    token_expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '7 days'),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    respondida_en TIMESTAMPTZ,
+    UNIQUE (encuesta_id, participante_email)
+);
+
+ALTER TABLE public.encuestas_satisfaccion ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY ""Public read via token"" 
+    ON public.encuestas_satisfaccion FOR SELECT USING (true);
+CREATE POLICY ""Public update via token"" 
+    ON public.encuestas_satisfaccion FOR UPDATE USING (true) WITH CHECK (true);
+
+-- TRIGGER FUNCTION
+CREATE OR REPLACE FUNCTION public.fn_trigger_genera_satisfaccion()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    IF NEW.published = true AND OLD.published = false THEN
+        INSERT INTO public.encuestas_satisfaccion (encuesta_id, participante_email, participante_id, token_expires_at)
+        SELECT DISTINCT 
+            NEW.id,
+            COALESCE(r.user_email, 'anonimo@sistema.com'),
+            CAST(r.user_id AS UUID),
+            now() + interval '7 days'
+        FROM public.survey_responses r
+        WHERE r.survey_id = NEW.id
+        ON CONFLICT (encuesta_id, participante_email) DO NOTHING;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trigger_genera_satisfaccion ON public.surveys;
+CREATE TRIGGER trigger_genera_satisfaccion
+AFTER UPDATE ON public.surveys
+FOR EACH ROW
+EXECUTE FUNCTION public.fn_trigger_genera_satisfaccion();

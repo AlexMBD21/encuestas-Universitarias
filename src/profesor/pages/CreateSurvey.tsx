@@ -23,7 +23,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [surveyType, setSurveyType] = useState<'simple' | 'project'>(initialType ?? 'simple')
-  type Question = { id: number; text: string; type: 'text' | 'multiple'; options?: string[] }
+  type Question = { id: number; text: string; type: 'text' | 'multiple' | 'emoji'; options?: string[] }
   const [questions, setQuestions] = useState<Question[]>([{ id: Date.now(), text: '', type: 'text', options: [] }])
   type Project = { id: string; name: string; category?: string; description?: string; members?: string; advisor?: string }
   const [projects, setProjects] = useState<Project[]>([])
@@ -85,10 +85,10 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
     } catch (e) {}
   }, [editSurvey])
 
-  const addQuestion = (type: 'text' | 'multiple' = 'text') => setQuestions(q => [...q, { id: Date.now() + Math.random(), text: '', type, options: type === 'multiple' ? [''] : [] }])
+  const addQuestion = (type: 'text' | 'multiple' | 'emoji' = 'text') => setQuestions(q => [...q, { id: Date.now() + Math.random(), text: '', type, options: type === 'multiple' ? [''] : [] }])
   const removeQuestion = (id: number) => setQuestions(q => q.filter(s => s.id !== id))
   const setQuestionText = (id: number, val: string) => setQuestions(q => q.map(s => s.id === id ? { ...s, text: val } : s))
-  const setQuestionType = (id: number, type: 'text' | 'multiple') => setQuestions(q => q.map(s => s.id === id ? { ...s, type, options: type === 'multiple' ? (s.options && s.options.length ? s.options : ['']) : [] } : s))
+  const setQuestionType = (id: number, type: 'text' | 'multiple' | 'emoji') => setQuestions(q => q.map(s => s.id === id ? { ...s, type, options: type === 'multiple' ? (s.options && s.options.length ? s.options : ['']) : [] } : s))
   const addOption = (qid: number) => setQuestions(q => q.map(s => s.id === qid ? { ...s, options: [...(s.options || []), ''] } : s))
   const setOption = (qid: number, idx: number, val: string) => setQuestions(q => q.map(s => s.id === qid ? { ...s, options: s.options?.map((o, i) => i === idx ? val : o) } : s))
   const removeOption = (qid: number, idx: number) => setQuestions(q => q.map(s => s.id === qid ? { ...s, options: s.options?.filter((_, i) => i !== idx) } : s))
@@ -314,11 +314,14 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 mt-6">
                <label className="block text-xl font-bold text-slate-800 dark:text-slate-100">Batería de Preguntas</label>
                <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
-                 <button type="button" className="flex justify-center items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300 transition-colors w-full sm:w-auto" onClick={() => addQuestion('text')}>
+                 <button type="button" className="flex justify-center items-center gap-1.5 px-3 py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300 transition-colors w-full sm:w-auto" onClick={() => addQuestion('text')}>
                    <span className="material-symbols-outlined text-[18px]">short_text</span> Texto
                  </button>
-                 <button type="button" className="flex justify-center items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-sm font-semibold rounded-lg dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-blue-900/60 transition-colors w-full sm:w-auto" onClick={() => addQuestion('multiple')}>
-                   <span className="material-symbols-outlined text-[18px]">checklist</span> Opción Única/Múltiple
+                 <button type="button" className="flex justify-center items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-sm font-semibold rounded-lg dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-blue-900/60 transition-colors w-full sm:w-auto" onClick={() => addQuestion('multiple')}>
+                   <span className="material-symbols-outlined text-[18px]">checklist</span> Múltiple
+                 </button>
+                 <button type="button" className="flex justify-center items-center gap-1.5 px-3 py-2 bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 text-sm font-semibold rounded-lg dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800 dark:hover:bg-amber-900/60 transition-colors w-full sm:w-auto" onClick={() => addQuestion('emoji')}>
+                   <span className="text-[16px]">🤩</span> Emojis
                  </button>
                </div>
             </div>
@@ -337,6 +340,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                           <select value={q.type} onChange={e => setQuestionType(q.id, e.target.value as any)} className="w-full appearance-none bg-transparent pl-3 pr-10 py-2 sm:py-1.5 text-sm sm:text-xs font-semibold text-slate-600 dark:text-slate-300 outline-none cursor-pointer">
                             <option value="text">Texto Libre</option>
                             <option value="multiple">Opción Múltiple</option>
+                            <option value="emoji">Escala Emojis</option>
                           </select>
                           <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[16px] select-none">expand_more</span>
                         </div>
@@ -362,6 +366,19 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                         </button>
                       </div>
                     )}
+                    
+                    {q.type === 'emoji' && (
+                      <div className="mt-3 ml-2 space-y-1.5 border-t border-slate-100 dark:border-slate-800 pt-4 pb-2">
+                        <div className="flex justify-center gap-4 sm:gap-6">
+                           {['😡', '🙁', '😐', '🙂', '🤩'].map((emoji, i) => (
+                             <span key={i} className="text-3xl sm:text-4xl grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer transform hover:scale-110">
+                               {emoji}
+                             </span>
+                           ))}
+                        </div>
+                        <p className="text-center text-[11px] font-semibold text-slate-400 mt-3 pt-2 uppercase tracking-wide">Vista previa: Escala de 1 a 5 mediante reacciones</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -373,10 +390,13 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                  <h4 className="text-slate-600 dark:text-slate-400 font-medium mb-4">No hay preguntas agregadas</h4>
                  <div className="flex flex-col sm:flex-row gap-3 w-full max-w-[280px] sm:max-w-none px-4 sm:px-0 mx-auto sm:mx-0 justify-center">
                    <button type="button" className="w-full sm:w-auto px-4 py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300 transition-colors flex items-center justify-center gap-1.5" onClick={() => addQuestion('text')}>
-                     <span className="material-symbols-outlined text-[18px]">short_text</span> Pregunta Texto
+                     <span className="material-symbols-outlined text-[18px]">short_text</span> Texto
                    </button>
                    <button type="button" className="w-full sm:w-auto px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-sm font-semibold rounded-lg dark:bg-blue-900/40 transition-colors flex items-center justify-center gap-1.5" onClick={() => addQuestion('multiple')}>
-                     <span className="material-symbols-outlined text-[18px]">checklist</span> Pregunta Opciones
+                     <span className="material-symbols-outlined text-[18px]">checklist</span> Opciones
+                   </button>
+                   <button type="button" className="w-full sm:w-auto px-4 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 text-sm font-semibold rounded-lg dark:bg-amber-900/40 transition-colors flex items-center justify-center gap-1.5" onClick={() => addQuestion('emoji')}>
+                     <span className="text-[16px]">🤩</span> Emojis
                    </button>
                  </div>
               </div>

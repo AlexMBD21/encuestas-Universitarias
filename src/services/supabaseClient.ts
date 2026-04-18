@@ -69,6 +69,7 @@ export function initFirebase() {
 }
 
 export function isEnabled() { ensureClient(); return !!enabled }
+export function getRawSupabaseClient() { ensureClient(); return supabase }
 
 export function debugInfo() {
   try { ensureClient() } catch (e) {}

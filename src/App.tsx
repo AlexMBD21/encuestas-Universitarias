@@ -12,6 +12,8 @@ import ReportDetail from './profesor/pages/ReportDetail'
 import Configuracion from './profesor/pages/Configuracion'
 import RequireAuth from './components/RequireAuth'
 import Inscripcion from './public/pages/Inscripcion'
+import SatisfaccionEncuesta from './public/pages/SatisfaccionEncuesta'
+import SatisfaccionSuccess from './public/pages/SatisfaccionSuccess'
 import { ToastProvider, ToastImperativeMount } from './components/ui/Toast'
 
 function ScrollToTop(): null {
@@ -57,6 +59,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/inscripcion/:token" element={<Inscripcion />} />
+        <Route path="/satisfaccion/:token" element={<SatisfaccionEncuesta />} />
+        <Route path="/satisfaccion/success" element={<SatisfaccionSuccess />} />
         <Route path="/profesor" element={
           <RequireAuth>
             <ProfesorLayout />
