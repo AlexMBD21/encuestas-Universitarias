@@ -136,8 +136,22 @@ export default function SatisfaccionEncuesta() {
          <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] opacity-50"></div>
       </div>
 
-      <div className="relative z-10 w-full max-w-2xl bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[30px] shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden">
+      {/* Header Info - OUTSIDE the card, same as Proyecto */}
+      <div className="w-full max-w-2xl text-center mb-8 relative z-10">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 mb-6">
+          <span className="material-symbols-outlined text-white text-[28px]">rate_review</span>
+        </div>
+        <div className="flex items-center justify-center gap-2 text-blue-300 mb-2">
+          <span className="material-symbols-outlined text-[16px]">star</span>
+          <span className="text-[10px] font-black uppercase tracking-widest">Encuesta de Satisfacción</span>
+        </div>
+        <h1 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight">Valoración de Actividad</h1>
+        <p className="text-sm font-medium text-slate-400">
+          Evaluando: <strong className="text-blue-300 ml-1">{surveyData?.surveys?.title || surveyData?.survey_title || 'Actividad Evaluada'}</strong>
+        </p>
+      </div>
 
+      <div className="relative z-10 w-full max-w-2xl bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[30px] shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden">
         {/* Timer/Deadline Ribbon */}
         {surveyData?.token_expires_at || surveyData?.satisfaccion_expires_at ? (
           <div className="bg-white/5 border-b border-white/5 p-4 flex items-center justify-center gap-3">
@@ -154,16 +168,6 @@ export default function SatisfaccionEncuesta() {
         ) : null}
 
         <div className="p-8 md:p-12">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 mb-6">
-            <span className="material-symbols-outlined text-white text-[28px]">rate_review</span>
-          </div>
-          <h1 className="text-3xl font-black text-white px-2">Encuesta de Satisfacción</h1>
-          <p className="text-sm font-medium text-slate-400 mt-2">
-            Valoración para: <strong className="text-blue-300">{surveyData?.surveys?.title || 'Actividad Evaluada'}</strong>
-          </p>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-10">
           
           {/* Pregunta 1: Estrellas (Reemplazado por Emojis) */}
