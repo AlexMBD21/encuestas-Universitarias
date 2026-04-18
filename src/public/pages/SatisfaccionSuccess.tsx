@@ -1,8 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function SatisfaccionSuccess() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const surveyId = searchParams.get('surveyId');
 
   return (
     <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6 relative overflow-hidden font-outfit">
@@ -25,11 +27,17 @@ export default function SatisfaccionSuccess() {
         </p>
 
         <button 
-          onClick={() => navigate('/')} 
+          onClick={() => {
+            if (surveyId) {
+              navigate(`/satisfaccion/votar/${surveyId}`);
+            } else {
+              navigate('/');
+            }
+          }} 
           className="w-full bg-slate-800 text-white font-black py-4 rounded-[18px] hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-xs border border-white/10"
         >
-          <span className="material-symbols-outlined text-lg">home</span>
-          Finalizar
+          <span className="material-symbols-outlined text-lg">{surveyId ? 'replay' : 'home'}</span>
+          {surveyId ? 'Nueva Respuesta' : 'Finalizar'}
         </button>
         
       </div>

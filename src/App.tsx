@@ -60,6 +60,7 @@ export default function App() {
         <Route path="/" element={<Login />} />
         <Route path="/inscripcion/:token" element={<Inscripcion />} />
         <Route path="/satisfaccion/:token" element={<SatisfaccionEncuesta />} />
+        <Route path="/satisfaccion/votar/:surveyId" element={<SatisfaccionEncuesta />} />
         <Route path="/satisfaccion/success" element={<SatisfaccionSuccess />} />
         <Route path="/profesor" element={
           <RequireAuth>

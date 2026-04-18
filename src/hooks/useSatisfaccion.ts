@@ -10,6 +10,8 @@ export function useSatisfaccion(token: string | undefined) {
 
   useEffect(() => {
     async function load() {
+      setError(null);
+      
       if (!token) {
         setError('Token inválido o no proporcionado.');
         setLoading(false);
@@ -21,9 +23,15 @@ export function useSatisfaccion(token: string | undefined) {
       
       if (!data) {
         setError('No se encontró la encuesta o el token es incorrecto.');
+      } else if (data.__expired) {
+        // Surface expired to the UI component
+        setSurveyData(data);
+      } else if (data.__publicMode) {
+        // Shared link: always allow filling the form
+        setSurveyData(data);
       } else if (data.respondida) {
         setError('Esta encuesta de satisfacción ya ha sido completada anteriormente.');
-      } else if (new Date(data.token_expires_at) < new Date()) {
+      } else if (data.token_expires_at && new Date(data.token_expires_at) < new Date()) {
         setError('El enlace de esta encuesta ha expirado.');
       } else {
         setSurveyData(data);
@@ -33,13 +41,12 @@ export function useSatisfaccion(token: string | undefined) {
     load();
   }, [token]);
 
-  const submit = async (payload: SatisfaccionPayload) => {
+  const submit = async (payload: SatisfaccionPayload, publicMode?: { survey_id: string }) => {
     if (!token || !surveyData) return false;
     setIsSubmitting(true);
     
-    // Auto asignamos la fecha actual en formato ISO
     const finalPayload = { ...payload, respondida_en: new Date().toISOString() };
-    const success = await submitSatisfaccion(token, finalPayload);
+    const success = await submitSatisfaccion(token, finalPayload, publicMode);
     
     setIsSubmitting(false);
     if (success) {

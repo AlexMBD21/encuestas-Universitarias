@@ -232,23 +232,23 @@ export function isConnected() { return !!_connected }
 
 export function onConnectionChanged(cb: (connected: boolean) => void) { try { cb(true); return () => {} } catch (e) { return () => {} } }
 
+const snakeToCamel = (s: string) => String(s).replace(/_([a-z])/g, (_m, p1) => p1.toUpperCase());
+const convertRow = (row: any) => {
+  if (!row || typeof row !== 'object') return row;
+  const out: any = {};
+  for (const k of Object.keys(row)) {
+    try { out[snakeToCamel(k)] = row[k]; } catch (e) { out[k] = row[k]; }
+  }
+  return out;
+};
+
 // Data helpers
 async function rowsToArray(tableRes: any) {
   if (!tableRes) return []
   const { data, error } = tableRes
   if (error) { return [] }
   if (!Array.isArray(data)) return []
-  // convert snake_case DB columns to camelCase for the app
-  const snakeToCamel = (s: string) => String(s).replace(/_([a-z])/g, (_m, p1) => p1.toUpperCase())
-  const convert = (row: any) => {
-    if (!row || typeof row !== 'object') return row
-    const out: any = {}
-    for (const k of Object.keys(row)) {
-      try { out[snakeToCamel(k)] = row[k] } catch (e) { out[k] = row[k] }
-    }
-    return out
-  }
-  return data.map((r: any) => convert(r))
+  return data.map((r: any) => convertRow(r))
 }
 
 // convert camelCase keys to snake_case for DB writes (shallow)
@@ -293,11 +293,13 @@ export function listenSurveys(cb: (surveys: any[]) => void) {
   let channel: any = null
   let mounted = true
   let lastJson = ''
+  let localSurveys: any[] = []
   const refetch = async () => {
     if (!mounted) return
     try {
       const arr = await getSurveysOnce()
       if (!mounted) return
+      localSurveys = arr
       let json = ''
       try { json = JSON.stringify(arr) } catch (e) {}
       if (json !== lastJson) {
@@ -314,14 +316,43 @@ export function listenSurveys(cb: (surveys: any[]) => void) {
   })
   try {
     const surveysChanName = `surveys-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`
+    
     channel = supabase!.channel(surveysChanName).on('postgres_changes', { event: '*', schema: 'public', table: 'surveys' }, async (payload: any) => {
       try {
-        const arr = await getSurveysOnce()
-        if (!mounted) return
-        try { lastJson = JSON.stringify(arr) } catch (e) {}
-        try { cb(arr) } catch (e) {}
-      } catch (e) {}
+        if (payload.eventType === 'INSERT') {
+          const item = convertRow(payload.new);
+          localSurveys = [...localSurveys, item];
+        } else if (payload.eventType === 'UPDATE') {
+          const item = convertRow(payload.new);
+          // Check if the item is different from what we have to avoid unnecessary state updates
+          const existing = localSurveys.find(s => String(s.id) === String(item.id));
+          if (JSON.stringify(existing) === JSON.stringify(item)) return;
+          
+          localSurveys = localSurveys.map(s => String(s.id) === String(item.id) ? item : s);
+        } else if (payload.eventType === 'DELETE') {
+          const oldId = payload.old.id;
+          localSurveys = localSurveys.filter(s => String(s.id) !== String(oldId));
+        } else {
+          // Fallback for complex changes
+          localSurveys = await getSurveysOnce();
+        }
+        
+        lastJson = JSON.stringify(localSurveys);
+        try { cb(localSurveys) } catch (e) {}
+      } catch (e) {
+        // Ultimate fallback
+        refetch();
+      }
     }).subscribe()
+    
+    // Initial load and sync with localSurveys
+    getSurveysOnce().then(arr => {
+      if (mounted) {
+        localSurveys = arr;
+        lastJson = JSON.stringify(arr);
+        try { cb(arr) } catch (e) {}
+      }
+    });
   } catch (e) { channel = null }
   // Polling fallback every 8s (handles cases where Realtime doesn't echo back to sender).
   const pollInterval = window.setInterval(refetch, 8000)
@@ -344,13 +375,26 @@ export async function pushSurvey(survey: any) {
   for (const k of Object.keys(toSave)) { if (k.startsWith('_')) delete toSave[k] }
   const uid = currentUserCache ? currentUserCache.id : null
   const email = currentUserCache ? currentUserCache.email : null
-  if (uid) { toSave.ownerId = uid; toSave.ownerUid = uid }
+  if (uid) { 
+    toSave.ownerUid = uid; 
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid)) {
+      toSave.ownerId = uid; 
+    }
+  }
+  
+  // Safe-guard against 400 Bad Request: ensure ownerId is a UUID if present
+  if (toSave.ownerId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(toSave.ownerId))) {
+    toSave.ownerId = null;
+  }
   if (email) { toSave.ownerEmail = email }
   if (!toSave.id) toSave.id = `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`
   if (!toSave.createdAt) toSave.createdAt = new Date().toISOString()
   const snake = camelToSnakeObject(toSave)
   const { data, error } = await supabase.from('surveys').upsert([snake], { onConflict: 'id' })
-  if (error) throw error
+  if (error) {
+    console.error('[pushSurvey] Supabase upsert failed:', error)
+    throw error
+  }
   return toSave.id
 }
 
@@ -359,14 +403,25 @@ export async function setSurvey(id: string, survey: any) {
   if (!supabase) throw new Error('Supabase not configured')
   const toSave = { ...(survey || {}), id: String(id) }
   if (!toSave.createdAt) toSave.createdAt = new Date().toISOString()
-  // Always ensure owner_uid is set so RLS policies work (e.g. survey_reports_select)
+  // Do NOT blindly overwrite ownership on update; keep the survey's original owner if they created it.
   const uid = currentUserCache ? currentUserCache.id : null
   const email = currentUserCache ? currentUserCache.email : null
-  if (uid && !toSave.ownerUid) toSave.ownerUid = uid
+  if (uid && !toSave.ownerUid) {
+    toSave.ownerUid = uid;
+  }
+  
+  // Safe-guard against 400 Bad Request: ensure ownerId is a UUID if present
+  // Otherwise Supabase rejects the whole update because owner_id is a UUID column.
+  if (toSave.ownerId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(toSave.ownerId))) {
+    toSave.ownerId = null;
+  }
   if (email && !toSave.ownerEmail) toSave.ownerEmail = email
   const snake = camelToSnakeObject(toSave)
   const { data, error } = await supabase.from('surveys').upsert([snake], { onConflict: 'id' })
-  if (error) throw error
+  if (error) {
+    console.error('[setSurvey] Supabase update failed:', error)
+    throw error
+  }
 }
 
 export async function removeSurveyById(id: string) {

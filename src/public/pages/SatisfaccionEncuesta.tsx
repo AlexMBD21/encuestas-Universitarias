@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSatisfaccion } from '../../hooks/useSatisfaccion';
 import Loader from '../../components/Loader';
+import { getOrCreateSatisfaccionToken } from '../../services/satisfaccion.service';
 
 export default function SatisfaccionEncuesta() {
-  const { token } = useParams<{ token: string }>();
+  const { token: urlToken, surveyId: urlSurveyId } = useParams<{ token?: string, surveyId?: string }>();
+  const [searchParams] = useSearchParams();
+  const urlPublicToken = searchParams.get('t') || '';
   const navigate = useNavigate();
+  const [token, setToken] = useState<string | undefined>(urlToken);
   const { loading, error, surveyData, isSubmitting, isSuccess, submit } = useSatisfaccion(token);
+
+  const [email, setEmail] = useState('');
+  const [isIdentifying, setIsIdentifying] = useState(false);
+  const [idError, setIdError] = useState<string | null>(null);
 
   const [estrellas, setEstrellas] = useState<number>(0);
   const [nps, setNps] = useState<number | null>(null);
@@ -15,17 +23,76 @@ export default function SatisfaccionEncuesta() {
   
   const ASPECTOS = ['Contenido', 'Claridad', 'Dificultad apropiada', 'Relevancia', 'Tiempo asignado'];
 
-  if (loading) return <Loader fullScreen text="Cargando encuesta de satisfacción..." />;
+  const handleIdentify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !urlSurveyId) return;
+    setIsIdentifying(true);
+    setIdError(null);
+    try {
+      const newToken = await getOrCreateSatisfaccionToken(urlSurveyId, email, urlPublicToken);
+      if (newToken) {
+        setToken(newToken);
+      } else {
+        setIdError('No pudimos validar tu acceso o el enlace ha expirado.');
+      }
+    } catch (err) {
+      setIdError('Error de conexión.');
+    } finally {
+      setIsIdentifying(false);
+    }
+  };
 
-  if (error) {
+  if (loading || isIdentifying) return <Loader fullScreen text={isIdentifying ? "Validando tu correo..." : "Cargando encuesta de satisfacción..."} />;
+
+  // PANTALLA DE IDENTIFICACIÓN: Si entramos por surveyId y no tenemos token aún
+  if (urlSurveyId && !token) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6 relative overflow-hidden font-outfit">
+        <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]"></div>
+        <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.5)]">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 border border-white/20 mb-6">
+              <span className="material-symbols-outlined text-white text-[28px]">mail</span>
+            </div>
+            <h1 className="text-2xl font-black text-white px-2">Identificación</h1>
+            <p className="text-sm font-medium text-slate-400 mt-2">Ingresa tu correo para comenzar la encuesta de satisfacción</p>
+          </div>
+
+          <form onSubmit={handleIdentify} className="space-y-6">
+            <div className="space-y-2">
+              <input 
+                type="email" 
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="tu@correo.com"
+                className="w-full bg-slate-950/50 border-2 border-slate-700/50 focus:border-blue-500/50 focus:bg-slate-900/80 rounded-2xl p-4 text-sm font-medium outline-none text-white transition-all"
+              />
+              {idError && <p className="text-rose-400 text-[10px] font-bold uppercase tracking-wider px-2">{idError}</p>}
+            </div>
+
+            <button 
+              type="submit"
+              disabled={!email.trim()}
+              className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg hover:bg-blue-500 transition-all active:scale-[0.98] disabled:opacity-50 uppercase tracking-widest text-[11px]"
+            >
+              Comenzar Encuesta
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || (surveyData && surveyData.__expired)) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
         <div className="bg-white max-w-md w-full p-8 rounded-3xl shadow-xl flex flex-col items-center text-center border border-slate-100 animate-fade-in-up">
           <div className="w-16 h-16 bg-rose-100 text-rose-500 flex items-center justify-center rounded-full mb-6">
-            <span className="material-symbols-outlined text-3xl">error</span>
+            <span className="material-symbols-outlined text-3xl">{surveyData?.__expired ? 'timer_off' : 'error'}</span>
           </div>
-          <h2 className="text-xl font-black text-slate-800 mb-2">Acceso No Disponible</h2>
-          <p className="text-sm font-medium text-slate-500 mb-8">{error}</p>
+          <h2 className="text-xl font-black text-slate-800 mb-2">{surveyData?.__expired ? 'Enlace Expirado' : 'Acceso No Disponible'}</h2>
+          <p className="text-sm font-medium text-slate-500 mb-8">{surveyData?.__expired ? 'Este enlace de satisfacción ya no está vigente. Contacta al profesor si crees que es un error.' : error}</p>
           <button onClick={() => navigate('/')} className="btn btn-primary w-full shadow-lg">Volver al Inicio</button>
         </div>
       </div>
@@ -35,15 +102,23 @@ export default function SatisfaccionEncuesta() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (estrellas === 0 || nps === null || !aspecto) return;
-    const success = await submit({
-      satisfaccion_estrellas: estrellas,
-      nps: nps,
-      aspecto_destacado: aspecto,
-      comentario: comentario.trim() || null,
-      respondida_en: new Date().toISOString()
-    });
+    const isPublicMode = !!(surveyData?.__publicMode);
+    const success = await submit(
+      {
+        satisfaccion_estrellas: estrellas,
+        nps: nps,
+        aspecto_destacado: aspecto,
+        comentario: comentario.trim() || null,
+        respondida_en: new Date().toISOString()
+      },
+      isPublicMode ? { survey_id: String(surveyData.survey_id) } : undefined
+    );
     if (success) {
-      navigate(`/satisfaccion/success`, { replace: true });
+      if (urlSurveyId) {
+        navigate(`/satisfaccion/success?surveyId=${urlSurveyId}`, { replace: true });
+      } else {
+        navigate(`/satisfaccion/success`, { replace: true });
+      }
     }
   };
 
@@ -101,23 +176,23 @@ export default function SatisfaccionEncuesta() {
           {/* Pregunta 2: NPS */}
           <div className="space-y-4 pt-4 border-t border-white/10">
             <label className="block text-sm font-bold text-white text-center">2. ¿Con qué probabilidad recomendarías esta actividad a otros?</label>
-            <div className="flex justify-between text-[10px] uppercase font-black tracking-widest text-slate-500 px-2 pb-2">
-              <span>0 = Espantosa</span>
-              <span>10 = Excelente</span>
+            <div className="flex justify-between w-full text-[10px] uppercase font-black tracking-widest text-slate-500 px-2 pb-2">
+              <span>Poco probable</span>
+              <span>Muy probable</span>
             </div>
             <div className="flex flex-wrap justify-center gap-2">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(score => (
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(score => (
                 <button
-                  key={score}
-                  type="button"
-                  onClick={() => setNps(score)}
-                  className={`w-10 h-10 md:w-11 md:h-11 flex items-center justify-center border transition-all duration-300 ${
-                    score <= 6 ? 'rounded-[12px] md:rounded-[14px]' : score <= 8 ? 'rounded-[12px] md:rounded-[14px]' : 'rounded-[12px] md:rounded-[14px]'
-                  } ${
-                    nps === score 
-                    ? (score <= 6 ? 'bg-rose-500 border-rose-400 text-white shadow-[0_0_15px_rgba(244,63,94,0.4)] scale-110' : score <= 8 ? 'bg-amber-500 border-amber-400 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)] scale-110' : 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] scale-110')
-                    : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                  }`}
+                   key={score}
+                   type="button"
+                   onClick={() => setNps(score)}
+                   className={`w-10 h-10 md:w-11 md:h-11 flex items-center justify-center border transition-all duration-300 ${
+                     score <= 6 ? 'rounded-[12px] md:rounded-[14px]' : score <= 8 ? 'rounded-[12px] md:rounded-[14px]' : 'rounded-[12px] md:rounded-[14px]'
+                   } ${
+                     nps === score 
+                     ? (score <= 6 ? 'bg-rose-500 border-rose-400 text-white shadow-[0_0_15px_rgba(244,63,94,0.4)] scale-110' : score <= 8 ? 'bg-amber-500 border-amber-400 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)] scale-110' : 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] scale-110')
+                     : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                   }`}
                 >
                   <span className="font-black">{score}</span>
                 </button>

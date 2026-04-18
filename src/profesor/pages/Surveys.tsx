@@ -17,10 +17,12 @@ import { Dropdown as FilterDropdown } from '../../components/ui/Dropdown';
 import { EvaluatorAssignmentModal as EvaluatorModalContent } from '../components/surveys/EvaluatorAssignmentModal';
 import { ManageCategoriesModal } from '../components/surveys/ManageCategoriesModal';
 import { GenerateLinkModal } from '../components/surveys/GenerateLinkModal';
+import { GenerateSatisfaccionLinkModal } from '../components/surveys/GenerateSatisfaccionLinkModal';
 import { SurveyGridSkeleton } from '../../components/ui/SurveyCardSkeleton';
 import Loader from '../../components/Loader';
 import { toast } from '../../components/ui/Toast';
 import { Modal } from '../../components/ui/Modal';
+import { getSatisfaccionTokensBySurveyId } from '../../services/satisfaccion.service';
 
 export default function Surveys(): JSX.Element {
   const location = useLocation()
@@ -51,6 +53,26 @@ export default function Surveys(): JSX.Element {
   const [isConfirmReportVisible, setIsConfirmReportVisible] = useState(false)
   const [reportSearch, setReportSearch] = useState<string>('')
   const [reportUserFilter, setReportUserFilter] = useState<string>('all')
+  // satisfaction tokens map: { [surveyId]: token[] }
+  const [satisfaccionTokensMap, setSatisfaccionTokensMap] = useState<Record<string, any[]>>({})
+  const [generateSatisfaccionLinkSurveyId, setGenerateSatisfaccionLinkSurveyId] = useState<string | null>(null)
+  const [confirmDeactivateSatisfaccionLinkSurveyId, setConfirmDeactivateSatisfaccionLinkSurveyId] = useState<string | null>(null)
+
+  // Load satisfaction tokens for every simple survey I own
+  useEffect(() => {
+    // Load satisfaction tokens for every simple survey I own
+    const isUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
+    const simpleOwned = surveys.filter(
+      (s: any) => s.type !== 'project' && isOwnerOf(s) && !String(s.id).startsWith('sys_') && isUuid(String(s.id))
+    )
+    if (!simpleOwned.length) return
+    simpleOwned.forEach(async (s: any) => {
+      try {
+        const tokens = await getSatisfaccionTokensBySurveyId(String(s.id))
+        setSatisfaccionTokensMap(prev => ({ ...prev, [String(s.id)]: tokens }))
+      } catch (e) { /* silently ignore */ }
+    })
+  }, [surveys, isOwnerOf])
 
   useEffect(() => {
     if (viewReportsFor) setTimeout(() => setIsReportsVisible(true), 50)
@@ -756,6 +778,69 @@ export default function Surveys(): JSX.Element {
                             )}
                           </div>
 
+                          {/* Sección Satisfacción */}
+                          {!isProjectType && isOwnerOf(s) && (
+                            <div className={`mt-4 pt-3 border-t transition-colors rounded-xl max-w-full ${s.satisfaccionExpiresAt && new Date(s.satisfaccionExpiresAt) > new Date() ? 'border-emerald-200/50 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-900/10 p-3.5' : 'border-slate-100 dark:border-slate-800'}`}>
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex flex-col gap-2">
+                                  <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">SATISFACCIÓN</span>
+                                    {s.satisfaccionExpiresAt && new Date(s.satisfaccionExpiresAt) > new Date() && (
+                                      <span className="text-[11px] font-bold flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                                        <span className="material-symbols-outlined text-[15px]">calendar_month</span>
+                                        Vence {new Date(s.satisfaccionExpiresAt).toLocaleDateString()}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {s.satisfaccionExpiresAt && new Date(s.satisfaccionExpiresAt) > new Date() && (
+                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-black border shadow-sm self-start bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/50 dark:border-emerald-800/50">
+                                      <span className="w-1.5 h-1.5 rounded-full animate-pulse shadow-sm shrink-0 bg-emerald-500"></span>
+                                      ACTIVO ({(() => {
+                                        const diffDays = Math.floor((new Date(s.satisfaccionExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                                        const diffHrs = Math.floor(((new Date(s.satisfaccionExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60)) % 24);
+                                        return diffDays >= 1 ? `${diffDays}d ${diffHrs}h` : `${diffHrs}h`;
+                                      })()})
+                                    </div>
+                                  )}
+                                </div>
+
+                                {s.satisfaccionExpiresAt && new Date(s.satisfaccionExpiresAt) > new Date() ? (
+                                  <div className="flex flex-col gap-2 md:justify-end flex-1 w-full md:w-auto mt-1 md:mt-0">
+                                    <div className="flex flex-col xs:flex-row items-center gap-2 w-full md:w-auto">
+                                      <button type="button" onClick={() => {
+                                        const link = window.location.origin + '/satisfaccion/votar/' + s.id + '?t=' + s.satisfaccionToken;
+                                        if (navigator.clipboard && window.isSecureContext) {
+                                          navigator.clipboard.writeText(link).then(() => {
+                                            setToastMessage('Enlace copiado');
+                                            setTimeout(() => setToastMessage(null), 3000);
+                                          }).catch(() => fallback());
+                                        } else { fallback(); }
+                                        function fallback() {
+                                          const ta = document.createElement('textarea'); ta.value = link; ta.style.position = 'fixed';
+                                          document.body.appendChild(ta); ta.focus(); ta.select();
+                                          try { document.execCommand('copy'); setToastMessage('Enlace copiado'); } catch { setToastMessage('Error'); }
+                                          document.body.removeChild(ta); setTimeout(() => setToastMessage(null), 3000);
+                                        }
+                                      }} className="w-full xs:flex-1 flex items-center justify-center gap-2 text-[10px] font-black bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700/50 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 dark:text-emerald-400 shadow-sm px-3 py-2 rounded-xl transition-all active:scale-95 whitespace-nowrap" title="Copiar link de satisfacción">
+                                        <span className="material-symbols-outlined text-[15px]">content_copy</span> Link
+                                      </button>
+                                      <button type="button"
+                                        onClick={() => setConfirmDeactivateSatisfaccionLinkSurveyId(String(s.id))}
+                                        className="w-full xs:flex-1 flex items-center justify-center gap-2 text-[10px] font-black bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700/50 shadow-sm text-amber-700 hover:text-amber-800 hover:bg-amber-50 dark:text-amber-400 px-3 py-2 rounded-xl transition-all active:scale-95 whitespace-nowrap"
+                                        title="Cerrar link">
+                                        <span className="material-symbols-outlined text-[15px]">link_off</span> Cerrar
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <button type="button" onClick={() => setGenerateSatisfaccionLinkSurveyId(String(s.id))} className="text-[11px] bg-emerald-100 border border-emerald-200 text-emerald-700 dark:bg-slate-800 dark:border-emerald-700 dark:text-emerald-300 px-4 py-2 rounded-xl hover:bg-emerald-200 dark:hover:bg-emerald-900/20 font-black shadow-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap w-full md:w-auto mt-2 md:mt-0 active:scale-95">
+                                    <span className="material-symbols-outlined text-[16px]">calendar_month</span> Definir Fecha
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
                           {isProjectType && isOwnerOf(s) && (
                             <div className={`mt-4 pt-3 border-t transition-colors rounded-xl max-w-full ${s.linkExpiresAt && new Date(s.linkExpiresAt) > new Date() ? (isProjectType ? 'border-indigo-200/50 dark:border-indigo-800/50 bg-indigo-50/50 dark:bg-indigo-900/10 p-3.5' : 'border-emerald-200/50 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-900/10 p-3.5') : 'border-slate-100 dark:border-slate-800'}`}>
                               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -854,7 +939,11 @@ export default function Surveys(): JSX.Element {
                               }} className="btn btn-indigo px-4 py-1.5 text-xs">Calificar</button>
                             )
                           ) : (
-                            userResponded ? (
+                            isOwnerOf(s) ? (
+                              <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 flex items-center gap-1.5">
+                                <span className="material-symbols-outlined text-[16px]">bar_chart</span> Ver Resultados
+                              </button>
+                            ) : userResponded ? (
                               <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50">Respondido</button>
                             ) : (
                               <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="btn btn-emerald px-4 py-1.5 text-xs">Responder</button>
@@ -1413,13 +1502,18 @@ export default function Surveys(): JSX.Element {
                         }
                         try {
                           await dataClientNow.setSurvey(String(confirmPublish.id), updated)
-                        } catch (e) { console.error(e) }
-                        // optimistic update
-                        setSurveys(prev => prev.map(x => (String(x.id) === String(confirmPublish.id) ? updated : x)))
-                        setToastMessage(confirmPublish.action === 'publish' ? 'Encuesta publicada' : 'Publicación retirada')
-                        setTimeout(() => setToastMessage(null), 3000)
-                        // create a global notification when publishing
-                        if (confirmPublish.action === 'publish') {
+                          
+                          // optimistic update IF SUCCESSFUL
+                          setSurveys(prev => prev.map(x => (String(x.id) === String(confirmPublish.id) ? updated : x)))
+                          setToastMessage(confirmPublish.action === 'publish' ? 'Encuesta publicada' : 'Publicación retirada')
+                          
+                          // Notify all components that this survey changed
+                          try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { newId: confirmPublish.id, survey: updated } })) } catch (e) { }
+                          
+                          setTimeout(() => setToastMessage(null), 3000)
+                          
+                          // create a global notification when publishing
+                          if (confirmPublish.action === 'publish') {
                           try {
                             const s = updated
                             const note = {
@@ -1461,6 +1555,12 @@ export default function Surveys(): JSX.Element {
                           } catch (e) { }
                         }
                         try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { surveyId: confirmPublish.id, survey: updated } })) } catch (e) { }
+                        } catch (e: any) { 
+                          console.error('SERVER ERROR PUBLISHING SURVEY:', e)
+                          setToastMessage('Error de servidor: No se pudo guardar la publicación. Revisa los permisos de base de datos.')
+                          setTimeout(() => setToastMessage(null), 6000)
+                        }
+
                       } else {
                         // Not allowed when no backend is configured
                         setToastMessage('No se puede cambiar el estado de publicación: no hay servicio de datos configurado.')
@@ -1469,7 +1569,9 @@ export default function Surveys(): JSX.Element {
                         setConfirmPublish(null)
                         return
                       }
-                    } catch (e) { console.error(e) }
+                    } catch (e: any) { 
+                      console.error('UNEXPECTED ERROR:', e)
+                    }
                     finally { setConfirmPublishing(false); setConfirmPublish(null) }
                   }} disabled={confirmPublishing} className="btn btn-primary px-10">
                     {confirmPublishing ? 'Procesando...' : (confirmPublish.action === 'publish' ? 'Publicar Ahora' : 'Confirmar Retiro')}
@@ -1940,6 +2042,73 @@ export default function Surveys(): JSX.Element {
               className="btn btn-amber flex-1"
             >
               Sí, desactivar
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Generate Satisfaction Link Modal */}
+      <GenerateSatisfaccionLinkModal
+        isOpen={generateSatisfaccionLinkSurveyId !== null}
+        onClose={() => setGenerateSatisfaccionLinkSurveyId(null)}
+        survey={surveys.find((x: any) => String(x.id) === String(generateSatisfaccionLinkSurveyId))}
+        dataClientNow={dataClientNow}
+        onSave={(updated: any) => {
+          setSurveys((prev: any[]) => prev.map((x: any) => String(x.id) === String(updated.id) ? updated : x))
+          setGenerateSatisfaccionLinkSurveyId(null)
+          setToastMessage('Link de satisfacción actualizado')
+          
+          // Notify other hooks to keep them in sync
+          try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { newId: updated.id, survey: updated } })) } catch (e) { }
+          
+          setTimeout(() => setToastMessage(null), 3000)
+        }}
+      />
+
+      {/* Confirm Deactivate Satisfaction Link Modal */}
+      <Modal
+        isOpen={confirmDeactivateSatisfaccionLinkSurveyId !== null}
+        onClose={() => setConfirmDeactivateSatisfaccionLinkSurveyId(null)}
+        maxWidth="max-w-sm"
+        hideCloseButton={true}
+        noHeaderShadow={true}
+        scrollableBody={false}
+      >
+        <div className="p-6 text-center bg-white dark:bg-slate-900 flex-1 flex flex-col justify-center">
+          <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-4 shadow-sm">
+            <span className="material-symbols-outlined text-[32px]">warning</span>
+          </div>
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Cerrar enlace de satisfacción?</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Esta acción invalidará el link de satisfacción inmediatamente. Los participantes ya no podrán acceder a él.</p>
+          <div className="flex flex-col-reverse sm:flex-row gap-3 mt-auto sm:mt-0">
+            <button type="button" onClick={() => setConfirmDeactivateSatisfaccionLinkSurveyId(null)} className="btn btn-ghost flex-1">
+              Cancelar y Volver
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const s = surveys.find((x: any) => String(x.id) === String(confirmDeactivateSatisfaccionLinkSurveyId))
+                  if (s) {
+                    const updated = { ...s, satisfaccionToken: null, satisfaccionExpiresAt: null }
+                    await dataClientNow.setSurvey(String(s.id), updated)
+                    setSurveys((prev: any[]) => prev.map((x: any) => String(x.id) === String(s.id) ? updated : x))
+                    
+                    // Notify other hooks
+                    try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { newId: s.id, survey: updated } })) } catch (e) { }
+                    
+                    setToastMessage('Enlace de satisfacción cerrado')
+                    setTimeout(() => setToastMessage(null), 3000)
+                  }
+                  setConfirmDeactivateSatisfaccionLinkSurveyId(null)
+                } catch {
+                  setToastMessage('Error')
+                  setTimeout(() => setToastMessage(null), 3000)
+                }
+              }}
+              className="btn btn-amber flex-1"
+            >
+              Sí, cerrar enlace
             </button>
           </div>
         </div>

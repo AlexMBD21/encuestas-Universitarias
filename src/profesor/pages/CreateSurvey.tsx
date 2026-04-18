@@ -23,7 +23,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [surveyType, setSurveyType] = useState<'simple' | 'project'>(initialType ?? 'simple')
-  type Question = { id: number; text: string; type: 'text' | 'multiple' | 'emoji'; options?: string[] }
+  type Question = { id: number; text: string; type: 'text' | 'multiple' | 'emoji' | 'nps'; options?: string[] }
   const [questions, setQuestions] = useState<Question[]>([{ id: Date.now(), text: '', type: 'text', options: [] }])
   type Project = { id: string; name: string; category?: string; description?: string; members?: string; advisor?: string }
   const [projects, setProjects] = useState<Project[]>([])
@@ -85,10 +85,10 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
     } catch (e) {}
   }, [editSurvey])
 
-  const addQuestion = (type: 'text' | 'multiple' | 'emoji' = 'text') => setQuestions(q => [...q, { id: Date.now() + Math.random(), text: '', type, options: type === 'multiple' ? [''] : [] }])
+  const addQuestion = (type: 'text' | 'multiple' | 'emoji' | 'nps' = 'text') => setQuestions(q => [...q, { id: Date.now() + Math.random(), text: '', type, options: type === 'multiple' ? [''] : [] }])
   const removeQuestion = (id: number) => setQuestions(q => q.filter(s => s.id !== id))
   const setQuestionText = (id: number, val: string) => setQuestions(q => q.map(s => s.id === id ? { ...s, text: val } : s))
-  const setQuestionType = (id: number, type: 'text' | 'multiple' | 'emoji') => setQuestions(q => q.map(s => s.id === id ? { ...s, type, options: type === 'multiple' ? (s.options && s.options.length ? s.options : ['']) : [] } : s))
+  const setQuestionType = (id: number, type: 'text' | 'multiple' | 'emoji' | 'nps') => setQuestions(q => q.map(s => s.id === id ? { ...s, type, options: type === 'multiple' ? (s.options && s.options.length ? s.options : ['']) : [] } : s))
   const addOption = (qid: number) => setQuestions(q => q.map(s => s.id === qid ? { ...s, options: [...(s.options || []), ''] } : s))
   const setOption = (qid: number, idx: number, val: string) => setQuestions(q => q.map(s => s.id === qid ? { ...s, options: s.options?.map((o, i) => i === idx ? val : o) } : s))
   const removeOption = (qid: number, idx: number) => setQuestions(q => q.map(s => s.id === qid ? { ...s, options: s.options?.filter((_, i) => i !== idx) } : s))
@@ -213,7 +213,8 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
       }
 
       // create new survey
-      const newSurvey: any = { id: `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`, title: title.trim(), description: description.trim(), createdAt: now, type: surveyType }
+      const generatedId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`
+      const newSurvey: any = { id: generatedId, title: title.trim(), description: description.trim(), createdAt: now, type: surveyType }
       newSurvey.ownerId = currentUserId || 'local'
       if (surveyType === 'simple') {
         newSurvey.questions = questions.map(q => ({ text: q.text.trim(), type: q.type, options: q.options?.map(o => o.trim()).filter(Boolean) }))
@@ -311,19 +312,11 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
 
         {surveyType === 'simple' ? (
           <div className="mb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 mt-6">
+            <div className="flex flex-col gap-1 mb-6 mt-6 border-b border-slate-100 dark:border-slate-800 pb-4">
                <label className="block text-xl font-bold text-slate-800 dark:text-slate-100">Batería de Preguntas</label>
-               <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
-                 <button type="button" className="flex justify-center items-center gap-1.5 px-3 py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300 transition-colors w-full sm:w-auto" onClick={() => addQuestion('text')}>
-                   <span className="material-symbols-outlined text-[18px]">short_text</span> Texto
-                 </button>
-                 <button type="button" className="flex justify-center items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-sm font-semibold rounded-lg dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800 dark:hover:bg-blue-900/60 transition-colors w-full sm:w-auto" onClick={() => addQuestion('multiple')}>
-                   <span className="material-symbols-outlined text-[18px]">checklist</span> Múltiple
-                 </button>
-                 <button type="button" className="flex justify-center items-center gap-1.5 px-3 py-2 bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 text-sm font-semibold rounded-lg dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800 dark:hover:bg-amber-900/60 transition-colors w-full sm:w-auto" onClick={() => addQuestion('emoji')}>
-                   <span className="text-[16px]">🤩</span> Emojis
-                 </button>
-               </div>
+               <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                 Agrega y diseña las preguntas de tu encuesta. Puedes usar formatos de texto, opción múltiple o escalas de calificación.
+               </p>
             </div>
             
             <div className="space-y-6">
@@ -341,6 +334,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                             <option value="text">Texto Libre</option>
                             <option value="multiple">Opción Múltiple</option>
                             <option value="emoji">Escala Emojis</option>
+                            <option value="nps">Escala Numérica (NPS)</option>
                           </select>
                           <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[16px] select-none">expand_more</span>
                         </div>
@@ -379,24 +373,69 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                         <p className="text-center text-[11px] font-semibold text-slate-400 mt-3 pt-2 uppercase tracking-wide">Vista previa: Escala de 1 a 5 mediante reacciones</p>
                       </div>
                     )}
+                    
+                    {q.type === 'nps' && (
+                      <div className="mt-3 ml-2 space-y-1.5 border-t border-slate-100 dark:border-slate-800 pt-4 pb-2">
+                        <div className="flex justify-center flex-wrap gap-1 md:gap-2">
+                           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                             <span key={num} className="w-8 h-8 sm:w-10 sm:h-10 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center text-slate-500 font-bold hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer text-xs sm:text-sm shadow-sm">
+                               {num}
+                             </span>
+                           ))}
+                        </div>
+                        <div className="flex justify-between w-full px-2 mt-2">
+                          <span className="text-[10px] font-bold text-slate-400">Poco probable</span>
+                          <span className="text-[10px] font-bold text-slate-400">Muy probable</span>
+                        </div>
+                        <p className="text-center text-[11px] font-semibold text-slate-400 mt-2 pt-2 uppercase tracking-wide border-t border-dashed border-slate-100 dark:border-slate-800/50">Vista previa: Escala de 1 a 10</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
             
+            {/* Botones de acción rápida al final de la lista */}
+            {questions.length > 0 && (
+              <div className="mt-6 p-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/30">
+                <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Agregar nueva pregunta aquí</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full justify-center">
+                   <button type="button" className="w-full px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-sm font-semibold rounded-lg shadow-sm transition-all focus:ring-4 focus:ring-slate-100 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700 flex items-center justify-center gap-2" onClick={() => addQuestion('text')}>
+                     <span className="material-symbols-outlined text-[20px] text-slate-400">short_text</span>
+                     <span>Texto Libre</span>
+                   </button>
+                   <button type="button" className="w-full px-4 py-2.5 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-sm font-semibold rounded-lg shadow-sm transition-all focus:ring-4 focus:ring-blue-100 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-300 flex items-center justify-center gap-2" onClick={() => addQuestion('multiple')}>
+                     <span className="material-symbols-outlined text-[20px] text-blue-400">checklist</span>
+                     <span>Opción Múltiple</span>
+                   </button>
+                   <button type="button" className="w-full px-4 py-2.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 text-amber-700 text-sm font-semibold rounded-lg shadow-sm transition-all focus:ring-4 focus:ring-amber-100 dark:bg-amber-900/40 dark:border-amber-800 dark:text-amber-300 flex items-center justify-center gap-2" onClick={() => addQuestion('emoji')}>
+                     <span className="text-[18px]">🤩</span>
+                     <span>Escala Emojis</span>
+                   </button>
+                   <button type="button" className="w-full px-4 py-2.5 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-lg shadow-sm transition-all focus:ring-4 focus:ring-emerald-100 dark:bg-emerald-900/40 dark:border-emerald-800 dark:text-emerald-300 flex items-center justify-center gap-2" onClick={() => addQuestion('nps')}>
+                     <span className="material-symbols-outlined text-[20px] text-emerald-400">123</span>
+                     <span>Escala Numérica</span>
+                   </button>
+                </div>
+              </div>
+            )}
+            
             {questions.length === 0 && (
               <div className="py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center text-center">
                  <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-3">quiz</span>
                  <h4 className="text-slate-600 dark:text-slate-400 font-medium mb-4">No hay preguntas agregadas</h4>
-                 <div className="flex flex-col sm:flex-row gap-3 w-full max-w-[280px] sm:max-w-none px-4 sm:px-0 mx-auto sm:mx-0 justify-center">
-                   <button type="button" className="w-full sm:w-auto px-4 py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-700 text-sm font-semibold rounded-lg dark:bg-slate-800/50 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300 transition-colors flex items-center justify-center gap-1.5" onClick={() => addQuestion('text')}>
-                     <span className="material-symbols-outlined text-[18px]">short_text</span> Texto
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full px-4 sm:px-0 mt-4">
+                   <button type="button" className="w-full px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-sm font-semibold rounded-lg shadow-sm focus:ring-4 focus:ring-slate-100 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2" onClick={() => addQuestion('text')}>
+                     <span className="material-symbols-outlined text-[18px] text-slate-400">short_text</span> Texto Libre
                    </button>
-                   <button type="button" className="w-full sm:w-auto px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-sm font-semibold rounded-lg dark:bg-blue-900/40 transition-colors flex items-center justify-center gap-1.5" onClick={() => addQuestion('multiple')}>
-                     <span className="material-symbols-outlined text-[18px]">checklist</span> Opciones
+                   <button type="button" className="w-full px-4 py-2 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-sm font-semibold rounded-lg shadow-sm focus:ring-4 focus:ring-blue-100 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-300 transition-all flex items-center justify-center gap-2" onClick={() => addQuestion('multiple')}>
+                     <span className="material-symbols-outlined text-[18px] text-blue-400">checklist</span> Opción Múltiple
                    </button>
-                   <button type="button" className="w-full sm:w-auto px-4 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 text-sm font-semibold rounded-lg dark:bg-amber-900/40 transition-colors flex items-center justify-center gap-1.5" onClick={() => addQuestion('emoji')}>
-                     <span className="text-[16px]">🤩</span> Emojis
+                   <button type="button" className="w-full px-4 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 text-sm font-semibold rounded-lg shadow-sm focus:ring-4 focus:ring-amber-100 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800 transition-all flex items-center justify-center gap-2" onClick={() => addQuestion('emoji')}>
+                     <span className="text-[16px]">🤩</span> Escala Emojis
+                   </button>
+                   <button type="button" className="w-full px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-sm font-semibold rounded-lg shadow-sm focus:ring-4 focus:ring-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800 transition-all flex items-center justify-center gap-2" onClick={() => addQuestion('nps')}>
+                     <span className="material-symbols-outlined text-[18px] text-emerald-400">123</span> Escala Numérica
                    </button>
                  </div>
               </div>

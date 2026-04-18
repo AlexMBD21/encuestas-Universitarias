@@ -236,13 +236,18 @@ export function useSurveysData() {
           })
         }
       } catch (e) { }
-      if (dbEnabled) {
+      // Only re-fetch from DB when the event did NOT include a full survey object.
+      // If the event already carried `detail.survey`, we already applied the
+      // optimistic update above — doing a full re-fetch here would overwrite the
+      // local state with potentially-stale data from Supabase (race condition).
+      const hasFullSurvey = !!(ev && ev.detail && ev.detail.survey)
+      if (!hasFullSurvey && dbEnabled) {
         dataClient.getSurveysOnce().then((arr: any[]) => {
           try { setSurveys(arr) } catch (e) { }
         }).catch(() => { })
         return
       }
-      attachFallback()
+      if (!hasFullSurvey) attachFallback()
     }
     const onResponded = (ev: any) => {
       try {
