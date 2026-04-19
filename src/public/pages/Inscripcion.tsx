@@ -126,10 +126,29 @@ export default function Inscripcion() {
     load();
   }, [token]);
 
-  const handleIdentify = (e: React.FormEvent) => {
+  const handleIdentify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
-    setIsEmailConfirmed(true);
+    if (!email.trim() || !token) return;
+    
+    // Re-validar que el enlace siga activo en caso de demora
+    setLoading(true);
+    try {
+      const response = await fetch('/api/get_inscription_survey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const result = await response.json();
+      if (!response.ok) {
+         setError(result.error || 'El enlace de inscripción ha sido cerrado o ya no es válido.');
+      } else {
+         setIsEmailConfirmed(true);
+      }
+    } catch (err) {
+      setError('Error al verificar el enlace de inscripción.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -182,7 +201,7 @@ export default function Inscripcion() {
         <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]"></div>
         <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.5)] flex flex-col items-center text-center animate-fade-in-up">
           <div className="w-16 h-16 bg-rose-500/20 text-rose-500 border border-rose-500/50 flex items-center justify-center rounded-full mb-6 shadow-[0_0_50px_rgba(244,63,94,0.3)]">
-            <span className="material-symbols-outlined text-3xl">error</span>
+            <span className="material-symbols-outlined text-3xl">link_off</span>
           </div>
           <h2 className="text-2xl font-black text-white mb-2">Acceso No Disponible</h2>
           <p className="text-sm font-medium text-slate-400 mb-8 leading-relaxed">{error}</p>

@@ -27,17 +27,11 @@ export default function SatisfaccionSuccess() {
         </p>
 
         <button 
-          onClick={() => {
-            if (surveyId) {
-              navigate(`/satisfaccion/votar/${surveyId}`);
-            } else {
-              navigate('/');
-            }
-          }} 
+          onClick={() => navigate('/')} 
           className="w-full bg-slate-800 text-white font-black py-4 rounded-[18px] hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-xs border border-white/10"
         >
-          <span className="material-symbols-outlined text-lg">{surveyId ? 'replay' : 'home'}</span>
-          {surveyId ? 'Nueva Respuesta' : 'Finalizar'}
+          <span className="material-symbols-outlined text-lg">home</span>
+          Finalizar
         </button>
         
       </div>

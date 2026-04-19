@@ -16,6 +16,36 @@ export default function SatisfaccionEncuesta() {
   const [isIdentifying, setIsIdentifying] = useState(false);
   const [idError, setIdError] = useState<string | null>(null);
 
+  const [isValidatingLink, setIsValidatingLink] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (urlSurveyId && !token && urlPublicToken) {
+      setIsValidatingLink(true);
+      import('../../services/supabaseClient').then(({ getRawSupabaseClient }) => {
+        const supabase = getRawSupabaseClient();
+        if (!supabase) {
+          setIsValidatingLink(false);
+          return;
+        }
+        supabase.from('surveys')
+          .select('satisfaccion_token, satisfaccion_expires_at')
+          .eq('id', urlSurveyId)
+          .maybeSingle()
+          .then(({ data }) => {
+            if (!data) {
+              setLinkError('Encuesta no encontrada.');
+            } else if (data.satisfaccion_expires_at && new Date(data.satisfaccion_expires_at) < new Date()) {
+              setLinkError('Este enlace de satisfacción ha expirado.');
+            } else if (!data.satisfaccion_token || data.satisfaccion_token !== urlPublicToken) {
+              setLinkError('Este enlace de satisfacción ha sido cerrado o ya no es válido.');
+            }
+            setIsValidatingLink(false);
+          });
+      });
+    }
+  }, [urlSurveyId, urlPublicToken, token]);
+
   const [estrellas, setEstrellas] = useState<number>(0);
   const [nps, setNps] = useState<number | null>(null);
   const [aspecto, setAspecto] = useState<string>('');
@@ -33,16 +63,32 @@ export default function SatisfaccionEncuesta() {
       if (newToken) {
         setToken(newToken);
       } else {
-        setIdError('No pudimos validar tu acceso o el enlace ha expirado.');
+        setLinkError('Este enlace de satisfacción ha sido cerrado o ya no es válido.');
       }
     } catch (err) {
-      setIdError('Error de conexión.');
+      setLinkError('Error de conexión al validar el enlace.');
     } finally {
       setIsIdentifying(false);
     }
   };
 
-  if (loading || isIdentifying) return <Loader fullScreen text={isIdentifying ? "Validando tu correo..." : "Cargando encuesta de satisfacción..."} />;
+  if (loading || isIdentifying || isValidatingLink) return <Loader fullScreen text={isIdentifying ? "Validando tu correo..." : isValidatingLink ? "Verificando enlace..." : "Cargando encuesta de satisfacción..."} />;
+
+  if (linkError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#020617] font-outfit relative overflow-hidden">
+        <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]"></div>
+        <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.5)] flex flex-col items-center text-center animate-fade-in-up">
+          <div className="w-16 h-16 bg-rose-500/20 text-rose-500 border border-rose-500/50 flex items-center justify-center rounded-full mb-6 shadow-[0_0_50px_rgba(244,63,94,0.3)]">
+            <span className="material-symbols-outlined text-3xl">link_off</span>
+          </div>
+          <h2 className="text-2xl font-black text-white mb-2">Acceso No Disponible</h2>
+          <p className="text-sm font-medium text-slate-400 mb-8 leading-relaxed">{linkError}</p>
+          <button onClick={() => navigate('/')} className="w-full bg-slate-800 text-white font-black py-4 rounded-[18px] hover:bg-slate-700 transition-all border border-white/10 shadow-lg">Volver al Inicio</button>
+        </div>
+      </div>
+    );
+  }
 
   // PANTALLA DE IDENTIFICACIÓN: Si entramos por surveyId y no tenemos token aún
   if (urlSurveyId && !token) {
@@ -89,14 +135,42 @@ export default function SatisfaccionEncuesta() {
 
   if (error || (surveyData && surveyData.__expired)) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-        <div className="bg-white max-w-md w-full p-8 rounded-3xl shadow-xl flex flex-col items-center text-center border border-slate-100 animate-fade-in-up">
-          <div className="w-16 h-16 bg-rose-100 text-rose-500 flex items-center justify-center rounded-full mb-6">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#020617] font-outfit relative overflow-hidden">
+        <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]"></div>
+        <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[30px] p-8 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.5)] flex flex-col items-center text-center animate-fade-in-up">
+          <div className="w-16 h-16 bg-rose-500/20 text-rose-500 border border-rose-500/50 flex items-center justify-center rounded-full mb-6 shadow-[0_0_50px_rgba(244,63,94,0.3)]">
             <span className="material-symbols-outlined text-3xl">{surveyData?.__expired ? 'timer_off' : 'error'}</span>
           </div>
-          <h2 className="text-xl font-black text-slate-800 mb-2">{surveyData?.__expired ? 'Enlace Expirado' : 'Acceso No Disponible'}</h2>
-          <p className="text-sm font-medium text-slate-500 mb-8">{surveyData?.__expired ? 'Este enlace de satisfacción ya no está vigente. Contacta al profesor si crees que es un error.' : error}</p>
-          <button onClick={() => navigate('/')} className="btn btn-primary w-full shadow-lg">Volver al Inicio</button>
+          <h2 className="text-2xl font-black text-white mb-2">{surveyData?.__expired ? 'Enlace Expirado' : 'Acceso No Disponible'}</h2>
+          <p className="text-sm font-medium text-slate-400 mb-8 leading-relaxed">{surveyData?.__expired ? 'Este enlace de satisfacción ya no está vigente. Contacta al profesor si crees que es un error.' : error}</p>
+          <button onClick={() => navigate('/')} className="w-full bg-slate-800 text-white font-black py-4 rounded-[18px] hover:bg-slate-700 transition-all border border-white/10 shadow-lg">Volver al Inicio</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Duplicate prevention: if this token was already used to respond
+  if (surveyData && surveyData.respondida === true) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6 relative overflow-hidden font-outfit">
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]">
+          <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-amber-600/20 rounded-full blur-[120px] opacity-60"></div>
+        </div>
+        <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[30px] p-10 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.5)] animate-fade-in-up text-center flex flex-col items-center">
+          <div className="w-20 h-20 rounded-full bg-amber-500/20 border border-amber-500/50 flex items-center justify-center mb-6 shadow-[0_0_50px_rgba(245,158,11,0.3)]">
+            <span className="material-symbols-outlined text-amber-400 text-[42px]">check_circle</span>
+          </div>
+          <h1 className="text-2xl font-black text-white px-2 mb-3 tracking-tight">Ya has respondido</h1>
+          <p className="text-sm font-medium text-slate-400 leading-relaxed mb-8">
+            Tu opinión ya fue registrada anteriormente con este correo. Solo se permite una respuesta por persona para garantizar resultados confiables.
+          </p>
+          <button 
+            onClick={() => navigate('/')} 
+            className="w-full bg-slate-800 text-white font-black py-4 rounded-[18px] hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-xs border border-white/10"
+          >
+            <span className="material-symbols-outlined text-lg">home</span>
+            Finalizar
+          </button>
         </div>
       </div>
     );
@@ -105,7 +179,6 @@ export default function SatisfaccionEncuesta() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (estrellas === 0 || nps === null || !aspecto) return;
-    const isPublicMode = !!(surveyData?.__publicMode);
     const success = await submit(
       {
         satisfaccion_estrellas: estrellas,
@@ -113,12 +186,11 @@ export default function SatisfaccionEncuesta() {
         aspecto_destacado: aspecto,
         comentario: comentario.trim() || null,
         respondida_en: new Date().toISOString()
-      },
-      isPublicMode ? { survey_id: String(surveyData.survey_id) } : undefined
+      }
     );
     if (success) {
       if (urlSurveyId) {
-        navigate(`/satisfaccion/success?surveyId=${urlSurveyId}`, { replace: true });
+        navigate(`/satisfaccion/success`, { replace: true });
       } else {
         navigate(`/satisfaccion/success`, { replace: true });
       }

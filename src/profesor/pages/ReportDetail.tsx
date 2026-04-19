@@ -19,6 +19,7 @@ export default function ReportDetail(): JSX.Element {
 
   const [survey, setSurvey] = useState<any>(null)
   const [report, setReport] = useState<any>(null)
+  const [satisfactionReport, setSatisfactionReport] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [modalProject, setModalProject] = useState<any>(null)
   const [usersCache, setUsersCache] = useState<Record<string, any>>({})
@@ -139,6 +140,81 @@ export default function ReportDetail(): JSX.Element {
         if (kind === 'simple') r = await (reportHelpers as any).getSimpleSurveyReport(surveyId!)
         else r = await (reportHelpers as any).getProjectSurveyReport(surveyId!)
         if (mounted) setReport(r)
+
+        // Also fetch satisfaction data for simple surveys
+        if (kind === 'simple' && (reportHelpers as any).getSimpleSurveySatisfactionReport) {
+          try {
+            const satData = await (reportHelpers as any).getSimpleSurveySatisfactionReport(surveyId!)
+            if (mounted) {
+              setSatisfactionReport(satData)
+              
+              // Inject satisfaction data into the generic report so 'Actividad por usuario', 'Respuestas' and 'Desglose' pick it up.
+              if (satData && satData.respondidas > 0 && r) {
+                const satRows = satData.respondentes.map((sr: any) => ({
+                  userId: sr.email,
+                  submittedAt: sr.respondida_en,
+                  'Satisfacción Evaluada': sr.estrellas + ' estrellas',
+                  'NPS Promedio': sr.nps,
+                  'Aspecto Elegido': sr.aspecto
+                }))
+                // Deduplicate in case they overlap, though they shouldn't
+                r.rows = [...(r.rows || []), ...satRows]
+                r.totalResponses = Math.max(r.totalResponses || 0, r.rows.length)
+                
+                if (!r.respondentIds) r.respondentIds = []
+                satRows.forEach((sr: any) => {
+                  if (sr.userId && !r.respondentIds.includes(sr.userId)) {
+                    r.respondentIds.push(sr.userId)
+                  }
+                })
+
+                // Populate questionStats (Desglose por pregunta)
+                if (Array.isArray(r.questionStats)) {
+                  r.questionStats.forEach((qs: any) => {
+                    const qText = (qs.question || '').toLowerCase()
+                    if (qText.includes('satisfecho')) {
+                      qs.questionType = 'multiple'
+                      const emojis = ['5 🤩', '4 🙂', '3 😐', '2 🙁', '1 😡']
+                      qs.options = emojis
+                      qs.texts = undefined
+                      satData.respondentes.forEach((sr: any) => {
+                        const val = String(sr.estrellas)
+                        const label = emojis.find(e => e.startsWith(val))
+                        if (label) { qs.counts[label] = (qs.counts[label] || 0) + 1; qs.answered++; }
+                      })
+                    } else if (qText.includes('probabilidad') || qText.includes('recomendarías')) {
+                      qs.questionType = 'multiple'
+                      qs.options = ['10', '9', '8', '7', '6', '5', '4', '3', '2', '1', '0']
+                      qs.texts = undefined
+                      satData.respondentes.forEach((sr: any) => {
+                        const val = String(sr.nps)
+                        if (qs.counts[val] !== undefined || qs.options.includes(val)) {
+                          qs.counts[val] = (qs.counts[val] || 0) + 1; qs.answered++;
+                        }
+                      })
+                    } else if (qText.includes('aspecto destaca')) {
+                      qs.questionType = 'multiple'
+                      qs.texts = undefined
+                      satData.respondentes.forEach((sr: any) => {
+                        const val = sr.aspecto
+                        if (val) { qs.counts[val] = (qs.counts[val] || 0) + 1; qs.answered++; }
+                      })
+                    } else if (qText.includes('comentario adicional')) {
+                      qs.questionType = 'text'
+                      qs.texts = []
+                      satData.respondentes.forEach((sr: any) => {
+                        if (sr.comentario) { qs.texts.push(sr.comentario); qs.answered++; }
+                      })
+                    }
+                  })
+                }
+                
+                // Re-set report with merged rows and stats
+                setReport({...r})
+              }
+            }
+          } catch (e) { /* non-fatal */ }
+        }
       } catch (e) {
         if (mounted) setReport(null)
       } finally {
@@ -210,6 +286,73 @@ export default function ReportDetail(): JSX.Element {
       let r: any = null
       if (kind === 'simple') r = await (reportHelpers as any).getSimpleSurveyReport(surveyId)
       else r = await (reportHelpers as any).getProjectSurveyReport(surveyId)
+      
+      // Also fetch satisfaction data for simple surveys on reload
+      if (kind === 'simple' && (reportHelpers as any).getSimpleSurveySatisfactionReport) {
+        try {
+          const satData = await (reportHelpers as any).getSimpleSurveySatisfactionReport(surveyId)
+          setSatisfactionReport(satData)
+          if (satData && satData.respondidas > 0 && r) {
+            const satRows = satData.respondentes.map((sr: any) => ({
+              userId: sr.email,
+              submittedAt: sr.respondida_en,
+              'Satisfacción Evaluada': sr.estrellas + ' estrellas',
+              'NPS Promedio': sr.nps,
+              'Aspecto Elegido': sr.aspecto
+            }))
+            r.rows = [...(r.rows || []), ...satRows]
+            r.totalResponses = Math.max(r.totalResponses || 0, r.rows.length)
+            
+            if (!r.respondentIds) r.respondentIds = []
+            satRows.forEach((sr: any) => {
+              if (sr.userId && !r.respondentIds.includes(sr.userId)) {
+                r.respondentIds.push(sr.userId)
+              }
+            })
+
+            if (Array.isArray(r.questionStats)) {
+              r.questionStats.forEach((qs: any) => {
+                const qText = (qs.question || '').toLowerCase()
+                if (qText.includes('satisfecho')) {
+                  qs.questionType = 'multiple'
+                  const emojis = ['5 🤩', '4 🙂', '3 😐', '2 🙁', '1 😡']
+                  qs.options = emojis
+                  qs.texts = undefined
+                  satData.respondentes.forEach((sr: any) => {
+                    const val = String(sr.estrellas)
+                    const label = emojis.find(e => e.startsWith(val))
+                    if (label) { qs.counts[label] = (qs.counts[label] || 0) + 1; qs.answered++; }
+                  })
+                } else if (qText.includes('probabilidad') || qText.includes('recomendarías')) {
+                  qs.questionType = 'multiple'
+                  qs.options = ['10', '9', '8', '7', '6', '5', '4', '3', '2', '1', '0']
+                  qs.texts = undefined
+                  satData.respondentes.forEach((sr: any) => {
+                    const val = String(sr.nps)
+                    if (qs.counts[val] !== undefined || qs.options.includes(val)) {
+                      qs.counts[val] = (qs.counts[val] || 0) + 1; qs.answered++;
+                    }
+                  })
+                } else if (qText.includes('aspecto destaca')) {
+                  qs.questionType = 'multiple'
+                  qs.texts = undefined
+                  satData.respondentes.forEach((sr: any) => {
+                    const val = sr.aspecto
+                    if (val) { qs.counts[val] = (qs.counts[val] || 0) + 1; qs.answered++; }
+                  })
+                } else if (qText.includes('comentario adicional')) {
+                  qs.questionType = 'text'
+                  qs.texts = []
+                  satData.respondentes.forEach((sr: any) => {
+                    if (sr.comentario) { qs.texts.push(sr.comentario); qs.answered++; }
+                  })
+                }
+              })
+            }
+          }
+        } catch (e) { /* non-fatal */ }
+      }
+      
       setReport(r)
     } catch (e) { setReport(null) }
     finally { setLoading(false) }
@@ -217,29 +360,39 @@ export default function ReportDetail(): JSX.Element {
 
   return (
     <>
-      <div id="report-detail-root" className="min-h-screen bg-slate-50/50 pb-24 print:hidden">
+      <div id="report-detail-root" className="min-h-screen bg-slate-100/80 pb-24 print:hidden">
 
       {/* Header Premium */}
       <div className="bg-white border-b border-slate-200/60 shadow-sm relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/[0.03] to-blue-500/[0.04]" />
         
         <div className="px-5 sm:px-8 py-6 md:py-8 relative z-10 max-w-7xl mx-auto">
-          {/* Breadcrumb glassmorphic */}
-          {/* Encapsulated Breadcrumb in a more visible Gray Pill */}
-          <nav className="inline-flex items-center p-1 rounded-2xl bg-slate-200/80 backdrop-blur-sm border border-slate-300/50 transition-all mb-8 shadow-sm">
-            <button 
-              onClick={() => navigate('/profesor/encuestas/reports')}
-              className="group flex items-center gap-2 px-4 py-1.5 rounded-xl bg-transparent border border-slate-900/40 dark:border-white/30 text-slate-800 dark:text-slate-200 font-bold hover:bg-white/40 dark:hover:bg-slate-800/40 transition-all duration-300 active:scale-95"
-            >
-              <span className="material-symbols-outlined text-[18px]">bar_chart</span>
-              Reportes
-            </button>
-            
-            <div className="flex items-center gap-2.5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              <span className="material-symbols-outlined text-[14px] text-slate-300 dark:text-slate-600">chevron_right</span>
-              <span className="text-slate-800 dark:text-slate-300 truncate max-w-[120px] sm:max-w-xs">
-                {loading ? '...' : surveyTitle}
-              </span>
+          {/* Breadcrumb Premium Flotante (Estilo Linear/Notion) */}
+          <nav className="flex items-center mb-8 animate-fade-in-down" aria-label="Breadcrumb">
+            <div className="inline-flex items-center gap-1 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/50 shadow-sm shadow-slate-200/60 dark:shadow-black/20 rounded-2xl px-1.5 py-1.5 ring-1 ring-slate-900/[0.04]">
+              
+              {/* Botón Volver */}
+              <button 
+                onClick={() => navigate('/profesor/encuestas/reports')}
+                className="group flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-semibold text-sm transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-slate-300 shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[16px] transition-transform duration-200 group-hover:-translate-x-0.5">arrow_back_ios_new</span>
+                <span>Reportes</span>
+              </button>
+
+              {/* Separador */}
+              <div className="flex items-center px-1">
+                <span className="text-[10px] text-slate-300 dark:text-slate-600 font-light select-none">›</span>
+              </div>
+
+              {/* Chip del Título Activo */}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 dark:bg-white/10 max-w-[160px] sm:max-w-xs">
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 animate-pulse ${survey?.type === 'project' ? 'bg-indigo-400' : 'bg-emerald-400'}`} />
+                <span className="text-sm font-bold text-white dark:text-slate-100 truncate leading-none">
+                  {loading ? 'Cargando...' : surveyTitle}
+                </span>
+              </div>
+
             </div>
           </nav>
 
@@ -327,7 +480,7 @@ export default function ReportDetail(): JSX.Element {
         )}
 
         {!loading && report && (
-          <div className="animate-fade-in-up" style={{ animationDelay: '50ms' }}>
+          <div className="relative z-20 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
             
             {report.totalResponses === 0 && (
               <div className="mb-6 bg-slate-50 border border-slate-200 p-5 rounded-2xl flex items-center gap-4">
@@ -348,9 +501,73 @@ export default function ReportDetail(): JSX.Element {
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-12">
-              
               {/* Left Column (Main Stats / Ranking) */}
               <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
+
+                {/* Satisfacción KPIs (Resumen Global) */}
+                {satisfactionReport && satisfactionReport.respondidas > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Stars */}
+                    <div className="relative bg-white h-[88px] sm:h-auto rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-5 flex flex-row sm:flex-col items-center sm:justify-center text-left sm:text-center gap-3 sm:gap-0">
+                      <div className="absolute top-1/2 -translate-y-1/2 sm:translate-y-0 sm:top-3 right-4 sm:right-3 group z-[50]">
+                        <div className="text-slate-300 group-hover:text-slate-500 cursor-help transition-colors">
+                          <span className="material-symbols-outlined text-[16px]">help</span>
+                        </div>
+                        <div className="absolute bottom-full right-[-8px] sm:right-0 mb-3 sm:mb-2 w-[220px] max-w-[85vw] sm:w-56 sm:max-w-none p-3 bg-slate-800 text-white text-[11px] leading-relaxed rounded-xl shadow-[0_10px_30px_-5px_rgba(0,0,0,0.4)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 pointer-events-none translate-y-1 group-hover:translate-y-0 text-left">
+                          El promedio de todas las respuestas a la pregunta de satisfacción, en una escala del 1 al 5.
+                          <div className="absolute top-full right-4 sm:right-2 -mt-0.5 border-4 border-transparent border-t-slate-800"></div>
+                        </div>
+                      </div>
+                      <div className="inline-flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 shrink-0 rounded-full bg-amber-50 text-amber-500 sm:mb-2">
+                        <span className="material-symbols-outlined text-[20px] sm:text-[16px]">star</span>
+                      </div>
+                      <div className="flex flex-col justify-center">
+                        <div className="text-xl sm:text-2xl font-black text-slate-800 leading-none mb-1 sm:mb-0">{satisfactionReport.estrellas.promedio} <span className="text-xs sm:text-sm font-bold text-slate-400">/ 5</span></div>
+                        <div className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0 sm:mt-1">Satisfacción Promedio</div>
+                      </div>
+                    </div>
+                    {/* NPS */}
+                    <div className="relative bg-white h-[88px] sm:h-auto rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-5 flex flex-row sm:flex-col items-center sm:justify-center text-left sm:text-center gap-3 sm:gap-0">
+                      <div className="absolute top-1/2 -translate-y-1/2 sm:translate-y-0 sm:top-3 right-4 sm:right-3 group z-[50]">
+                        <div className="text-slate-300 group-hover:text-slate-500 cursor-help transition-colors">
+                          <span className="material-symbols-outlined text-[16px]">help</span>
+                        </div>
+                        <div className="absolute bottom-full right-[-8px] sm:right-0 mb-3 sm:mb-2 w-[220px] max-w-[85vw] sm:w-56 sm:max-w-none p-3 bg-slate-800 text-white text-[11px] leading-relaxed rounded-xl shadow-[0_10px_30px_-5px_rgba(0,0,0,0.4)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 pointer-events-none translate-y-1 group-hover:translate-y-0 text-left">
+                          Net Promoter Score: Mide la lealtad restando el porcentaje de detractores al de promotores. Su valor va de -100 a +100.
+                          <div className="absolute top-full right-4 sm:right-2 -mt-0.5 border-4 border-transparent border-t-slate-800"></div>
+                        </div>
+                      </div>
+                       <div className={`inline-flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 shrink-0 rounded-full sm:mb-2 ${satisfactionReport.nps.score >= 0 ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
+                        <span className="material-symbols-outlined text-[20px] sm:text-[16px]">speed</span>
+                      </div>
+                      <div className="flex flex-col justify-center">
+                        <div className="text-xl sm:text-2xl font-black text-slate-800 leading-none mb-1 sm:mb-0">{satisfactionReport.nps.score > 0 ? '+' : ''}{satisfactionReport.nps.score}</div>
+                        <div className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0 sm:mt-1">Score NPS Global</div>
+                      </div>
+                    </div>
+                    {/* Top Aspect */}
+                    <div className="relative bg-white h-[88px] sm:h-auto rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm p-4 sm:p-5 flex flex-row sm:flex-col items-center sm:justify-center text-left sm:text-center gap-3 sm:gap-0">
+                      <div className="absolute top-1/2 -translate-y-1/2 sm:translate-y-0 sm:top-3 right-4 sm:right-3 group z-[50]">
+                        <div className="text-slate-300 group-hover:text-slate-500 cursor-help transition-colors">
+                          <span className="material-symbols-outlined text-[16px]">help</span>
+                        </div>
+                        <div className="absolute bottom-full right-[-8px] sm:right-0 mb-3 sm:mb-2 w-[220px] max-w-[85vw] sm:w-56 sm:max-w-none p-3 bg-slate-800 text-white text-[11px] leading-relaxed rounded-xl shadow-[0_10px_30px_-5px_rgba(0,0,0,0.4)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 pointer-events-none translate-y-1 group-hover:translate-y-0 text-left">
+                          El parámetro de la actividad que acumuló la mayor cantidad de votos positivos.
+                          <div className="absolute top-full right-4 sm:right-2 -mt-0.5 border-4 border-transparent border-t-slate-800"></div>
+                        </div>
+                      </div>
+                       <div className="inline-flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 shrink-0 rounded-full bg-indigo-50 text-indigo-500 sm:mb-2">
+                        <span className="material-symbols-outlined text-[20px] sm:text-[16px]">military_tech</span>
+                      </div>
+                      <div className="flex flex-col justify-center min-w-0 pr-6 sm:pr-0">
+                        <div className="text-base sm:text-lg font-black text-slate-800 truncate w-full px-0 sm:px-2 leading-none mb-1 sm:mb-0" title={String(Object.entries(satisfactionReport.aspectos).sort(([,a]: any,[,b]: any) => b - a)[0]?.[0] || '—')}>
+                          {String(Object.entries(satisfactionReport.aspectos).sort(([,a]: any,[,b]: any) => b - a)[0]?.[0] || '—')}
+                        </div>
+                        <div className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0 sm:mt-1">Aspecto Destacado</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Preguntas Simples */}
                 {report.questionStats && (
@@ -378,6 +595,8 @@ export default function ReportDetail(): JSX.Element {
                     </div>
                   </div>
                 )}
+
+
 
                 {/* Ranking de Proyectos */}
                 {report.projectSummaries && (

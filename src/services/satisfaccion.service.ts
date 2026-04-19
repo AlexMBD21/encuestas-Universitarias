@@ -67,21 +67,8 @@ export async function submitSatisfaccion(token: string, payload: SatisfaccionPay
   const supabase = getRawSupabaseClient();
   if (!supabase) return false;
   try {
-    if (publicMode) {
-      // Shared public link: insert new anonymous row
-      const { error } = await (supabase as any).from('encuestas_satisfaccion').insert({
-        survey_id: publicMode.survey_id,
-        token: `pub_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-        respondida: true,
-        respuestas_json: payload,
-        respondida_en: payload.respondida_en,
-        token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // no expiry
-      });
-      if (error) { console.error('submitSatisfaccion (public) error', error); return false; }
-      return true;
-    }
-
-    // Individual token mode: update existing row
+    // Both public-link and individual-token modes UPDATE the existing row.
+    // The row was already created by getOrCreateSatisfaccionToken() during email identification.
     const { error } = await (supabase as any).from('encuestas_satisfaccion')
       .update({
         respondida: true,
@@ -134,9 +121,7 @@ export async function getSatisfaccionTokensBySurveyId(surveyId: string): Promise
   const supabase = getRawSupabaseClient();
   if (!supabase) return [];
   try {
-    // Prevent 400 Bad Request if surveyId is not a valid UUID (common for system settings or legacy items)
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(surveyId);
-    if (!isUuid) return [];
+    // Legacy IDs format 's_xxxx' are allowed, so we removed the strict isUuid check.
 
     const res: any = await (supabase as any).from('encuestas_satisfaccion')
       .select('token, participante_id, respondida, token_expires_at')
@@ -148,6 +133,108 @@ export async function getSatisfaccionTokensBySurveyId(surveyId: string): Promise
   } catch (e) {
     console.error('getSatisfaccionTokensBySurveyId Error:', e);
     return [];
+  }
+}
+
+/**
+ * Obtiene todas las respuestas de satisfacción para un survey y calcula métricas agregadas.
+ * Usado por el creador para ver resultados y por los reportes.
+ */
+export async function getSatisfaccionResultsBySurveyId(surveyId: string): Promise<{
+  total: number;
+  respondidas: number;
+  estrellas: { promedio: number; distribucion: number[] };
+  nps: { score: number; detractores: number; neutrales: number; promotores: number };
+  aspectos: Record<string, number>;
+  comentarios: string[];
+  respondentes: { email: string; respondida_en: string; estrellas: number; nps: number; aspecto: string; comentario: string | null }[];
+} | null> {
+  const supabase = getRawSupabaseClient();
+  if (!supabase) return null;
+  try {
+    // Legacy IDs format 's_xxxx' are allowed.
+
+    const res: any = await (supabase as any).from('encuestas_satisfaccion')
+      .select('*')
+      .eq('encuesta_id', surveyId)
+      .order('created_at', { ascending: true });
+
+    if (res && res.error) return null;
+    const rows = res.data || [];
+    if (rows.length === 0) return null;
+
+    const answered = rows.filter((r: any) => r.respondida === true);
+    const total = rows.length;
+    const respondidas = answered.length;
+
+    // Estrellas (1-5)
+    const starDist = [0, 0, 0, 0, 0]; // índice 0 = 1 estrella, etc.
+    let starSum = 0;
+    answered.forEach((r: any) => {
+      const json = r.respuestas_json || {};
+      const stars = Number(json.satisfaccion_estrellas || 0);
+      if (stars >= 1 && stars <= 5) {
+        starDist[stars - 1]++;
+        starSum += stars;
+      }
+    });
+    const starAvg = respondidas > 0 ? +(starSum / respondidas).toFixed(2) : 0;
+
+    // NPS (1-10)
+    let detractores = 0, neutrales = 0, promotores = 0;
+    answered.forEach((r: any) => {
+      const json = r.respuestas_json || {};
+      const nps = Number(json.nps || 0);
+      if (nps >= 1 && nps <= 6) detractores++;
+      else if (nps >= 7 && nps <= 8) neutrales++;
+      else if (nps >= 9 && nps <= 10) promotores++;
+    });
+    const npsScore = respondidas > 0 ? Math.round(((promotores - detractores) / respondidas) * 100) : 0;
+
+    // Aspectos
+    const aspectos: Record<string, number> = {};
+    answered.forEach((r: any) => {
+      const json = r.respuestas_json || {};
+      const asp = json.aspecto_destacado;
+      if (asp && typeof asp === 'string') {
+        aspectos[asp] = (aspectos[asp] || 0) + 1;
+      }
+    });
+
+    // Comentarios
+    const comentarios: string[] = [];
+    answered.forEach((r: any) => {
+      const json = r.respuestas_json || {};
+      if (json.comentario && String(json.comentario).trim()) {
+        comentarios.push(String(json.comentario).trim());
+      }
+    });
+
+    // Lista de respondentes
+    const respondentes = answered.map((r: any) => {
+      const json = r.respuestas_json || {};
+      return {
+        email: r.participante_email || 'Anónimo',
+        respondida_en: json.respondida_en || r.respondida_en || '',
+        estrellas: Number(json.satisfaccion_estrellas || 0),
+        nps: Number(json.nps || 0),
+        aspecto: json.aspecto_destacado || '',
+        comentario: json.comentario || null
+      };
+    });
+
+    return {
+      total,
+      respondidas,
+      estrellas: { promedio: starAvg, distribucion: starDist },
+      nps: { score: npsScore, detractores, neutrales, promotores },
+      aspectos,
+      comentarios,
+      respondentes
+    };
+  } catch (e) {
+    console.error('getSatisfaccionResultsBySurveyId Error:', e);
+    return null;
   }
 }
 
@@ -170,7 +257,10 @@ export async function getOrCreateSatisfaccionToken(surveyId: string, email: stri
     if (sData.satisfaccion_expires_at && new Date(sData.satisfaccion_expires_at) < new Date()) {
        return null; // Survey Closed 
     }
-    if (publicToken && sData.satisfaccion_token && sData.satisfaccion_token !== publicToken) {
+    if (!sData.satisfaccion_token) {
+       return null; // Survey Closed (Link removed)
+    }
+    if (publicToken && sData.satisfaccion_token !== publicToken) {
        return null; // Old token Link mismatch
     }
 

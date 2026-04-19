@@ -388,7 +388,12 @@ export default function Configuracion() {
   }
 
   return (
-    <div id="configuration-root" className="min-h-screen bg-slate-50/50 pb-20" aria-hidden={modalOpen}>
+    <div id="configuration-root" className="min-h-screen bg-slate-100/80 dark:bg-[#0b1120] pb-20 relative" aria-hidden={modalOpen}>
+      {/* Luces de Fondo Premium (Celestial Glass) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[80vw] max-w-[800px] h-[800px] bg-indigo-500/5 dark:bg-indigo-600/15 rounded-full blur-[120px]"></div>
+        <div className="absolute top-[20%] right-[-10%] w-[60vw] max-w-[600px] h-[600px] bg-emerald-500/5 dark:bg-emerald-600/15 rounded-full blur-[120px]"></div>
+      </div>
       {/* Header Splash Premium */}
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
         <div id="config-header-inner" className="px-5 sm:px-8 py-10 md:py-16 max-w-7xl mx-auto">

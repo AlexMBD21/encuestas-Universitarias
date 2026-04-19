@@ -8,8 +8,6 @@
     "dev:all": "concurrently -k \"npm run dev\" \"npm run dev:functions\"",
     "build": "vite build",
     "preview": "vite preview",
-    "migrate:ownerids:dry": "node migrate-ownerids.js --dry",
-    "migrate:ownerids": "node migrate-ownerids.js --apply",
     "create-admin": "node backend/scripts/create_admin_user.js"
   },
   "dependencies": {

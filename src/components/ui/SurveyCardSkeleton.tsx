@@ -17,13 +17,12 @@ function Bone({ className = '' }: { className?: string }) {
 }
 
 export function SurveyCardSkeleton({ variant = 'project' }: { variant?: 'project' | 'simple' }) {
-  const accentColor = variant === 'project'
-    ? 'bg-indigo-100'
-    : 'bg-emerald-100';
+  const accentColorContainer = variant === 'project'
+    ? 'border-indigo-100 border-t-[6px] border-t-indigo-200 dark:border-indigo-900/50'
+    : 'border-emerald-100 border-t-[6px] border-t-emerald-200 dark:border-emerald-900/50';
 
   return (
-    <div className="relative p-5 border border-slate-100 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 flex flex-col justify-between overflow-hidden shadow-sm">
-      <div className={`absolute top-0 left-0 w-full h-[5px] ${accentColor}`} />
+    <div className={`relative p-6 border rounded-[24px] bg-white dark:bg-slate-900 flex flex-col justify-between overflow-hidden shadow-sm ${accentColorContainer}`}>
 
       <div className="flex-1 mt-1">
         {/* Badges */}

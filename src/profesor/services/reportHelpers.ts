@@ -2,6 +2,7 @@
   Prefer Firebase RTDB when available; fall back to localStorage for legacy data.
 */
 import supabaseClient from '../../services/supabaseClient'
+import { getSatisfaccionResultsBySurveyId } from '../../services/satisfaccion.service'
 
 function getDataClient() {
   try {
@@ -205,6 +206,18 @@ export async function getSimpleSurveyReport(surveyId: string, opts?: ReportOpts)
   const respondentIds = Array.from(new Set((filteredResponses || []).map(r => String((r as any).userId || (r as any).reporterUid || (r as any).reporterId || 'anónimo'))))
 
   return { survey, questionStats, totalResponses: filteredResponses.length, rows, respondentIds }
+}
+
+/**
+ * Fetches satisfaction results for a simple survey (if any exist).
+ * This is called separately from getSimpleSurveyReport to keep it non-blocking.
+ */
+export async function getSimpleSurveySatisfactionReport(surveyId: string) {
+  try {
+    return await getSatisfaccionResultsBySurveyId(surveyId)
+  } catch (e) {
+    return null
+  }
 }
 
 export async function getProjectSurveyReport(surveyId: string, opts?: ReportOpts) {
@@ -435,5 +448,5 @@ export function exportSimpleSurveyReport(report: {
 }
 
 
-const reportHelpers = { getSurveyList, getSimpleSurveyReport, getProjectSurveyReport, exportCsv, exportSimpleSurveyReport }
+const reportHelpers = { getSurveyList, getSimpleSurveyReport, getSimpleSurveySatisfactionReport, getProjectSurveyReport, exportCsv, exportSimpleSurveyReport }
 export default reportHelpers

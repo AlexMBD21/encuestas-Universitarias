@@ -206,8 +206,16 @@ export default function Reports(): JSX.Element {
           try {
             const kind = s.type === 'project' ? 'projects' : 'simple'
             let r: any = null
-            if (kind === 'simple') r = await (reportHelpers as any).getSimpleSurveyReport(String(s.id))
-            else r = await (reportHelpers as any).getProjectSurveyReport(String(s.id))
+            if (kind === 'simple') {
+              r = await (reportHelpers as any).getSimpleSurveyReport(String(s.id))
+              const satRes = await (reportHelpers as any).getSimpleSurveySatisfactionReport(String(s.id))
+              if (satRes && satRes.respondidas > 0) {
+                if (!r) r = { totalResponses: 0 }
+                r.totalResponses = Math.max(r.totalResponses || 0, satRes.respondidas)
+              }
+            } else {
+              r = await (reportHelpers as any).getProjectSurveyReport(String(s.id))
+            }
             // For project surveys, count unique evaluators from rawResponses
             let evaluatorsCount: number | null = null
             if (kind === 'projects' && r && Array.isArray(r.rawResponses)) {
@@ -229,7 +237,12 @@ export default function Reports(): JSX.Element {
 
   
   return (
-    <div id="reports-root" className="min-h-screen bg-slate-50/50 pb-20">
+    <div id="reports-root" className="min-h-screen bg-slate-100/80 pb-20 relative">
+      {/* Luces de Fondo Premium (Celestial Glass) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[80vw] max-w-[800px] h-[800px] bg-indigo-500/5 dark:bg-indigo-600/15 rounded-full blur-[120px]"></div>
+        <div className="absolute top-[20%] right-[-10%] w-[60vw] max-w-[600px] h-[600px] bg-emerald-500/5 dark:bg-emerald-600/15 rounded-full blur-[120px]"></div>
+      </div>
       {/* Header Limpio Minimalista con mayor profundidad */}
       <div className="bg-white border-b border-slate-200 shadow-md">
         <div id="reports-header-inner" className="px-5 sm:px-8 py-8 md:py-12 max-w-7xl mx-auto">
@@ -349,11 +362,10 @@ export default function Reports(): JSX.Element {
                   return (
                     <div 
                       key={su.id} 
-                      className="group bg-white rounded-2xl border border-slate-200 hover:border-slate-400 shadow-sm hover:shadow-xl hover:shadow-slate-500/10 transition-all duration-300 overflow-hidden flex flex-col relative"
+                      className={`group bg-white rounded-[24px] border border-t-[6px] hover:shadow-xl hover:shadow-slate-500/10 transform hover:-translate-y-1 transition duration-200 ease-out focus-within:ring-2 overflow-hidden flex flex-col relative ${isProject ? 'border-indigo-100 border-t-indigo-500 hover:border-indigo-300' : 'border-emerald-100 border-t-emerald-500 hover:border-emerald-300'}`}
                       style={{ animationDelay: `${i * 30 + 150}ms` }}
                     >
-                      <div className={`absolute top-0 left-0 right-0 h-[5px] ${isProject ? 'bg-indigo-500' : 'bg-emerald-500'}`} />
-                      <div className="p-5 md:p-6 flex-1 flex flex-col">
+                      <div className="p-6 flex-1 flex flex-col">
                         <div className="flex items-start justify-between gap-3 mb-4 mt-1">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isProject ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'} border ${isProject ? 'border-indigo-100' : 'border-emerald-100'}`}>
                             <span className="material-symbols-outlined text-[20px]">

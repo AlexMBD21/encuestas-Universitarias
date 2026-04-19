@@ -18,6 +18,7 @@ import { EvaluatorAssignmentModal as EvaluatorModalContent } from '../components
 import { ManageCategoriesModal } from '../components/surveys/ManageCategoriesModal';
 import { GenerateLinkModal } from '../components/surveys/GenerateLinkModal';
 import { GenerateSatisfaccionLinkModal } from '../components/surveys/GenerateSatisfaccionLinkModal';
+import { SatisfaccionResultsModal } from '../components/surveys/SatisfaccionResultsModal';
 import { SurveyGridSkeleton } from '../../components/ui/SurveyCardSkeleton';
 import Loader from '../../components/Loader';
 import { toast } from '../../components/ui/Toast';
@@ -57,13 +58,13 @@ export default function Surveys(): JSX.Element {
   const [satisfaccionTokensMap, setSatisfaccionTokensMap] = useState<Record<string, any[]>>({})
   const [generateSatisfaccionLinkSurveyId, setGenerateSatisfaccionLinkSurveyId] = useState<string | null>(null)
   const [confirmDeactivateSatisfaccionLinkSurveyId, setConfirmDeactivateSatisfaccionLinkSurveyId] = useState<string | null>(null)
+  const [viewSatisfaccionResultsSurveyId, setViewSatisfaccionResultsSurveyId] = useState<string | null>(null)
 
   // Load satisfaction tokens for every simple survey I own
   useEffect(() => {
     // Load satisfaction tokens for every simple survey I own
-    const isUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
     const simpleOwned = surveys.filter(
-      (s: any) => s.type !== 'project' && isOwnerOf(s) && !String(s.id).startsWith('sys_') && isUuid(String(s.id))
+      (s: any) => s.type !== 'project' && isOwnerOf(s) && !String(s.id).startsWith('sys_')
     )
     if (!simpleOwned.length) return
     simpleOwned.forEach(async (s: any) => {
@@ -407,7 +408,13 @@ export default function Surveys(): JSX.Element {
 
   const navigate = useNavigate();
   return (
-    <div id="surveys-root" className="min-h-screen bg-slate-50 pb-20">
+    <div id="surveys-root" className="min-h-screen bg-slate-100/80 dark:bg-[#0b1120] pb-20 transition-colors duration-300 relative">
+      
+      {/* Luces de Fondo Premium (Celestial Glass) — contenidas al área de contenido */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[80vw] max-w-[800px] h-[800px] bg-indigo-500/5 dark:bg-indigo-600/15 rounded-full blur-[120px]"></div>
+        <div className="absolute top-[20%] right-[-10%] w-[60vw] max-w-[600px] h-[600px] bg-emerald-500/5 dark:bg-emerald-600/15 rounded-full blur-[120px]"></div>
+      </div>
 
       {/* Header Surveys */}
       <div className="bg-white border-b border-slate-200 shadow-md relative z-10">
@@ -702,8 +709,7 @@ export default function Surveys(): JSX.Element {
                     const userResponded = !isProjectType ? (userRespondedLocal || surveyHelpers.hasUserResponded(String(s.id))) : false
                     const firstPending = allProjects.find((p: any) => !surveyHelpers.hasUserRated(String(s.id), String(p.id)))
                     return (
-                      <div key={s.id} id={`survey-${s.id}`} className={`group relative p-5 border rounded-2xl flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-xl transform hover:-translate-y-1 transition duration-200 ease-out focus-within:ring-2 bg-white dark:bg-slate-900 ${isProjectType ? 'border-indigo-100 dark:border-indigo-900/50 hover:border-indigo-300 dark:hover:border-indigo-700/50 focus-within:ring-indigo-200' : 'border-emerald-100 dark:border-emerald-900/50 hover:border-emerald-300 dark:hover:border-emerald-700/50 focus-within:ring-emerald-200'}`}>
-                        <div className={`absolute top-0 left-0 w-full h-[5px] ${isProjectType ? 'bg-indigo-500' : 'bg-emerald-500'}`}></div>
+                      <div key={s.id} id={`survey-${s.id}`} className={`group relative p-6 border rounded-[24px] flex flex-col justify-between shadow-sm hover:shadow-xl transform hover:-translate-y-1 transition duration-200 ease-out focus-within:ring-2 bg-white dark:bg-slate-900 ${isProjectType ? 'border-indigo-100 border-t-[6px] border-t-indigo-500 dark:border-indigo-900/50 hover:border-indigo-300 dark:hover:border-indigo-700/50 focus-within:ring-indigo-200' : 'border-emerald-100 border-t-[6px] border-t-emerald-500 dark:border-emerald-900/50 hover:border-emerald-300 dark:hover:border-emerald-700/50 focus-within:ring-emerald-200'}`}>
 
 
                         <div className="flex-1">
@@ -776,6 +782,26 @@ export default function Surveys(): JSX.Element {
                                 </div>
                               </div>
                             )}
+                            
+                            {/* Satisfaction Progress (Simple Survey) */}
+                            {(() => {
+                              if (isProjectType || !isOwnerOf(s)) return null;
+                              const tokens = satisfaccionTokensMap[String(s.id)] || [];
+                              const respondidas = tokens.filter((t: any) => t.respondida === true).length;
+                              const total = tokens.length;
+                              if (total === 0) return null;
+                              return (
+                                <div className="mt-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg p-2.5">
+                                  <div className="flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    <span>Progreso de satisfacción</span>
+                                    <span className="font-bold">{respondidas} / {total}</span>
+                                  </div>
+                                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                                    <div className="bg-emerald-500 h-1.5 transition-all duration-700 ease-out" style={{ width: `${total > 0 ? (respondidas / total) * 100 : 0}%` }}></div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           {/* Sección Satisfacción */}
@@ -831,9 +857,10 @@ export default function Surveys(): JSX.Element {
                                         <span className="material-symbols-outlined text-[15px]">link_off</span> Cerrar
                                       </button>
                                     </div>
+
                                   </div>
                                 ) : (
-                                  <button type="button" onClick={() => setGenerateSatisfaccionLinkSurveyId(String(s.id))} className="text-[11px] bg-emerald-100 border border-emerald-200 text-emerald-700 dark:bg-slate-800 dark:border-emerald-700 dark:text-emerald-300 px-4 py-2 rounded-xl hover:bg-emerald-200 dark:hover:bg-emerald-900/20 font-black shadow-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap w-full md:w-auto mt-2 md:mt-0 active:scale-95">
+                                  <button type="button" onClick={() => setGenerateSatisfaccionLinkSurveyId(String(s.id))} className="text-[11px] bg-slate-100 border border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 font-black shadow-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap w-full md:w-auto mt-2 md:mt-0 active:scale-95">
                                     <span className="material-symbols-outlined text-[16px]">calendar_month</span> Definir Fecha
                                   </button>
                                 )}
@@ -940,8 +967,8 @@ export default function Surveys(): JSX.Element {
                             )
                           ) : (
                             isOwnerOf(s) ? (
-                              <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 flex items-center gap-1.5">
-                                <span className="material-symbols-outlined text-[16px]">bar_chart</span> Ver Resultados
+                              <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 flex items-center gap-1.5 opacity-90 cursor-pointer shadow-sm active:scale-95" title="Abrir para responder">
+                                <span className="material-symbols-outlined text-[16px]">check_circle</span> Publicado
                               </button>
                             ) : userResponded ? (
                               <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50">Respondido</button>
@@ -1305,7 +1332,7 @@ export default function Surveys(): JSX.Element {
                                       }
 
                                       if (rated) {
-                                        return <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(true); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-4 py-2 text-sm font-bold rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">check_circle</span> Calificado</button>
+                                        return <button type="button" disabled className="w-full sm:w-auto px-4 py-2 text-sm font-bold rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 flex justify-center items-center gap-2 cursor-default"><span className="material-symbols-outlined text-[18px]">check_circle</span> Calificado</button>
                                       }
                                       
                                       return (
@@ -2113,6 +2140,14 @@ export default function Surveys(): JSX.Element {
           </div>
         </div>
       </Modal>
+
+      {/* Satisfaction Results Modal */}
+      <SatisfaccionResultsModal
+        isOpen={viewSatisfaccionResultsSurveyId !== null}
+        onClose={() => setViewSatisfaccionResultsSurveyId(null)}
+        surveyId={viewSatisfaccionResultsSurveyId || ''}
+        surveyTitle={surveys.find((x: any) => String(x.id) === String(viewSatisfaccionResultsSurveyId))?.title}
+      />
     </div>
   )
 }

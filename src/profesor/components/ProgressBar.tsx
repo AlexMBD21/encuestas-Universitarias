@@ -6,11 +6,22 @@ type Props = {
   showPercent?: boolean // show numeric percent (either inside or on the right)
   showInsideThreshold?: number // when to prefer showing percent inside the bar
   className?: string
+  orientation?: 'horizontal' | 'vertical'
   color?: string // optional gradient override, e.g. '#ef4444'
 }
 
-export default function ProgressBar({ value, height = 12, showPercent = true, showInsideThreshold = 101, className, color }: Props) {
+export default function ProgressBar({ 
+  value, 
+  height = 12, 
+  showPercent = true, 
+  showInsideThreshold = 101, 
+  className, 
+  color,
+  orientation = 'horizontal'
+}: Props) {
   const pct = Math.max(0, Math.min(100, Math.round(Number(value) || 0)))
+  const isVertical = orientation === 'vertical'
+  
   // showInsideThreshold default set high so by default percent is shown at the right
   const showInside = pct >= showInsideThreshold
   const [animatedPct, setAnimatedPct] = React.useState(0)
@@ -22,8 +33,44 @@ export default function ProgressBar({ value, height = 12, showPercent = true, sh
   }, [pct])
 
   const barBackground = color
-    ? `linear-gradient(90deg, ${color}cc 0%, ${color} 100%)`
-    : 'linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)'
+    ? `linear-gradient(${isVertical ? '0deg' : '90deg'}, ${color}cc 0%, ${color} 100%)`
+    : `linear-gradient(${isVertical ? '0deg' : '90deg'}, #3b82f6 0%, #06b6d4 100%)`
+
+  if (isVertical) {
+    return (
+      <div className={`flex flex-col items-center gap-2 h-full ${className || ''}`}>
+        <div className="relative group w-full flex-1" style={{ width: height || 12 }}>
+          <div 
+             className="bg-slate-100/80 rounded-full overflow-hidden relative flex flex-col justify-end h-full" 
+             style={{ borderRadius: 9999 }}
+             aria-hidden
+          >
+            <div
+              role="progressbar"
+              aria-valuenow={pct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              style={{
+                height: `${animatedPct}%`,
+                width: '100%',
+                borderRadius: 9999,
+                boxShadow: '0 -6px 18px rgba(0,0,0,0.05)',
+                background: barBackground,
+                transition: 'height 720ms cubic-bezier(.2,.9,.2,1)'
+              }}
+            />
+          </div>
+          {/* Tooltip on hover for vertical */}
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+            {pct}%
+          </div>
+        </div>
+        {showPercent && (
+          <span className="text-[10px] font-black text-slate-500 tabular-nums">{pct}%</span>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className={`flex items-center gap-3 ${className || ''}`}>

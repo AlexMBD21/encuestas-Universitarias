@@ -260,13 +260,7 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
               alert('Error al guardar la respuesta. Revisa la consola para más detalles.')
             }
           }}>
-            <div className="mb-8 p-1">
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2.5">Tu Nombre <span className="text-slate-400 font-normal ml-1">(Opcional)</span></label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">person</span>
-                <input className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 outline-none focus:ring-4 transition-all placeholder:text-slate-400 shadow-sm" style={{ '--tw-ring-color': 'var(--color-primary)' } as React.CSSProperties} value={respondent} onChange={e => setRespondent(e.target.value)} placeholder="Ej: Maria Perez" onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'} onBlur={(e) => e.target.style.borderColor = ''} />
-              </div>
-            </div>
+
 
             <div className="space-y-6">
               {survey.questions && survey.questions.length ? (
@@ -299,7 +293,65 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
                             )
                           })}
                         </div>
+                      ) : q.type === 'emoji' ? (
+                        /* Escala de Emojis 1–5 */
+                        <div className="flex justify-center gap-3 sm:gap-5 py-2">
+                          {[
+                            { emoji: '😡', label: 'Muy insatisfecho', val: 1 },
+                            { emoji: '🙁', label: 'Insatisfecho', val: 2 },
+                            { emoji: '😐', label: 'Neutral', val: 3 },
+                            { emoji: '🙂', label: 'Satisfecho', val: 4 },
+                            { emoji: '🤩', label: 'Muy satisfecho', val: 5 },
+                          ].map(({ emoji, label, val }) => {
+                            const isSelected = answers[idx] === val;
+                            return (
+                              <button
+                                key={val}
+                                type="button"
+                                title={label}
+                                onClick={() => setSurveyAnswers((a: any) => ({ ...a, [idx]: val }))}
+                                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 ${isSelected ? 'scale-125 bg-amber-50 ring-2 ring-amber-300 -translate-y-1' : 'grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:scale-110'}`}
+                              >
+                                <span className="text-3xl sm:text-4xl leading-none">{emoji}</span>
+                                <span className={`text-[9px] sm:text-[10px] font-bold text-center leading-tight ${isSelected ? 'text-amber-600' : 'text-slate-400'}`}>{val}</span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      ) : q.type === 'nps' ? (
+                        /* Escala Numérica NPS 1–10 */
+                        <div>
+                          <div className="flex flex-wrap justify-center gap-2">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+                              const isSelected = answers[idx] === num;
+                              const color = num <= 6 ? 'rose' : num <= 8 ? 'amber' : 'emerald';
+                              return (
+                                <button
+                                  key={num}
+                                  type="button"
+                                  onClick={() => setSurveyAnswers((a: any) => ({ ...a, [idx]: num }))}
+                                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl font-black text-sm sm:text-base transition-all duration-200 border-2 shadow-sm ${
+                                    isSelected
+                                      ? color === 'rose'
+                                        ? 'bg-rose-500 border-rose-500 text-white scale-110 shadow-rose-200 shadow-md -translate-y-1'
+                                        : color === 'amber'
+                                        ? 'bg-amber-400 border-amber-400 text-white scale-110 shadow-amber-200 shadow-md -translate-y-1'
+                                        : 'bg-emerald-500 border-emerald-500 text-white scale-110 shadow-emerald-200 shadow-md -translate-y-1'
+                                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-400 hover:bg-slate-50'
+                                  }`}
+                                >
+                                  {num}
+                                </button>
+                              )
+                            })}
+                          </div>
+                          <div className="flex justify-between mt-3 px-1">
+                            <span className="text-[11px] font-bold text-rose-400">Poco probable</span>
+                            <span className="text-[11px] font-bold text-emerald-500">Muy probable</span>
+                          </div>
+                        </div>
                       ) : (
+                        /* Texto Libre */
                         <textarea 
                           className="w-full p-4 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-xl text-slate-700 dark:text-slate-200 outline-none transition-all placeholder:text-slate-400 min-h-[120px] focus:ring-4 shadow-sm" 
                           style={{ '--tw-ring-color': 'var(--color-primary)' } as React.CSSProperties}

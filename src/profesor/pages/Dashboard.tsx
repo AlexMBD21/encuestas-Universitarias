@@ -854,7 +854,12 @@ export default function Dashboard() {
   }, [publishedSurveys, noticesToShow]);
 
   return (
-    <div id="dashboard-view" className="layout-content-container flex flex-col max-w-full flex-1 pt-4 relative">
+    <div id="dashboard-view" className="layout-content-container flex flex-col max-w-full flex-1 pt-4 relative bg-slate-100/80 dark:bg-[#0b1120]">
+      {/* Luces de Fondo Premium (Celestial Glass) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[80vw] max-w-[800px] h-[800px] bg-indigo-500/5 dark:bg-indigo-600/15 rounded-full blur-[120px]"></div>
+        <div className="absolute top-[20%] right-[-10%] w-[60vw] max-w-[600px] h-[600px] bg-emerald-500/5 dark:bg-emerald-600/15 rounded-full blur-[120px]"></div>
+      </div>
       {/* Welcome Section */}
       <div className="flex flex-wrap justify-between items-start gap-3 px-4 py-0.5 relative z-10">
         <div>

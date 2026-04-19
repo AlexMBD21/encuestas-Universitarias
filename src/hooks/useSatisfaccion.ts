@@ -41,12 +41,12 @@ export function useSatisfaccion(token: string | undefined) {
     load();
   }, [token]);
 
-  const submit = async (payload: SatisfaccionPayload, publicMode?: { survey_id: string }) => {
+  const submit = async (payload: SatisfaccionPayload) => {
     if (!token || !surveyData) return false;
     setIsSubmitting(true);
     
     const finalPayload = { ...payload, respondida_en: new Date().toISOString() };
-    const success = await submitSatisfaccion(token, finalPayload, publicMode);
+    const success = await submitSatisfaccion(token, finalPayload);
     
     setIsSubmitting(false);
     if (success) {

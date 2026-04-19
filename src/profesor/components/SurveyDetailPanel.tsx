@@ -391,7 +391,7 @@ export default function SurveyDetailPanel({ report, usersCache }: Props) {
         </div>
 
         {/* Rows */}
-        <div className="divide-y divide-slate-50 dark:divide-slate-800/40 pb-2 relative">
+        <div className="divide-y divide-slate-50 dark:divide-slate-800/40 pb-2 relative overflow-y-auto custom-scrollbar" style={{ maxHeight: '400px' }}>
           {filteredUserList.length === 0 ? (
             <div className="px-6 py-10 text-xs font-medium text-slate-400 text-center flex flex-col items-center justify-center gap-2">
               <span className="material-symbols-outlined text-3xl opacity-50">search_off</span>
