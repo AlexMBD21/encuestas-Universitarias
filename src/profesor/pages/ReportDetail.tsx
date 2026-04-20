@@ -883,6 +883,7 @@ export default function ReportDetail(): JSX.Element {
           report={report}
           config={printConfig}
           usersCache={usersCache}
+          satisfactionReport={satisfactionReport}
         />
       </div>
 

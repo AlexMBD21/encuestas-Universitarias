@@ -9,6 +9,7 @@ export interface PrintConfig {
   includeComments: boolean;
   includeRawResponses: boolean;
   categoryFilter: string;
+  includeKpis: boolean;
 }
 
 interface PrintConfigModalProps {
@@ -26,7 +27,8 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
     showOnlyWinners: false,
     includeComments: true,
     includeRawResponses: false,
-    categoryFilter: 'Todas'
+    categoryFilter: 'Todas',
+    includeKpis: true
   });
 
   const Toggle = ({ title, subtitle, checked, onChange, disabled = false }: any) => (
@@ -61,6 +63,16 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
 
         <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-5 sm:pb-6 overflow-y-auto flex-1 custom-scrollbar relative z-0">
           <div className="space-y-3">
+          
+          {!isProject && (
+            <Toggle 
+              title="Resumen Global de Satisfacción" 
+              subtitle="Tarjetas visuales con el promedio de estrellas, NPS y aspecto destacado."
+              checked={config.includeKpis} 
+              onChange={(v: boolean) => setConfig({ ...config, includeKpis: v })} 
+            />
+          )}
+
           <Toggle 
             title="Estadísticas de Preguntas" 
             subtitle="Gráficas y desgloses de respuestas simples."

@@ -5,9 +5,10 @@ interface PrintLayoutProps {
   report: any;
   config: PrintConfig | null;
   usersCache: Record<string, any>;
+  satisfactionReport?: any;
 }
 
-const PrintLayout = forwardRef<HTMLDivElement, PrintLayoutProps>(({ report, config, usersCache }, ref) => {
+const PrintLayout = forwardRef<HTMLDivElement, PrintLayoutProps>(({ report, config, usersCache, satisfactionReport }, ref) => {
   if (!report || !config) return <div ref={ref} />;
 
   const survey = report.survey || {};
@@ -111,6 +112,50 @@ const PrintLayout = forwardRef<HTMLDivElement, PrintLayoutProps>(({ report, conf
            </div>
         </div>
       </div>
+
+      {/* ── KPIs de Satisfacción (Encuesta Simple Solo) ── */}
+      {!isProject && config.includeKpis && satisfactionReport && satisfactionReport.respondidas > 0 && (
+        <div className="mb-6">
+          <SectionDivider />
+          <h2 className="text-2xl font-black text-slate-900 border-b-2 border-indigo-100 pb-3 mb-4">Resumen Global de Satisfacción</h2>
+          <div className="flex gap-4 w-full">
+            
+            {/* Stars */}
+            <div className="flex-1 border-2 border-amber-100 bg-amber-50/40 rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-sm avoid-break min-w-0">
+               <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center mb-3 grayscale-0 print:grayscale-[0.2]">
+                 <span className="text-[22px] leading-none">⭐</span>
+               </div>
+               <div className="text-3xl font-black text-slate-800 leading-none mb-1">
+                 {satisfactionReport.estrellas.promedio} <span className="text-sm font-bold text-slate-400">/ 5</span>
+               </div>
+               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1">Satisfacción Promedio</div>
+            </div>
+
+            {/* NPS */}
+            <div className="flex-1 border-2 border-slate-100 bg-slate-50/40 rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-sm avoid-break min-w-0">
+               <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 grayscale-0 print:grayscale-[0.2] ${satisfactionReport.nps.score >= 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                 <span className="text-[22px] leading-none">🚀</span>
+               </div>
+               <div className="text-3xl font-black text-slate-800 leading-none mb-1">
+                 {satisfactionReport.nps.score > 0 ? '+' : ''}{satisfactionReport.nps.score}
+               </div>
+               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1">Score NPS Global</div>
+            </div>
+
+            {/* Aspect */}
+            <div className="flex-1 border-2 border-indigo-100 bg-indigo-50/40 rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-sm avoid-break min-w-0">
+               <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-500 flex items-center justify-center mb-3 grayscale-0 print:grayscale-[0.2]">
+                 <span className="text-[22px] leading-none">🎖️</span>
+               </div>
+               <div className="text-xl font-black text-slate-800 leading-tight mb-1 truncate w-full px-2" title={String(Object.entries(satisfactionReport.aspectos).sort(([,a]: any,[,b]: any) => b - a)[0]?.[0] || '—')}>
+                 {String(Object.entries(satisfactionReport.aspectos).sort(([,a]: any,[,b]: any) => b - a)[0]?.[0] || '—')}
+               </div>
+               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1">Aspecto Destacado</div>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* ── Ranking (Project Only) ── */}
       {isProject && config.includeRanking && visibleSummaries.length > 0 && (
