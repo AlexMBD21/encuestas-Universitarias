@@ -12,13 +12,20 @@ COPY package*.json ./
 # Instalamos TODAS las dependencias (necesitamos las de desarrollo para compilar Vite)
 RUN npm install
 
-# Copiamos todo el resto del código del proyecto (respetando .dockerignore)
+# Tomamos las variables de Render para que Vite las pueda hornear
+ARG VITE_SUPABASE_URL
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+
+ARG VITE_SUPABASE_ANON_KEY
+ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+
+# Copiamos todo el resto del código
 COPY . .
 
-# Compilamos la aplicación React/Vite (genera la carpeta dist/)
+# Compilamos la aplicación React/Vite
 RUN npm run build
 
-# Opcional: Eliminar dependencias de desarrollo para aligerar la siguiente etapa
+# Opcional: Eliminar dependencias de desarrollo
 RUN npm prune --production
 
 # ---------------------------------------------------------
@@ -26,17 +33,14 @@ RUN npm prune --production
 # Etapa 2: Producción
 FROM node:18-alpine AS runner
 
-# Configuramos Node en modo producción
 ENV NODE_ENV=production
 WORKDIR /app
 
-# Copiamos solo los archivos esenciales desde la etapa de construcción (builder)
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/backend ./backend
 COPY --from=builder /app/api ./api
-COPY --from=builder /app/.env.local ./.env.local
 
 # Exponemos el puerto que usará nuestro servidor
 EXPOSE 8787
