@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8787:8787"
+    environment:
+      - NODE_ENV=production
+      # - SUPABASE_URL=coloca_tu_url_aqui
+      # - SUPABASE_SERVICE_ROLE_KEY=coloca_tu_llave_aqui
+      # - SUPABASE_ANON_KEY=coloca_tu_llave_aqui
+    restart: unless-stopped

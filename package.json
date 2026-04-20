@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "start": "node backend/server.js",
     "dev": "vite",
     "dev:functions": "node backend/scripts/dev_functions_server.js",
     "dev:all": "concurrently -k \"npm run dev\" \"npm run dev:functions\"",
@@ -12,6 +13,8 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.9.6",
