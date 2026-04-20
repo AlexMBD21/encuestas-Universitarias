@@ -295,13 +295,13 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
                         </div>
                       ) : q.type === 'emoji' ? (
                         /* Escala de Emojis 1–5 */
-                        <div className="flex justify-center gap-3 sm:gap-5 py-2">
+                        <div className="flex justify-center gap-2 sm:gap-4 py-2 flex-wrap">
                           {[
-                            { emoji: '😡', label: 'Muy insatisfecho', val: 1 },
-                            { emoji: '🙁', label: 'Insatisfecho', val: 2 },
-                            { emoji: '😐', label: 'Neutral', val: 3 },
-                            { emoji: '🙂', label: 'Satisfecho', val: 4 },
-                            { emoji: '🤩', label: 'Muy satisfecho', val: 5 },
+                            { emoji: '😡', label: 'Pésimo', val: 1 },
+                            { emoji: '🙁', label: 'Malo', val: 2 },
+                            { emoji: '😐', label: 'Regular', val: 3 },
+                            { emoji: '🙂', label: 'Bueno', val: 4 },
+                            { emoji: '🤩', label: 'Excelente', val: 5 },
                           ].map(({ emoji, label, val }) => {
                             const isSelected = answers[idx] === val;
                             return (
@@ -310,10 +310,10 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
                                 type="button"
                                 title={label}
                                 onClick={() => setSurveyAnswers((a: any) => ({ ...a, [idx]: val }))}
-                                className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 ${isSelected ? 'scale-125 bg-amber-50 ring-2 ring-amber-300 -translate-y-1' : 'grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:scale-110'}`}
+                                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 ${isSelected ? 'scale-125 bg-amber-50 ring-2 ring-amber-300 -translate-y-1' : 'grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:scale-110'}`}
                               >
                                 <span className="text-3xl sm:text-4xl leading-none">{emoji}</span>
-                                <span className={`text-[9px] sm:text-[10px] font-bold text-center leading-tight ${isSelected ? 'text-amber-600' : 'text-slate-400'}`}>{val}</span>
+                                <span className={`text-[9px] sm:text-[10px] font-bold text-center leading-tight uppercase tracking-wide ${isSelected ? 'text-amber-600' : 'text-slate-400'}`}>{label}</span>
                               </button>
                             )
                           })}

@@ -245,23 +245,31 @@ export default function SatisfaccionEncuesta() {
           {/* Pregunta 1: Estrellas (Reemplazado por Emojis) */}
           <div className="space-y-4">
             <label className="block text-sm font-bold text-white text-center">1. ¿Qué tan satisfecho/a estás con la actividad evaluada?</label>
-            <div className="flex justify-center gap-1 sm:gap-2 md:gap-4 flex-wrap">
-              {[1, 2, 3, 4, 5].map((cert, i) => {
-                const EMOJIS = ['😡', '🙁', '😐', '🙂', '🤩'];
-                const isActive = estrellas === cert;
+            <div className="flex justify-center gap-1 sm:gap-3 md:gap-4 flex-wrap">
+              {[
+                { emoji: '😡', label: 'Pésimo', val: 1 },
+                { emoji: '🙁', label: 'Malo', val: 2 },
+                { emoji: '😐', label: 'Regular', val: 3 },
+                { emoji: '🙂', label: 'Bueno', val: 4 },
+                { emoji: '🤩', label: 'Excelente', val: 5 },
+              ].map(({ emoji, label, val }) => {
+                const isActive = estrellas === val;
                 return (
                  <button
-                   key={cert}
+                   key={val}
                    type="button"
-                   onClick={() => setEstrellas(cert)}
-                   className={`w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 flex items-center justify-center rounded-3xl transition-all duration-300 transform ${
+                   onClick={() => setEstrellas(val)}
+                   className={`flex flex-col items-center gap-1.5 w-14 sm:w-16 md:w-20 py-3 rounded-3xl transition-all duration-300 transform ${
                      isActive 
                        ? 'bg-white/10 shadow-[0_0_30px_rgba(255,255,255,0.1)] scale-[1.15]' 
                        : 'bg-transparent hover:bg-white/5 hover:scale-110'
                    }`}
                  >
                    <span className={`text-[34px] sm:text-[40px] md:text-[50px] transition-all duration-300 ${!isActive && estrellas > 0 ? 'opacity-40 grayscale-[0.8]' : 'opacity-100'}`}>
-                     {EMOJIS[i]}
+                     {emoji}
+                   </span>
+                   <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wide leading-none transition-all duration-300 ${isActive ? 'text-white' : 'text-white/40'}`}>
+                     {label}
                    </span>
                  </button>
                 )
