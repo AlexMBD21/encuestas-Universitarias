@@ -290,7 +290,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Formato de la Encuesta</label>
             <div className="relative">
               <select value={surveyType} onChange={e => setSurveyType(e.target.value as any)} className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-800 font-medium rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 transition-shadow">
-                <option value="simple">Encuesta Simple (Preguntas y opciones)</option>
+                <option value="simple">Encuesta de Opinión (Preguntas, escalas y calificaciones)</option>
                 <option value="project">Proyecto Avanzado (Rúbricas y equipos)</option>
               </select>
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center text-slate-400">

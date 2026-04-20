@@ -292,7 +292,7 @@ export default function Reports(): JSX.Element {
               icon="filter_list"
               options={[
                 { id: 'auto', label: 'Todos los tipos' },
-                { id: 'simple', label: 'Simples' },
+                { id: 'simple', label: 'Opinión' },
                 { id: 'projects', label: 'Proyectos' }
               ]}
               onChange={val => setView(val as any)} 
@@ -376,7 +376,7 @@ export default function Reports(): JSX.Element {
                           {/* Badge idéntico a Encuestas */}
                           <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1.5 ${isProject ? 'bg-indigo-50 text-indigo-700 border-indigo-200 border' : 'bg-emerald-50 text-emerald-700 border-emerald-200 border'}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${isProject ? 'bg-indigo-600' : 'bg-emerald-600'}`}></span>
-                            {isProject ? 'Proyecto' : 'Simple'}
+                            {isProject ? 'Proyecto' : 'Opinión'}
                           </span>
                         </div>
                         

@@ -435,7 +435,7 @@ export default function Surveys(): JSX.Element {
               if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
               handleCreate()
             }} className={`btn btn-emerald ${!backendEnabled ? 'opacity-50 grayscale cursor-not-allowed' : ''}`} disabled={!backendEnabled}>
-              <span className="material-symbols-outlined text-[18px]">add_circle</span> <span className="hidden sm:inline">Nueva</span> Encuesta
+              <span className="material-symbols-outlined text-[18px]">add_circle</span> <span className="hidden sm:inline">Nueva</span> Opinión
             </button>
             <button type="button" onClick={() => {
               if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
@@ -582,11 +582,11 @@ export default function Surveys(): JSX.Element {
               </div>
               <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Aún no tienes encuestas</h3>
               <p className="text-slate-500 max-w-md mx-auto mb-6 leading-relaxed">
-                Comienza a recopilar información valiosa. Crea tu primera campaña, ya sea una encuesta simple para recabar opiniones o un proyecto de calificación avanzada.
+                Comienza a recopilar información valiosa. Crea tu primera campaña, ya sea una encuesta de opinión para recabar percepciones o un proyecto de calificación avanzada.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <button type="button" onClick={() => handleCreate()} className="btn btn-emerald px-6">
-                  <span className="material-symbols-outlined text-lg">add_circle</span> Encuesta Simple
+                  <span className="material-symbols-outlined text-lg">add_circle</span> Encuesta de Opinión
                 </button>
                 <button type="button" onClick={() => { setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true) }} className="btn btn-indigo px-6">
                   <span className="material-symbols-outlined text-lg">fact_check</span> Proyecto
@@ -717,7 +717,7 @@ export default function Surveys(): JSX.Element {
                           <div className="flex flex-wrap items-center gap-1.5 mb-3 mt-1 pr-9">
                             <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1 ${isProjectType ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300 dark:border-indigo-800 border' : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800 border'}`}>
                               <span className={`w-1.5 h-1.5 rounded-full ${isProjectType ? 'bg-indigo-600 dark:bg-indigo-400' : 'bg-emerald-600 dark:bg-emerald-400'}`}></span>
-                              {isProjectType ? 'Proyecto' : 'Simple'}
+                              {isProjectType ? 'Proyecto' : 'Opinión'}
                             </span>
 
                             {s.published && (
@@ -1915,7 +1915,7 @@ export default function Surveys(): JSX.Element {
         isOpen={createModalOpen}
         onClose={closeCreateModal}
         maxWidth="max-w-xl"
-        title={editSurvey ? 'Editar encuesta' : 'Crear encuesta'}
+        title={editSurvey ? (editSurvey.type === 'project' ? 'Editar Proyecto Avanzado' : 'Editar Encuesta de Opinión') : (createInitialType === 'project' ? 'Crear Proyecto Avanzado' : 'Nueva Encuesta de Opinión')}
         fullHeightOnMobile={true}
         scrollableBody={false}
       >

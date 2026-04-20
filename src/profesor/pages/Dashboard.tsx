@@ -919,7 +919,7 @@ export default function Dashboard() {
               </div>
               <div className="stat-badge">MÉTRICA</div>
               <div className="stat-subs">
-                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#16a34a'}}></span><span>Simples: <strong>{surveyResponseSurveyCounts.simple}</strong></span></div>
+                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#16a34a'}}></span><span>Opinión: <strong>{surveyResponseSurveyCounts.simple}</strong></span></div>
                 <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#4f46e5'}}></span><span>Proyectos: <strong>{surveyResponseSurveyCounts.project}</strong></span></div>
               </div>
             </li>
@@ -1030,7 +1030,7 @@ export default function Dashboard() {
           <div className="flex flex-col gap-3 quick-actions">
             <button
               type="button"
-              aria-label="Nueva encuesta simple"
+              aria-label="Nueva encuesta de opinión"
               onClick={() => navigate('/profesor/encuestas', { state: { openCreate: true, initialType: 'simple' } })}
               className="quick-action-card qa-green"
             >
@@ -1040,7 +1040,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="qa-body">
-                <div className="qa-title">Nueva encuesta simple</div>
+                <div className="qa-title">Nueva Encuesta de Opinión</div>
                 <div className="qa-subtitle">Creación inmediata de formulario</div>
               </div>
               <div className="qa-right">
