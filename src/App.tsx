@@ -54,7 +54,7 @@ export default function App() {
   return (
     <ToastProvider>
       <ToastImperativeMount />
-      <div style={{fontFamily: 'Inter, Arial, sans-serif'}}>
+      <div style={{fontFamily: 'Inter, Arial, sans-serif'}} className="flex flex-col min-h-[100dvh] w-full max-w-full overflow-x-hidden relative">
         <ScrollToTop />
       <Routes>
         <Route path="/" element={<Login />} />

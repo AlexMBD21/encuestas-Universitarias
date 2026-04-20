@@ -147,13 +147,8 @@ export default function Login() {
       </div>
 
       {/* Left Section: Branding & Welcome (Desktop only) */}
-      <div className="hidden md:flex flex-1 relative z-10 p-12 lg:p-20 flex-col justify-between">
-        <div className="flex items-center gap-3 animate-fade-in-down">
-          <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-white text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>fact_check</span>
-          </div>
-          <span className="text-xl font-bold text-white tracking-widest uppercase opacity-80">EduSurvey</span>
-        </div>
+      <div className="hidden lg:flex flex-1 relative z-10 p-12 lg:p-20 flex-col justify-between">
+
 
         <div className="max-w-2xl animate-fade-in-up">
           <h1 className="text-7xl lg:text-8xl font-black text-white leading-[0.9] pb-2 mb-8 tracking-tight">
@@ -208,7 +203,7 @@ export default function Login() {
       )}
 
       {/* Right Section: Form Panel */}
-      <div className="w-full md:w-[480px] lg:w-[540px] h-full relative z-20 flex items-center justify-center">
+      <div className="w-full sm:w-[480px] lg:w-[540px] h-full relative z-20 flex items-center justify-center mx-auto lg:mx-0">
         <div className="w-full h-full bg-slate-950/40 backdrop-blur-3xl border-l border-white/10 flex flex-col justify-center p-8 lg:p-16 shadow-[-50px_0_100px_rgba(0,0,0,0.5)] relative overflow-y-auto">
           
           <div className="w-full max-w-[400px] mx-auto animate-fade-in-up py-10">
