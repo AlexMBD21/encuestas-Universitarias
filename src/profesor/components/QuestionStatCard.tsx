@@ -73,7 +73,7 @@ export default function QuestionStatCard({ question, counts, answered, options, 
 
             if (useVerticalLayout) {
               return (
-                <div className="flex items-end justify-between gap-1 sm:gap-2 h-40 sm:h-48 pt-2 pb-8 px-1 sm:px-2 bg-slate-100/30 rounded-2xl border border-slate-100/50">
+                <div className="flex items-end justify-between gap-1 sm:gap-2 h-44 sm:h-52 pt-2 pb-12 px-1 sm:px-2 bg-slate-100/30 rounded-2xl border border-slate-100/50">
                   {(() => {
                     const maxCnt = Math.max(...displayOptions.map(([, c]) => Number(c) || 0));
                     return displayOptions.map(([opt, cnt]) => {
@@ -112,12 +112,17 @@ export default function QuestionStatCard({ question, counts, answered, options, 
                             className="h-full"
                           />
                         </div>
-                        <div className="absolute -bottom-8 flex flex-col items-center">
+                        <div className="absolute -bottom-12 flex flex-col items-center w-24 text-center">
                           <span className={`text-[18px] sm:text-[20px] leading-none mb-1 ${n > 0 ? 'opacity-100' : 'opacity-40'}`}>
                             {opt.split(' ').pop()}
                           </span>
-                          <span className="text-[9px] font-black text-slate-500 leading-none">
-                            {n}
+                          {opt.includes('🤩') && <span className="text-[9px] font-bold text-emerald-600 leading-tight mb-0.5">Excelente</span>}
+                          {opt.includes('🙂') && <span className="text-[9px] font-bold text-emerald-500 leading-tight mb-0.5">Bueno</span>}
+                          {opt.includes('😐') && <span className="text-[9px] font-bold text-amber-500 leading-tight mb-0.5">Regular</span>}
+                          {opt.includes('🙁') && <span className="text-[9px] font-bold text-rose-400 leading-tight mb-0.5">Malo</span>}
+                          {opt.includes('😡') && <span className="text-[9px] font-bold text-rose-600 leading-tight mb-0.5">Pésimo</span>}
+                          <span className="text-[9px] font-black text-slate-500 leading-none mt-0.5">
+                            {n} val.
                           </span>
                         </div>
                       </div>

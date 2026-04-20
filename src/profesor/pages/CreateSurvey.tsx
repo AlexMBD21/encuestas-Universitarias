@@ -364,13 +364,24 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                     {q.type === 'emoji' && (
                       <div className="mt-3 ml-2 space-y-1.5 border-t border-slate-100 dark:border-slate-800 pt-4 pb-2">
                         <div className="flex justify-center gap-4 sm:gap-6">
-                           {['😡', '🙁', '😐', '🙂', '🤩'].map((emoji, i) => (
-                             <span key={i} className="text-3xl sm:text-4xl grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer transform hover:scale-110">
-                               {emoji}
-                             </span>
+                           {[
+                             { emoji: '😡', label: 'Pésimo' },
+                             { emoji: '🙁', label: 'Malo' },
+                             { emoji: '😐', label: 'Regular' },
+                             { emoji: '🙂', label: 'Bueno' },
+                             { emoji: '🤩', label: 'Excelente' }
+                           ].map((item, i) => (
+                             <div key={i} className="flex flex-col items-center group cursor-pointer">
+                               <span className="text-3xl sm:text-4xl grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all transform group-hover:scale-110 mb-1">
+                                 {item.emoji}
+                               </span>
+                               <span className="text-[9px] font-bold text-slate-400 group-hover:text-emerald-500 transition-colors uppercase tracking-wide">
+                                 {item.label}
+                               </span>
+                             </div>
                            ))}
                         </div>
-                        <p className="text-center text-[11px] font-semibold text-slate-400 mt-3 pt-2 uppercase tracking-wide">Vista previa: Escala de 1 a 5 mediante reacciones</p>
+                        <p className="text-center text-[11px] font-semibold text-slate-400 mt-3 pt-2 border-t border-dashed border-slate-100 dark:border-slate-800/50 uppercase tracking-wide">Vista previa: Escala de 1 a 5 mediante reacciones</p>
                       </div>
                     )}
                     
