@@ -78,10 +78,7 @@ export const GenerateSatisfaccionLinkModal = ({ isOpen, onClose, survey, dataCli
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row justify-end gap-3 shrink-0">
-              <button disabled={saving} type="button" onClick={onClose} className="btn btn-ghost px-8">
-                Cancelar y Volver
-              </button>
+            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 shrink-0">
               <button disabled={saving} type="submit" className="btn btn-primary px-10">
                 {saving ? <><ButtonLoader size={20} /> Guardando...</> : <><span className="material-symbols-outlined text-[20px]">save</span> Guardar Fecha</>}
               </button>

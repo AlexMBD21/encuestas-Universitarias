@@ -904,12 +904,12 @@ export default function Dashboard() {
   return (
     <div id="dashboard-view" className="layout-content-container flex flex-col max-w-full flex-1 pt-4 relative bg-slate-100/80 dark:bg-[#0b1120]">
       {/* Luces de Fondo Premium (Celestial Glass) */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden dash-bg-animate">
         <div className="absolute top-[-10%] left-[-10%] w-[80vw] max-w-[800px] h-[800px] bg-indigo-500/5 dark:bg-indigo-600/15 rounded-full blur-[120px]"></div>
         <div className="absolute top-[20%] right-[-10%] w-[60vw] max-w-[600px] h-[600px] bg-emerald-500/5 dark:bg-emerald-600/15 rounded-full blur-[120px]"></div>
       </div>
       {/* Welcome Section */}
-      <div className="flex flex-wrap justify-between items-start gap-3 px-4 py-0.5 relative z-10">
+      <div className="flex flex-wrap justify-between items-start gap-3 px-4 py-0.5 relative z-10 dash-animate dash-delay-0">
         <div>
           <h1 className="text-slate-900 dark:text-slate-50 text-2xl md:text-3xl font-black leading-tight tracking-[-0.033em] mb-1">
             {profileName ? (
@@ -924,7 +924,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="px-4 pt-2">
+      <div className="px-4 pt-2 dash-animate dash-delay-1">
         <div className="bg-white/90 dark:bg-slate-900/90 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 md:p-10 shadow-lg transition-shadow duration-300 w-full max-w-full">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
@@ -1034,7 +1034,7 @@ export default function Dashboard() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-4 mt-4">
         {/* Reportes de seguimiento */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xl flex flex-col lg:col-span-2">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xl flex flex-col lg:col-span-2 dash-animate dash-delay-2">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
@@ -1122,7 +1122,7 @@ export default function Dashboard() {
 
         
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xl flex flex-col lg:row-start-1">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xl flex flex-col lg:row-start-1 dash-animate dash-delay-3">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
               <span className="material-symbols-outlined text-slate-700 dark:text-slate-300 text-2xl font-bold">bolt</span> 

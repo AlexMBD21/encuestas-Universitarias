@@ -418,7 +418,7 @@ export default function Surveys(): JSX.Element {
       </div>
 
       {/* Header Surveys */}
-      <div className="bg-white border-b border-slate-200 shadow-md relative z-10">
+      <div className="bg-white border-b border-slate-200 shadow-md relative z-10 rounded-b-3xl overflow-hidden">
         <div id="surveys-header-inner" className="px-5 sm:px-8 pt-8 pb-12 md:pt-12 md:pb-16 max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-8">
           <div className="animate-fade-in-up" id="surveys-header-text">
             <div id="surveys-header-title-row" className="flex items-center gap-3 mb-2">

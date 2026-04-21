@@ -300,8 +300,7 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
         )}
         </div> {/* close scrollable container */}
         
-        <div className="shrink-0 p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-b-[20px] flex flex-col-reverse sm:flex-row justify-end gap-3 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
-          <button type="button" onClick={() => { if (onClose) onClose() }} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">{readonlyMode ? 'Volver' : 'Cancelar y Volver'}</button>
+        <div className="shrink-0 p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-b-[20px] flex justify-end gap-3 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
           {!readonlyMode && (
             <button type="submit" disabled={saving || already} className="btn btn-indigo w-full sm:w-auto px-10 flex items-center justify-center gap-2 active:scale-[0.95] disabled:opacity-60 disabled:cursor-not-allowed">
               {saving ? <><ButtonLoader size={20} /> Guardando...</> : <><span className="material-symbols-outlined text-[20px]">save</span> Guardar Calificación</>}

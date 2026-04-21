@@ -363,10 +363,10 @@ export default function ReportDetail(): JSX.Element {
       <div id="report-detail-root" className="min-h-screen bg-slate-100/80 pb-24 print:hidden">
 
         {/* Header Premium */}
-        <div className="bg-white border-b border-slate-200/60 shadow-sm relative overflow-hidden">
+        <div className="bg-white border-b border-slate-200/60 shadow-sm relative overflow-hidden rounded-b-3xl">
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/[0.03] to-blue-500/[0.04]" />
 
-          <div className="px-5 sm:px-8 py-6 md:py-8 relative z-10 max-w-7xl mx-auto">
+          <div className="px-5 sm:px-8 pt-8 pb-12 md:pt-12 md:pb-16 relative z-10 max-w-7xl mx-auto">
             {/* Breadcrumb Premium Flotante (Estilo Linear/Notion) */}
             <nav className="flex items-center mb-8 animate-fade-in-down" aria-label="Breadcrumb">
               <div className="inline-flex items-center gap-1 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/50 shadow-sm shadow-slate-200/60 dark:shadow-black/20 rounded-2xl px-1.5 py-1.5 ring-1 ring-slate-900/[0.04]">

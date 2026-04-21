@@ -206,22 +206,14 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row-reverse gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
           <button 
             type="button"
-            className={`btn btn-primary flex-1 ${!name.trim() || saving ? 'opacity-60 cursor-not-allowed shadow-none' : ''}`}
+            className={`btn btn-primary ${!name.trim() || saving ? 'opacity-60 cursor-not-allowed shadow-none' : ''}`}
             onClick={handleSave} 
             disabled={!name.trim() || saving}
           >
             {saving ? <><ButtonLoader size={20} /> Guardando...</> : <><span className="material-symbols-outlined text-[20px]">save</span> Guardar perfil</>}
-          </button>
-          <button 
-            type="button"
-            className="btn btn-ghost flex-1"
-            onClick={onClose} 
-            disabled={saving}
-          >
-            Cancelar y Volver
           </button>
         </div>
       </div>

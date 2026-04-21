@@ -244,8 +244,8 @@ export default function Reports(): JSX.Element {
         <div className="absolute top-[20%] right-[-10%] w-[60vw] max-w-[600px] h-[600px] bg-emerald-500/5 dark:bg-emerald-600/15 rounded-full blur-[120px]"></div>
       </div>
       {/* Header Limpio Minimalista con mayor profundidad */}
-      <div className="bg-white border-b border-slate-200 shadow-md">
-        <div id="reports-header-inner" className="px-5 sm:px-8 py-8 md:py-12 max-w-7xl mx-auto">
+      <div className="bg-white border-b border-slate-200 shadow-md rounded-b-3xl overflow-hidden">
+        <div id="reports-header-inner" className="px-5 sm:px-8 pt-8 pb-12 md:pt-12 md:pb-16 max-w-7xl mx-auto">
           <div id="reports-header-title-row" className="flex items-center gap-3 mb-2 animate-fade-in-up">
             <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/20 text-white shrink-0">
               <span className="material-symbols-outlined text-xl">bar_chart</span>

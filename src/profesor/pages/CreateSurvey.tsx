@@ -599,8 +599,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
         )}
         </div>
 
-        <div className={`shrink-0 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-4 flex-wrap ${isModal ? 'p-4 sm:p-6 bg-white dark:bg-slate-900 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.08)]' : 'pt-6 mt-10'}`}>
-          <button type="button" onClick={onCancel} className="btn btn-ghost px-8">Cancelar y Volver</button>
+        <div className={`shrink-0 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-4 flex-wrap ${isModal ? 'p-4 sm:p-6 bg-white dark:bg-slate-900 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.08)]' : 'pt-6 mt-10'}`}>
           <button type="submit" disabled={saving} className="btn btn-primary px-10">
              {saving ? (
                <>

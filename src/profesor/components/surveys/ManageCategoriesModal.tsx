@@ -152,15 +152,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 px-6 sm:px-8 py-4 sm:py-5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0 relative z-10 shadow-[0_-6px_16px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_-6px_16px_-4px_rgba(0,0,0,0.30)]">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={saving}
-            className="btn btn-ghost w-full sm:w-auto px-8"
-          >
-            Cancelar y Volver
-          </button>
+        <div className="flex justify-end gap-3 px-6 sm:px-8 py-4 sm:py-5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0 relative z-10 shadow-[0_-6px_16px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_-6px_16px_-4px_rgba(0,0,0,0.30)]">
           <button
             type="button"
             disabled={saving}

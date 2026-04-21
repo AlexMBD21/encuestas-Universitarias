@@ -396,8 +396,8 @@ export default function Configuracion() {
         <div className="absolute top-[20%] right-[-10%] w-[60vw] max-w-[600px] h-[600px] bg-emerald-500/5 dark:bg-emerald-600/15 rounded-full blur-[120px]"></div>
       </div>
       {/* Header Splash Premium */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
-        <div id="config-header-inner" className="px-5 sm:px-8 py-10 md:py-16 max-w-7xl mx-auto">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm rounded-b-3xl overflow-hidden">
+        <div id="config-header-inner" className="px-5 sm:px-8 pt-8 pb-12 md:pt-12 md:pb-16 max-w-7xl mx-auto">
           <div id="config-header-title-row" className="flex items-center gap-3 mb-2 animate-fade-in-up">
             <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg shadow-slate-900/20 text-white shrink-0">
               <span className="material-symbols-outlined text-xl">settings</span>

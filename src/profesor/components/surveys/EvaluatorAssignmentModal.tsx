@@ -311,10 +311,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
       </div>
 
       {/* Fixed Footer at the bottom */}
-      <div className="border-t border-slate-200 dark:border-slate-800 p-4 sm:px-6 bg-white dark:bg-slate-900 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 shrink-0 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
-        <button type="button" onClick={onClose || onCancel} disabled={saving} className="btn btn-ghost px-8">
-          Cancelar y Volver
-        </button>
+      <div className="border-t border-slate-200 dark:border-slate-800 p-4 sm:px-6 bg-white dark:bg-slate-900 flex justify-end gap-3 shrink-0 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
         <button type="button" disabled={saving} onClick={async () => {
            setSaving(true);
            try {
