@@ -968,11 +968,20 @@ export default function Surveys(): JSX.Element {
                             )
                           ) : (
                             isOwnerOf(s) ? (
-                              <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 flex items-center gap-1.5 opacity-90 cursor-pointer shadow-sm active:scale-95" title="Abrir para responder">
-                                <span className="material-symbols-outlined text-[16px]">check_circle</span> Publicado
+                              /* Dueño → va directo a Reportes, no abre el formulario */
+                              <button
+                                type="button"
+                                onClick={() => navigate('/profesor/encuestas/reports/' + String(s.id))}
+                                className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 flex items-center gap-1.5 shadow-sm active:scale-95"
+                                title="Ver reporte de respuestas"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">bar_chart</span> Ver reporte
                               </button>
                             ) : userResponded ? (
-                              <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50">Respondido</button>
+                              /* Ya respondió → badge estático, sin acción */
+                              <span className="px-4 py-1.5 text-sm font-semibold border-2 border-emerald-200 text-emerald-700 bg-emerald-50 rounded-lg dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-900/30 flex items-center gap-1.5 select-none">
+                                <span className="material-symbols-outlined text-[16px]">check_circle</span> Respondido
+                              </span>
                             ) : (
                               <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('view') }} className="btn btn-emerald px-4 py-1.5 text-xs">Responder</button>
                             )
