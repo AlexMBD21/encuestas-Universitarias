@@ -9,6 +9,7 @@ import { loadProfile, loadProfileAsync } from '../components/ProfileModal'
 import { CalendarWidget, CalendarEvent } from '../components/CalendarWidget'
 import '../styles/dashboard-profesor.css'
 import { DashboardStatCardsSkeleton, DashboardNoticesSkeleton } from '../../components/ui/DashboardSkeleton'
+import { getSatisfaccionResultsBySurveyId } from '../../services/satisfaccion.service'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -677,7 +678,30 @@ export default function Dashboard() {
         const concurrency = 4
         for (let i = 0; i < toFetch.length; i += concurrency) {
           const batch = toFetch.slice(i, i + concurrency)
-          const results = await Promise.all(batch.map(id => (dataClientNow as any).getSurveyResponsesOnce(id).catch(() => [])))
+          const results = await Promise.all(batch.map(async id => {
+            const rawRes = await (dataClientNow as any).getSurveyResponsesOnce(id).catch(() => [])
+            const res = Array.isArray(rawRes) ? [...rawRes] : []
+            try {
+              const s = publishedSurveys.find(x => String(x.id) === String(id))
+              if (s && (s.type === 'opinion' || s.type !== 'project')) {
+                const satData = await getSatisfaccionResultsBySurveyId(String(id))
+                if (satData && Array.isArray(satData.respondentes)) {
+                  satData.respondentes.forEach((sr: any) => {
+                    if (sr && sr.estrellas) {
+                      res.push({
+                        userId: sr.email || 'anon',
+                        submittedAt: sr.respondida_en || new Date().toISOString(),
+                        answers: { satisfaccion_estrellas: sr.estrellas }
+                      })
+                    }
+                  })
+                }
+              }
+            } catch (e) {
+              console.error('computeStats satData error', e)
+            }
+            return res
+          }))
           if (cancelled) return
           for (let idx = 0; idx < results.length; idx++) {
             const arr = Array.isArray(results[idx]) ? results[idx] : []
@@ -781,7 +805,31 @@ export default function Dashboard() {
         let mine = 0
         for (let i = 0; i < ids.length; i += concurrency) {
           const batch = ids.slice(i, i + concurrency)
-          const results = await Promise.all(batch.map(id => (dataClientNow as any).getSurveyResponsesOnce(id).catch(() => [])))
+          const results = await Promise.all(batch.map(async id => {
+            const rawRes = await (dataClientNow as any).getSurveyResponsesOnce(id).catch(() => [])
+            const res = Array.isArray(rawRes) ? [...rawRes] : []
+            try {
+              const s = publishedSurveys.find(x => String(x.id) === String(id))
+              // Simplificamos la condicion para atrapar cualquier encuesta que NO sea proyecto
+              if (s && (s.type === 'opinion' || s.type !== 'project')) {
+                const satData = await getSatisfaccionResultsBySurveyId(String(id))
+                if (satData && Array.isArray(satData.respondentes)) {
+                  satData.respondentes.forEach((sr: any) => {
+                    if (sr && sr.estrellas) {
+                      res.push({
+                        userId: sr.email || 'anon',
+                        submittedAt: sr.respondida_en || new Date().toISOString(),
+                        answers: { satisfaccion_estrellas: sr.estrellas }
+                      })
+                    }
+                  })
+                }
+              }
+            } catch (e) {
+              console.error('compute satData error', e)
+            }
+            return res
+          }))
           if (cancelled) return
           for (let k = 0; k < results.length; k++) {
             try {
@@ -895,8 +943,19 @@ export default function Dashboard() {
                 <div className="stat-label">Encuestas activas</div>
               </div>
               <div className="stat-badge">ESTADÍSTICAS</div>
-              <div className="stat-subs">
-                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#0f172a'}}></span><span>Tus activas: <strong>{myActiveCount}</strong></span></div>
+              <div className="stat-subs w-full">
+                <div className="flex flex-col w-full">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
+                    <span>Tus activas</span>
+                    <span className="text-slate-800 dark:text-slate-200">
+                      {myActiveCount} <span className="text-slate-400 font-medium">/ {activeCount}</span>
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-2 overflow-hidden border border-slate-200/50 dark:border-slate-700/50 group">
+                    <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-1000 ease-out group-hover:opacity-80" 
+                         style={{ width: `${activeCount > 0 ? (myActiveCount/activeCount)*100 : 0}%` }}></div>
+                  </div>
+                </div>
               </div>
             </li>
             <li className="stat-card">
@@ -906,9 +965,30 @@ export default function Dashboard() {
                 <div className="stat-label">Calificadas globalmente</div>
               </div>
               <div className="stat-badge">GLOBAL</div>
-              <div className="stat-subs">
-                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#1e293b'}}></span><span>Encuestas calificadas: <strong>{myTotalResponses}</strong></span></div>
-                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#0f172a'}}></span><span>Tus encuestas calificadas: <strong>{surveyResponseSurveyCounts.mine}</strong></span></div>
+              <div className="stat-subs w-full flex flex-col gap-3">
+                <div className="flex flex-col w-full">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
+                    <span>Total Respuestas</span>
+                    <span className="text-slate-800 dark:text-slate-200">
+                      {myTotalResponses} <span className="text-slate-400 font-medium">rtas.</span>
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
+                    <div className="h-full rounded-full bg-gradient-to-r from-slate-400 to-slate-600 dark:from-slate-500 dark:to-slate-300 transition-all duration-1000 ease-out w-full opacity-60"></div>
+                  </div>
+                </div>
+                <div className="flex flex-col w-full">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
+                    <span>Tus encuestas</span>
+                    <span className="text-slate-800 dark:text-slate-200">
+                      {surveyResponseSurveyCounts.mine} <span className="text-slate-400 font-medium">/ {surveyResponseSurveyCounts.total || 1}</span>
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
+                    <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000 ease-out" 
+                         style={{ width: `${surveyResponseSurveyCounts.total > 0 ? (surveyResponseSurveyCounts.mine/surveyResponseSurveyCounts.total)*100 : 0}%` }}></div>
+                  </div>
+                </div>
               </div>
             </li>
             <li className="stat-card">
@@ -918,9 +998,31 @@ export default function Dashboard() {
                 <div className="stat-label">Satisfacción promedio</div>
               </div>
               <div className="stat-badge">MÉTRICA</div>
-              <div className="stat-subs">
-                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#16a34a'}}></span><span>Opinión: <strong>{surveyResponseSurveyCounts.simple}</strong></span></div>
-                <div className="stat-sub"><span className="stat-sub-dot" style={{background:'#4f46e5'}}></span><span>Proyectos: <strong>{surveyResponseSurveyCounts.project}</strong></span></div>
+              <div className="stat-subs w-full flex flex-col gap-3">
+                <div className="flex flex-col w-full">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
+                    <span>Opinión</span>
+                    <span className="text-slate-800 dark:text-slate-200">
+                      {surveyResponseSurveyCounts.simple} <span className="text-slate-400 font-medium">/ {surveyResponseSurveyCounts.total || 1}</span>
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
+                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-1000 ease-out" 
+                         style={{ width: `${surveyResponseSurveyCounts.total > 0 ? (surveyResponseSurveyCounts.simple/surveyResponseSurveyCounts.total)*100 : 0}%` }}></div>
+                  </div>
+                </div>
+                <div className="flex flex-col w-full">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
+                    <span>Proyectos</span>
+                    <span className="text-slate-800 dark:text-slate-200">
+                      {surveyResponseSurveyCounts.project} <span className="text-slate-400 font-medium">/ {surveyResponseSurveyCounts.total || 1}</span>
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
+                    <div className="h-full rounded-full bg-gradient-to-r from-slate-500 to-slate-400 dark:from-slate-600 dark:to-slate-400 transition-all duration-1000 ease-out" 
+                         style={{ width: `${surveyResponseSurveyCounts.total > 0 ? (surveyResponseSurveyCounts.project/surveyResponseSurveyCounts.total)*100 : 0}%` }}></div>
+                  </div>
+                </div>
               </div>
             </li>
           </ul>
