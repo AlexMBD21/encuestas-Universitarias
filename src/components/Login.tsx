@@ -139,6 +139,17 @@ export default function Login() {
 
   return (
     <div className="login-root fixed inset-0 z-[100] flex flex-col md:flex-row bg-[#020617] overflow-hidden font-outfit">
+      <style>{`
+        @keyframes float-premium {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+          100% { transform: translateY(0px); }
+        }
+        .animate-float-premium {
+          animation: float-premium 6s ease-in-out infinite;
+        }
+      `}</style>
+
       {/* Cosmic Background Layer (Behind everything) */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[radial-gradient(circle_at_20%_30%,_#0f172a_0%,_#020617_100%)]">
         <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-blue-600/30 rounded-full blur-[120px] animate-pulse-slow opacity-80"></div>
@@ -151,13 +162,72 @@ export default function Login() {
       <div className="hidden lg:flex flex-1 relative z-10 p-12 lg:p-20 flex-col justify-between">
 
 
-        <div className="max-w-2xl animate-fade-in-up">
-          <h1 className="text-7xl lg:text-8xl font-black text-white leading-[0.9] pb-2 mb-8 tracking-tight">
+        <div className="max-w-2xl animate-fade-in-up relative z-10">
+          <h1 className="text-6xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black text-white leading-[0.9] pb-2 mb-6 tracking-tight relative z-10">
             Gestiona con <br /> Inteligencia.
           </h1>
-          <p className="text-xl text-slate-400 font-medium max-w-lg leading-relaxed">
-            Plataforma avanzada de gestión universitaria diseñada para simplificar el análisis y la toma de decisiones.
-          </p>
+
+          <div className="flex flex-col xl:flex-row items-start xl:items-center gap-8 xl:gap-12 relative z-10 mt-2">
+            <p className="text-lg xl:text-xl text-slate-400 font-medium max-w-sm xl:max-w-md leading-relaxed">
+              Plataforma avanzada de gestión universitaria diseñada para simplificar el análisis y la toma de decisiones.
+            </p>
+
+            {/* Premium Code-Based UI Illustration */}
+            <div className="relative w-full max-w-[280px] xl:max-w-[320px] h-[220px] group cursor-default flex-shrink-0 mt-8 xl:mt-0 perspective-1000">
+              {/* Ambient Glow */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/30 via-indigo-500/20 to-cyan-400/30 blur-[60px] rounded-full group-hover:blur-[80px] transition-all duration-700"></div>
+              
+              {/* Floating Elements Container */}
+              <div className="relative z-10 w-full h-full transform-style-3d animate-float-premium">
+                
+                {/* Main Glass Card (Represents Dashboard) */}
+                <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-[24px] shadow-2xl p-6 flex flex-col justify-between overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2"></div>
+                  
+                  {/* Card Header */}
+                  <div className="flex justify-between items-center z-10">
+                    <div className="flex gap-2">
+                      <div className="w-3 h-3 rounded-full bg-slate-700"></div>
+                      <div className="w-3 h-3 rounded-full bg-slate-700"></div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-blue-500/10 border border-blue-400/20 flex items-center justify-center">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse-slow shadow-[0_0_8px_rgba(96,165,250,0.8)]"></div>
+                    </div>
+                  </div>
+
+                  {/* Animated Chart Bars */}
+                  <div className="flex items-end gap-3 h-28 z-10 mt-6 border-b border-slate-700/50 pb-0">
+                    <div className="w-full bg-blue-500/20 rounded-t-md h-[40%] group-hover:h-[65%] transition-all duration-700 ease-out delay-75"></div>
+                    <div className="w-full bg-indigo-500/30 rounded-t-md h-[70%] group-hover:h-[85%] transition-all duration-700 ease-out delay-150 relative">
+                       <div className="absolute -top-1 left-0 right-0 h-1.5 bg-indigo-400 shadow-[0_0_12px_rgba(129,140,248,0.8)] rounded-t-full"></div>
+                    </div>
+                    <div className="w-full bg-cyan-500/40 rounded-t-md h-[30%] group-hover:h-[100%] transition-all duration-700 ease-out delay-200 relative">
+                       <div className="absolute -top-1 left-0 right-0 h-1.5 bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)] rounded-t-full"></div>
+                    </div>
+                    <div className="w-full bg-slate-700/40 rounded-t-md h-[90%] group-hover:h-[45%] transition-all duration-700 ease-out"></div>
+                  </div>
+                </div>
+
+                {/* Floating Metric Badge 1 (Right) */}
+                <div className="absolute -right-8 -bottom-6 bg-slate-800/90 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl shadow-xl flex items-center gap-3 transform group-hover:scale-110 group-hover:-translate-y-3 transition-all duration-500 z-20">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shadow-[inset_0_0_10px_rgba(16,185,129,0.2)]">
+                    <span className="material-symbols-outlined text-emerald-400 text-xl font-bold">trending_up</span>
+                  </div>
+                  <div className="flex flex-col pr-2">
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-0.5">Satisfacción</span>
+                    <span className="text-xl font-black text-white leading-none">98.4%</span>
+                  </div>
+                </div>
+
+                {/* Floating Status Node (Left) */}
+                <div className="absolute -left-6 -top-4 bg-slate-800/90 backdrop-blur-xl border border-white/10 py-2.5 px-4 rounded-xl shadow-xl flex items-center gap-2.5 transform group-hover:-translate-x-3 group-hover:-translate-y-1 transition-all duration-500 delay-100 z-20">
+                  <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
+                  <span className="text-xs font-bold text-slate-200 tracking-wide">Análisis Activo</span>
+                </div>
+
+              </div>
+            </div>
+          </div>
           <div className="flex gap-4 mt-10 opacity-80">
             <div className="flex flex-col">
               <span className="text-2xl font-black text-white">100%</span>

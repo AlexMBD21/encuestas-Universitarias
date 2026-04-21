@@ -6,6 +6,7 @@ import supabaseClient from '../../services/supabaseClient'
 import { ReportCardsSkeleton } from '../../components/ui/ReportCardsSkeleton'
 import { toast } from '../../components/ui/Toast'
 import Dropdown from '../../components/ui/Dropdown'
+import ScrollFloatingButton from '../components/ScrollFloatingButton'
 
 
 export default function Reports(): JSX.Element {
@@ -419,7 +420,7 @@ export default function Reports(): JSX.Element {
         )}
       </div>
 
-
+      <ScrollFloatingButton />
 
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }

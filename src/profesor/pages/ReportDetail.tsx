@@ -11,6 +11,7 @@ import PrintConfigModal, { PrintConfig } from '../components/PrintConfigModal'
 import PrintLayout from '../components/PrintLayout'
 import { toast } from '../../components/ui/Toast'
 import Dropdown from '../../components/ui/Dropdown'
+import ScrollFloatingButton from '../components/ScrollFloatingButton'
 
 export default function ReportDetail(): JSX.Element {
   const navigate = useNavigate()
@@ -886,6 +887,8 @@ export default function ReportDetail(): JSX.Element {
           satisfactionReport={satisfactionReport}
         />
       </div>
+
+      <ScrollFloatingButton />
 
       <style>{`
         @keyframes fadeInUp {

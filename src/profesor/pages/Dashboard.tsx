@@ -10,6 +10,7 @@ import { CalendarWidget, CalendarEvent } from '../components/CalendarWidget'
 import '../styles/dashboard-profesor.css'
 import { DashboardStatCardsSkeleton, DashboardNoticesSkeleton } from '../../components/ui/DashboardSkeleton'
 import { getSatisfaccionResultsBySurveyId } from '../../services/satisfaccion.service'
+import ScrollFloatingButton from '../components/ScrollFloatingButton'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -1205,6 +1206,8 @@ export default function Dashboard() {
           onClose={() => setIsCalendarOpen(false)} 
         />
       )}
+
+      <ScrollFloatingButton />
 
     </div>
   )

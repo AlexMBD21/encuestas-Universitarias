@@ -8,6 +8,8 @@ import { toast } from '../../components/ui/Toast'
 import { Modal } from '../../components/ui/Modal';
 import { Dropdown } from '../../components/ui/Dropdown';
 import ButtonLoader from '../../components/ButtonLoader';
+import ScrollFloatingButton from '../components/ScrollFloatingButton';
+
 export default function Configuracion() {
   const navigate = useNavigate();
   const supabaseEnabledNow = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
@@ -837,6 +839,8 @@ export default function Configuracion() {
       </Modal>
       {/* Toast global — renderizado por ToastProvider en App.tsx */}
       
+      <ScrollFloatingButton />
+
       <style>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(10px); }
