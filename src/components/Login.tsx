@@ -178,7 +178,7 @@ export default function Login() {
               <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/30 via-indigo-500/20 to-cyan-400/30 blur-[60px] rounded-full group-hover:blur-[80px] transition-all duration-700"></div>
               
               {/* Floating Elements Container */}
-              <div className="relative z-10 w-full h-full transform-style-3d animate-float-premium">
+              <div className="relative z-10 w-full h-full transform-style-3d">
                 
                 {/* Main Glass Card (Represents Dashboard) */}
                 <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-[24px] shadow-2xl p-6 flex flex-col justify-between overflow-hidden">
