@@ -1019,7 +1019,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
-                    <div className="h-full rounded-full bg-gradient-to-r from-slate-500 to-slate-400 dark:from-slate-600 dark:to-slate-400 transition-all duration-1000 ease-out" 
+                    <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-indigo-400 transition-all duration-1000 ease-out" 
                          style={{ width: `${surveyResponseSurveyCounts.total > 0 ? (surveyResponseSurveyCounts.project/surveyResponseSurveyCounts.total)*100 : 0}%` }}></div>
                   </div>
                 </div>
