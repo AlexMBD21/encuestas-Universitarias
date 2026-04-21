@@ -1147,7 +1147,7 @@ export default function Surveys(): JSX.Element {
                     onClick={() => closeModal()} 
                     aria-label="Cerrar" 
                     title="Cerrar" 
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-all active:scale-95 shadow-sm group"
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white transition-all active:scale-95 shadow-sm group"
                   >
                     <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
                   </button>
@@ -1807,7 +1807,7 @@ export default function Surveys(): JSX.Element {
                     type="button" 
                     onClick={() => closeConfirmReportModal()} 
                     disabled={confirmReporting} 
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 active:scale-95 transition-all duration-300 outline-none shadow-sm group hidden sm:flex"
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white active:scale-95 transition-all duration-300 outline-none shadow-sm group hidden sm:flex"
                     aria-label="Cerrar"
                   >
                     <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
@@ -1897,7 +1897,7 @@ export default function Surveys(): JSX.Element {
                       } catch (e) { console.error(e) }
                       finally { setConfirmReporting(false) }
                     }} 
-                    className={`btn btn-danger px-10 ${confirmReporting ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`btn btn-primary px-10 ${confirmReporting ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     {confirmReporting ? (
                       <><ButtonLoader size={18} /> Procesando...</>

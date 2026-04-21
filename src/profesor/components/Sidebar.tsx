@@ -98,16 +98,22 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
     <>
     <aside id="app-sidebar" ref={sidebarRef} className={`app-sidebar${effectiveCollapsed ? ' collapsed' : ''}${mobileOpen ? ' mobile-open' : ''}`} aria-label="Navegación principal">
 
-      {/* Collapse toggle — oculto en mobile via CSS */}
-      <div className="sidebar-collapse-row">
+      {/* Collapse toggle — floating pill on the right edge */}
+      <div
+        className="sidebar-toggle-wrap"
+        style={{ left: `calc(${effectiveCollapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)'} - 14px)` }}
+      >
         <button
-          className="sidebar-collapse-btn"
+          className="sidebar-toggle-btn"
           onClick={onToggleCollapse}
           aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
           title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
         >
-          <span className="material-symbols-outlined">
-            {collapsed ? 'chevron_right' : 'chevron_left'}
+          <span
+            className="material-symbols-outlined"
+            style={{ transition: 'transform 300ms cubic-bezier(0.4,0,0.2,1)', transform: effectiveCollapsed ? 'rotate(0deg)' : 'rotate(180deg)' }}
+          >
+            chevron_right
           </span>
         </button>
       </div>

@@ -205,8 +205,8 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
         </div>
         {!hideCloseButton && (
           <div className="ml-4 shrink-0">
-            <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} aria-label="Cerrar" title="Cerrar" className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 hover:text-slate-800 transition-colors">
-              <span className="material-symbols-outlined text-[20px]">close</span>
+            <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} aria-label="Cerrar" title="Cerrar" className="w-10 h-10 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white transition-all active:scale-95 shadow-sm group">
+              <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
             </button>
           </div>
         )}
