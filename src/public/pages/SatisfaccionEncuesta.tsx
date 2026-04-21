@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSatisfaccion } from '../../hooks/useSatisfaccion';
 import Loader from '../../components/Loader';
 import { getOrCreateSatisfaccionToken } from '../../services/satisfaccion.service';
+import ButtonLoader from '../../components/ButtonLoader';
 
 export default function SatisfaccionEncuesta() {
   const { token: urlToken, surveyId: urlSurveyId } = useParams<{ token?: string, surveyId?: string }>();
@@ -350,7 +351,7 @@ export default function SatisfaccionEncuesta() {
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  <ButtonLoader size={20} />
                   <span>Enviando...</span>
                 </>
               ) : (

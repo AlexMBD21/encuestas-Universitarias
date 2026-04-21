@@ -7,6 +7,7 @@ import { useAuth } from '../../services/AuthContext'
 import { toast } from '../../components/ui/Toast'
 import { Modal } from '../../components/ui/Modal';
 import { Dropdown } from '../../components/ui/Dropdown';
+import ButtonLoader from '../../components/ButtonLoader';
 export default function Configuracion() {
   const navigate = useNavigate();
   const supabaseEnabledNow = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
@@ -524,7 +525,7 @@ export default function Configuracion() {
                       className={`btn btn-primary w-full py-4 ${loading || !newPassword || !confirmPassword ? 'opacity-50 grayscale cursor-not-allowed shadow-none' : ''}`}
                     >
                       {loading ? (
-                        <><span className="material-symbols-outlined text-[18px] animate-spin">refresh</span> Actualizando...</>
+                        <><ButtonLoader size={18} /> Actualizando...</>
                       ) : (
                         <><span className="material-symbols-outlined text-[20px]">save_as</span> Actualizar contraseña</>
                       )}
@@ -717,7 +718,7 @@ export default function Configuracion() {
                     onClick={confirmModalSave} 
                     disabled={modalLoading || !modalData.adminPassword}
                   >
-                    {modalLoading ? 'Eliminando...' : 'Eliminar'}
+                    {modalLoading ? <><ButtonLoader size={18} /> Eliminando...</> : 'Eliminar'}
                   </button>
                   <button className="btn btn-ghost w-full sm:w-auto px-6" onClick={closeModal} disabled={modalLoading}>Cancelar y Volver</button>
                 </div>
@@ -803,7 +804,7 @@ export default function Configuracion() {
                     className={`btn btn-primary w-full sm:w-auto px-8 ${(modalLoading || !modalData.adminPassword) ? 'opacity-50 grayscale cursor-not-allowed shadow-none' : ''}`} 
                     disabled={modalLoading || !modalData.adminPassword}
                   >
-                    {modalLoading ? 'Guardando...' : (modalType === 'edit' ? 'Guardar Cambios' : 'Crear Usuario')}
+                    {modalLoading ? <><ButtonLoader size={18} /> Guardando...</> : (modalType === 'edit' ? 'Guardar Cambios' : 'Crear Usuario')}
                   </button>
                   <button type="button" className="btn btn-ghost w-full sm:w-auto px-6" onClick={closeModal} disabled={modalLoading}>Cancelar</button>
                 </div>

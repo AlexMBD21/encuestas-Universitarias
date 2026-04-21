@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../components/ui/Modal';
 import supabaseClient from '../../../services/supabaseClient';
+import ButtonLoader from '../../../components/ButtonLoader';
 
 export interface ManageCategoriesModalProps {
   isOpen: boolean;
@@ -167,7 +168,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
             className="btn btn-primary w-full sm:w-auto px-10"
           >
             {saving ? (
-              <span className="animate-spin material-symbols-outlined">refresh</span>
+              <><ButtonLoader size={20} /> Guardando...</>
             ) : (
               <><span className="material-symbols-outlined text-[20px]">save</span> Guardar Categorías</>
             )}

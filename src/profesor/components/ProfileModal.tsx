@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import supabaseClient, { getProfile, upsertProfile, uploadAvatar } from '../../services/supabaseClient'
 import { Modal } from '../../components/ui/Modal'
+import ButtonLoader from '../../components/ButtonLoader'
 
 export interface ProfileData {
   displayName: string
@@ -212,7 +213,7 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
             onClick={handleSave} 
             disabled={!name.trim() || saving}
           >
-            {saving ? <><span className="material-symbols-outlined text-[20px] animate-spin">refresh</span> Guardando...</> : <><span className="material-symbols-outlined text-[20px]">save</span> Guardar perfil</>}
+            {saving ? <><ButtonLoader size={20} /> Guardando...</> : <><span className="material-symbols-outlined text-[20px]">save</span> Guardar perfil</>}
           </button>
           <button 
             type="button"

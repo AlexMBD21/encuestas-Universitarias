@@ -23,6 +23,7 @@ import { SurveyGridSkeleton } from '../../components/ui/SurveyCardSkeleton';
 import Loader from '../../components/Loader';
 import { toast } from '../../components/ui/Toast';
 import { Modal } from '../../components/ui/Modal';
+import ButtonLoader from '../../components/ButtonLoader';
 import { getSatisfaccionTokensBySurveyId } from '../../services/satisfaccion.service';
 
 export default function Surveys(): JSX.Element {
@@ -1425,7 +1426,7 @@ export default function Surveys(): JSX.Element {
                 setConfirmDeleteId(null)
               }
             }} disabled={confirmDeleting} className="btn btn-danger flex-1">
-              {confirmDeleting ? 'Eliminando...' : 'Eliminar Definivamente'}
+              {confirmDeleting ? <><ButtonLoader size={20} /> Eliminando...</> : 'Eliminar Definitivamente'}
             </button>
           </div>
         </div>
@@ -1601,7 +1602,7 @@ export default function Surveys(): JSX.Element {
                     }
                     finally { setConfirmPublishing(false); setConfirmPublish(null) }
                   }} disabled={confirmPublishing} className="btn btn-primary px-10">
-                    {confirmPublishing ? 'Procesando...' : (confirmPublish.action === 'publish' ? 'Publicar Ahora' : 'Confirmar Retiro')}
+                    {confirmPublishing ? <><ButtonLoader size={20} /> Procesando...</> : (confirmPublish.action === 'publish' ? 'Publicar Ahora' : 'Confirmar Retiro')}
                   </button>
                 )}
               </div>
@@ -1899,7 +1900,7 @@ export default function Surveys(): JSX.Element {
                     className={`btn btn-danger px-10 ${confirmReporting ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     {confirmReporting ? (
-                      <><span className="material-symbols-outlined text-[18px] animate-spin">refresh</span> Procesando...</>
+                      <><ButtonLoader size={18} /> Procesando...</>
                     ) : (
                       <><span className="material-symbols-outlined text-[20px]">send</span> Enviar reporte</>
                     )}

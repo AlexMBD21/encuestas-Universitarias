@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Modal } from '../../../components/ui/Modal';
+import ButtonLoader from '../../../components/ButtonLoader';
 
 const MultiEvaluatorSelector = ({ values, evaluatorUsers, onChange, onSave }: any) => {
   const emails = Array.isArray(values) ? values : (values ? [String(values)] : []);
@@ -323,8 +324,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
            } catch(e) { console.error(e) }
            finally { setSaving(false); }
         }} className="btn btn-primary px-10">
-          {saving ? <span className="material-symbols-outlined text-[20px] animate-spin">refresh</span> : <span className="material-symbols-outlined text-[20px]">save</span>}
-          {saving ? 'Guardando...' : 'Guardar Cambios'}
+          {saving ? <><ButtonLoader size={20} /> Guardando...</> : <><span className="material-symbols-outlined text-[20px]">save</span> Guardar Cambios</>}
         </button>
       </div>
       </div>

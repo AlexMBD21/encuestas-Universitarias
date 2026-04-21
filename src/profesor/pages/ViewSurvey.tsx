@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import surveyHelpers from '../../services/surveyHelpers'
 import supabaseClient from '../../services/supabaseClient'
 import Loader from '../../components/Loader'
+import ButtonLoader from '../../components/ButtonLoader'
 
 type ViewSurveyProps = {
   surveyId?: string | null
@@ -22,6 +23,7 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
   const [respondent, setRespondent] = useState('')
   const [answers, setSurveyAnswers] = useState<any>({})
   const [submitted, setSubmitted] = useState<boolean>(false)
+  const [submitting, setSubmitting] = useState(false)
   const [summary, setSummary] = useState<any>(null)
 
   const supabaseEnabledNow = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
@@ -214,6 +216,8 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
         {!submitted ? (
           <form id={`view-survey-form-${survey.id}`} onSubmit={async (e) => {
             e.preventDefault()
+            if (submitting) return
+            setSubmitting(true)
             // save response via unified data client (Supabase preferred)
             try {
               if (dataClientNow && (dataClientNow as any).isEnabled && (dataClientNow as any).isEnabled() && (dataClientNow as any).pushSurveyResponse) {
@@ -258,6 +262,8 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
             } catch (e) {
               console.error('Error saving survey response', e)
               alert('Error al guardar la respuesta. Revisa la consola para más detalles.')
+            } finally {
+              setSubmitting(false)
             }
           }}>
 
@@ -446,8 +452,8 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
         {!submitted ? (
           <>
             <button type="button" onClick={() => onClose ? onClose() : navigate('/profesor/encuestas')} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-2.5 bg-transparent hover:bg-slate-50 text-slate-600 font-bold rounded-2xl dark:hover:bg-slate-800/60 dark:text-slate-400 transition-all text-sm border border-slate-300 dark:border-slate-600 active:scale-[0.98]">Cancelar y Volver</button>
-            <button type="submit" form={`view-survey-form-${survey.id}`} className="btn btn-primary px-10">
-              <span className="material-symbols-outlined text-[20px]">send</span> Enviar respuestas
+            <button type="submit" form={`view-survey-form-${survey.id}`} disabled={submitting} className="btn btn-primary px-10">
+              {submitting ? <><ButtonLoader size={20} /> Enviando...</> : <><span className="material-symbols-outlined text-[20px]">send</span> Enviar respuestas</>}
             </button>
           </>
         ) : (

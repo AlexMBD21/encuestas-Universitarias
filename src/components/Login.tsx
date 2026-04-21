@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import AuthAdapter from '../services/AuthAdapter'
 import { useAuth } from '../services/AuthContext'
 import Loader from './Loader'
+import ButtonLoader from './ButtonLoader'
 import initLegacyLogin from '../legacy/loginLegacy'
 
 export default function Login() {
@@ -297,7 +298,7 @@ export default function Login() {
                   >
                     {isValidating || isLoggingIn || isSuccess? (
                       <>
-                        <div className="w-5 h-5 border-2 border-slate-900/20 border-t-slate-950 rounded-full animate-spin"></div>
+                        <ButtonLoader className="w-5 h-5 flex-shrink-0" />
                         <span>{isSuccess ? 'Entrando...' : 'Validando...'}</span>
                       </>
                     ) : (

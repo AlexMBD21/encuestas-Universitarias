@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal } from '../../../components/ui/Modal';
+import ButtonLoader from '../../../components/ButtonLoader';
 
 export const GenerateLinkModal = ({ isOpen, onClose, survey, dataClientNow, onSave }: any) => {
   const [saving, setSaving] = React.useState(false);
@@ -78,8 +79,7 @@ export const GenerateLinkModal = ({ isOpen, onClose, survey, dataClientNow, onSa
                 Cancelar y Volver
               </button>
               <button disabled={saving} type="submit" className="btn btn-primary px-10">
-                {saving ? <span className="material-symbols-outlined text-[20px] animate-spin">refresh</span> : <span className="material-symbols-outlined text-[20px]">save</span>}
-                {saving ? 'Guardando...' : 'Guardar Fecha'}
+                {saving ? <><ButtonLoader size={20} /> Guardando...</> : <><span className="material-symbols-outlined text-[20px]">save</span> Guardar Fecha</>}
               </button>
             </div>
           </form>
