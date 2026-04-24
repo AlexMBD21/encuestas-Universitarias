@@ -37,7 +37,7 @@ export function SatisfaccionResultsModal({ isOpen, onClose, surveyId, surveyTitl
 
         {/* Header */}
         <div className="shrink-0 px-6 pt-6 sm:pt-8 pb-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <div className="flex items-center justify-between mt-4 sm:mt-0">
+          <div className="flex items-center justify-between mt-4 sm:mt-0 pr-10">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-11 h-11 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm shrink-0">
                 <span className="material-symbols-outlined text-[26px]">rate_review</span>
@@ -47,9 +47,6 @@ export function SatisfaccionResultsModal({ isOpen, onClose, surveyId, surveyTitl
                 {surveyTitle && <p className="text-xs font-medium text-slate-400 truncate">{surveyTitle}</p>}
               </div>
             </div>
-            <button type="button" onClick={onClose} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors hidden sm:flex shrink-0 ml-3">
-              <span className="material-symbols-outlined text-[20px]">close</span>
-            </button>
           </div>
         </div>
 
@@ -237,9 +234,8 @@ export function SatisfaccionResultsModal({ isOpen, onClose, surveyId, surveyTitl
           )}
         </div>
 
-        {/* Footer */}
         <div className="shrink-0 p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-end">
-          <button type="button" onClick={onClose} className="btn btn-ghost px-8">Cerrar</button>
+          {/* Redundant button removed in favor of Modal's premium close button */}
         </div>
       </div>
     </Modal>

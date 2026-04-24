@@ -62,19 +62,8 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
 
         {/* Header — clean premium */}
-        <div className="flex items-center justify-between px-6 sm:px-8 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-5 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div className="flex items-center justify-between px-6 sm:px-8 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-5 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 pr-12">
           <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Categorías del Proyecto</h3>
-          <div className="hidden sm:block">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={saving}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white active:scale-95 transition-all duration-300 outline-none shadow-sm group"
-              aria-label="Cerrar"
-            >
-              <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
-            </button>
-          </div>
         </div>
 
         {/* Subtitle bar */}

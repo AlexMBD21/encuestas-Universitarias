@@ -621,7 +621,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
         isOpen={showCleanupConfirm} 
         onClose={() => { setShowCleanupConfirm(false); setSaving(false); }} 
         maxWidth="max-w-md"
-        hideCloseButton={true}
+        hideCloseButton={false}
         title={
           <div className="flex items-center gap-2 text-red-600">
             <span className="material-symbols-outlined">warning</span>
@@ -643,18 +643,11 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                   await handleFinalSave(pendingCleanup);
                 }
               }}
-              className="btn btn-danger flex-1"
+              className="btn btn-danger w-full"
               style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)' }}
             >
               <span className="material-symbols-outlined text-[20px]">delete_forever</span>
               Confirmar Borrado
-            </button>
-            <button 
-              type="button" 
-              onClick={() => { setShowCleanupConfirm(false); setSaving(false); }}
-              className="btn btn-ghost flex-1"
-            >
-              Cancelar y Volver
             </button>
           </div>
         </div>

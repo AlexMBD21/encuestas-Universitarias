@@ -722,7 +722,7 @@ export default function Configuracion() {
                   >
                     {modalLoading ? <><ButtonLoader size={18} /> Eliminando...</> : 'Eliminar'}
                   </button>
-                  <button className="btn btn-ghost w-full sm:w-auto px-6" onClick={closeModal} disabled={modalLoading}>Cancelar y Volver</button>
+                  {/* Redundant button removed */}
                 </div>
               </div>
             ) : (
@@ -833,7 +833,7 @@ export default function Configuracion() {
           <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 font-medium">¿Confirmas que deseas cambiar tu contraseña? Esta acción no se puede deshacer.</p>
           <div className="flex flex-col sm:flex-row-reverse gap-3 justify-end">
             <button type="button" onClick={doChangePassword} className="btn btn-primary w-full sm:w-auto px-8">Sí, cambiar</button>
-            <button type="button" onClick={() => setConfirmPwdOpen(false)} className="btn btn-ghost w-full sm:w-auto px-6">Cancelar y Volver</button>
+            {/* Redundant button removed */}
           </div>
         </div>
       </Modal>

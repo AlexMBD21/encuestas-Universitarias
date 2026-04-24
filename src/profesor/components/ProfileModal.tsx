@@ -160,17 +160,36 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
               )}
             </div>
             {!loadingProfile && (
-              <div className="absolute inset-0 bg-blue-600/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-3xl text-white">
-                <span className="material-symbols-outlined text-3xl">photo_camera</span>
+              <div className="absolute -right-2 -bottom-2 w-10 h-10 bg-white dark:bg-slate-700 rounded-full shadow-lg border-4 border-slate-50 dark:border-slate-900 flex items-center justify-center text-blue-600 dark:text-blue-400 z-10">
+                <span className="material-symbols-outlined text-[22px] font-bold">photo_camera</span>
+              </div>
+            )}
+            {!loadingProfile && (
+              <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-3xl">
               </div>
             )}
           </div>
-          <p className="mt-3 text-xs font-bold text-slate-400 uppercase tracking-widest">Haz clic o arrastra una foto</p>
-          {avatarUrl && !loadingProfile && (
-            <button className="mt-2 text-xs font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider" onClick={handleRemoveAvatar}>
-              Eliminar foto
+
+          <div className="flex gap-3 mt-8 w-full max-w-[320px]">
+            <button 
+              type="button"
+              onClick={() => !loadingProfile && fileRef.current?.click()}
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-[0.98]"
+            >
+              <span className="material-symbols-outlined text-[18px]">upload</span>
+              Subir foto
             </button>
-          )}
+            {avatarUrl && !loadingProfile && (
+              <button 
+                type="button"
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all text-[11px] font-black uppercase tracking-wider shadow-sm active:scale-[0.98]" 
+                onClick={handleRemoveAvatar}
+              >
+                <span className="material-symbols-outlined text-[18px]">delete</span>
+                Eliminar
+              </button>
+            )}
+          </div>
           <input
             ref={fileRef}
             type="file"

@@ -73,6 +73,11 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
   const handleLogout = () => {
     setActiveTooltip(null)
     setShowLogoutConfirm(true)
+    if (mobileOpen && onMobileClose) {
+      setTimeout(() => {
+        onMobileClose()
+      }, 300)
+    }
   }
 
   const confirmLogout = () => {
@@ -158,7 +163,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
       isOpen={showLogoutConfirm}
       onClose={() => setShowLogoutConfirm(false)}
       maxWidth="max-w-sm"
-      hideCloseButton={true}
+      hideCloseButton={false}
       noHeaderShadow={true}
       scrollableBody={false}
       title={
@@ -176,16 +181,9 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
           <button 
             type="button" 
             onClick={confirmLogout} 
-            className="btn btn-primary flex-1 !bg-red-600 hover:!bg-red-700 !shadow-red-600/30"
+            className="btn btn-primary w-full !bg-red-600 hover:!bg-red-700 !shadow-red-600/30"
           >
             Cerrar sesión
-          </button>
-          <button 
-            type="button" 
-            onClick={() => setShowLogoutConfirm(false)} 
-            className="btn btn-ghost flex-1"
-          >
-            Cancelar y Volver
           </button>
         </div>
       </div>

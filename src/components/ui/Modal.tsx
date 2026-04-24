@@ -17,6 +17,7 @@ export interface ModalProps {
 
 export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true, hideCloseButton = false, noHeaderShadow = false, closeButtonVariant = 'premium' }: ModalProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [isClosingBtn, setIsClosingBtn] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const [pullDownY, setPullDownY] = useState(0);
   const touchStartRef = useRef({ y: 0, scrollY: 0 });
@@ -74,11 +75,18 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
   }, [isVisible]);
 
   const handleClose = () => {
-    setIsVisible(false);
+    // Activar animación de giro persistente
+    setIsClosingBtn(true);
+    
+    // Breve retraso para apreciar la animación del botón (giro/3D)
     setTimeout(() => {
-      setPullDownY(0);
-      onClose();
-    }, 300);
+      setIsVisible(false);
+      setTimeout(() => {
+        setPullDownY(0);
+        setIsClosingBtn(false);
+        onClose();
+      }, 300);
+    }, 250);
   };
 
   if (!isOpen && !isVisible) return null;
@@ -122,21 +130,29 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
 
         {/* Header */}
         {title && (
-          <div className={`flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 relative z-10 ${noHeaderShadow ? '' : 'shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]'}`}>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+          <div className={`flex items-center px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 relative z-10 ${noHeaderShadow ? '' : 'shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]'}`}>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight pr-12">
               {title}
             </h2>
-            {!hideCloseButton && (
-              <button 
-                type="button"
-                onClick={handleClose} 
-                className="hidden sm:flex w-10 h-10 items-center justify-center rounded-full transition-all active:scale-95 shadow-sm group bg-red-500 hover:bg-red-600 text-white"
-                aria-label="Cerrar"
-              >
-                <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
-              </button>
-            )}
           </div>
+        )}
+
+        {/* Close Button - Absolute Positioned */}
+        {!hideCloseButton && (
+          <button 
+            type="button"
+            onClick={handleClose} 
+            className={`absolute top-3 right-3 sm:top-4 sm:right-6 z-[60] flex w-10 h-10 items-center justify-center rounded-full transition-all duration-500 border border-white/30 group bg-red-500 text-white outline-none
+              ${isClosingBtn 
+                ? 'scale-0 rotate-[360deg] shadow-none opacity-0' 
+                : 'shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_20px_rgba(239,68,68,0.4)] hover:-translate-y-1 hover:scale-110 active:scale-90 active:translate-y-0 ring-0 hover:ring-4 ring-red-500/20'}`}
+            aria-label="Cerrar"
+          >
+            <span className={`material-symbols-outlined text-[20px] transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+              ${isClosingBtn ? 'rotate-[720deg] scale-50' : 'group-hover:rotate-180 group-active:scale-75'}`}>
+              close
+            </span>
+          </button>
         )}
 
         {/* Body content */}

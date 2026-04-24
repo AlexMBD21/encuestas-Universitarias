@@ -190,19 +190,8 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
         </div>
 
         {/* Header — clean premium */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 relative">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 relative pr-12">
           <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Configurar Evaluadores</h3>
-          <div className="hidden sm:block">
-            <button
-              type="button"
-              onClick={onClose || onCancel}
-              disabled={saving}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white active:scale-95 transition-all duration-300 outline-none shadow-sm group"
-              aria-label="Cerrar"
-            >
-              <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
-            </button>
-          </div>
         </div>
       {/* Fixed Instructions at the top */}
       <div className="p-4 sm:px-6 sm:py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">

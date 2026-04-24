@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef, useCallback } from 'react'
 import ReactDOM from 'react-dom'
 import { useLocation } from 'react-router-dom'
 const CreateSurvey = React.lazy(() => import('./CreateSurvey'))
-const ViewSurvey   = React.lazy(() => import('./ViewSurvey'))
-const RateProject  = React.lazy(() => import('./RateProject'))
+const ViewSurvey = React.lazy(() => import('./ViewSurvey'))
+const RateProject = React.lazy(() => import('./RateProject'))
 import surveyHelpers from '../../services/surveyHelpers'
 import AuthAdapter from '../../services/AuthAdapter'
 import supabaseClient from '../../services/supabaseClient'
@@ -82,13 +82,11 @@ export default function Surveys(): JSX.Element {
   }, [viewReportsFor])
 
   const closeReportsModal = () => {
-    setIsReportsVisible(false)
-    setTimeout(() => {
-      setViewReportsFor(null)
-      setHighlightedReportId(null)
-      setReportSearch('')
-      setReportUserFilter('all')
-    }, 300)
+    setViewReportsFor(null)
+    setHighlightedReportId(null)
+    setReportSearch('')
+    setReportUserFilter('all')
+    setPullDownY(0)
   }
 
   const [isCreateVisible, setIsCreateVisible] = useState(false)
@@ -99,8 +97,7 @@ export default function Surveys(): JSX.Element {
   }, [createModalOpen])
 
   const closeCreateModal = () => {
-    setIsCreateVisible(false)
-    setTimeout(() => setCreateModalOpen(false), 300)
+    setCreateModalOpen(false)
   }
 
   const [titleSearch, setTitleSearch] = useState<string>('')
@@ -176,12 +173,9 @@ export default function Surveys(): JSX.Element {
 
 
   const closeConfirmReportModal = useCallback(() => {
-    setIsConfirmReportVisible(false)
-    setTimeout(() => {
-      setConfirmReportId(null)
-      setReportComment('')
-      setPullDownY(0)
-    }, 300)
+    setConfirmReportId(null)
+    setReportComment('')
+    setPullDownY(0)
   }, [])
 
   const [confirmDeactivateLinkSurveyId, setConfirmDeactivateLinkSurveyId] = useState<string | null>(null)
@@ -270,14 +264,11 @@ export default function Surveys(): JSX.Element {
   // modal project-level filter removed: top-level 'Sin calificar' controls list filtering
 
   const closeModal = useCallback(() => {
-    setIsModalVisible(false)
-    // wait for animation then unmount and reset modal state
-    setTimeout(() => {
-      setModalSurveyId(null)
-      setModalKind(null)
-      setViewingProjectId(null)
-      setViewingReadOnly(false)
-    }, 210)
+    setModalSurveyId(null)
+    setModalKind(null)
+    setViewingProjectId(null)
+    setViewingReadOnly(false)
+    setPullDownY(0)
   }, [])
 
 
@@ -354,17 +345,17 @@ export default function Surveys(): JSX.Element {
 
       // Load global rated projects for this survey (all evaluators, not just current user)
       const surveyIdStr = String(modalSurveyId)
-      ;(async () => {
-        try {
-          const allResponses = await dataClientNow.getSurveyResponsesOnce(surveyIdStr)
-          const ratedProjectIds = Array.from(
-            new Set(
-              (allResponses || []).map((r: any) => String(r.projectId || '')).filter(Boolean)
-            )
-          ) as string[]
-          setGlobalRatedMap(prev => ({ ...prev, [surveyIdStr]: ratedProjectIds }))
-        } catch (e) { /* non-fatal */ }
-      })()
+        ; (async () => {
+          try {
+            const allResponses = await dataClientNow.getSurveyResponsesOnce(surveyIdStr)
+            const ratedProjectIds = Array.from(
+              new Set(
+                (allResponses || []).map((r: any) => String(r.projectId || '')).filter(Boolean)
+              )
+            ) as string[]
+            setGlobalRatedMap(prev => ({ ...prev, [surveyIdStr]: ratedProjectIds }))
+          } catch (e) { /* non-fatal */ }
+        })()
 
       return () => {
         clearTimeout(t)
@@ -410,7 +401,7 @@ export default function Surveys(): JSX.Element {
   const navigate = useNavigate();
   return (
     <div id="surveys-root" className="min-h-screen bg-slate-100/80 dark:bg-[#0b1120] pb-20 transition-colors duration-300 relative">
-      
+
       {/* Luces de Fondo Premium (Celestial Glass) — contenidas al área de contenido */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] left-[-10%] w-[80vw] max-w-[800px] h-[800px] bg-indigo-500/5 dark:bg-indigo-600/15 rounded-full blur-[120px]"></div>
@@ -484,17 +475,19 @@ export default function Surveys(): JSX.Element {
             </label>
 
             {/* Select: Estado */}
-            <FilterDropdown 
-              value={publishedFilter} 
-              label="Estado: Todas" 
+            <FilterDropdown
+              value={publishedFilter}
+              label="Estado: Todas"
               icon="filter_list"
               options={[
                 { id: 'all', label: 'Estado: Todas' },
                 { id: 'published', label: 'Publicadas' },
                 { id: 'unpublished', label: 'No publicadas' },
-                { id: 'reported', label: 'Reportadas' }
-              ]} 
-              onChange={(val) => setPublishedFilter(val as any)} 
+                ...(isAdmin || surveys.some(s => isOwnerOf(s) && surveyReports.some(r => String(r.surveyId) === String(s.id))) 
+                  ? [{ id: 'reported', label: 'Reportadas' }] 
+                  : [])
+              ]}
+              onChange={(val) => setPublishedFilter(val as any)}
             />
 
             {/* Select: Propietario */}
@@ -504,15 +497,15 @@ export default function Surveys(): JSX.Element {
               ).sort()
               if (uniqueOwners.length === 0) return null
               return (
-                <FilterDropdown 
-                  value={ownerFilter} 
-                  label="Cualquier propietario" 
+                <FilterDropdown
+                  value={ownerFilter}
+                  label="Cualquier propietario"
                   icon="person"
                   options={[
                     { id: 'all', label: 'Cualquier propietario' },
                     ...uniqueOwners.map(o => ({ id: o, label: o }))
-                  ]} 
-                  onChange={(val) => setOwnerFilter(val)} 
+                  ]}
+                  onChange={(val) => setOwnerFilter(val)}
                 />
               )
             })()}
@@ -627,18 +620,17 @@ export default function Surveys(): JSX.Element {
                   if (s.type === 'system' || s.type === 'settings' || String(s.id).startsWith('sys_')) return false
                   // filter by reported state (exclusive)
                   if (publishedFilter === 'reported') {
-                    // Only show surveys that belong to the current user and
-                    // that have reports submitted by OTHER users (exclude self-reports)
-                    // Admins should see all reported surveys.
-                    if (!isOwnerOf(s)) return false
+                    // Only show reported surveys to the owner or admins
+                    if (!isOwnerOf(s) && !isAdmin) return false
+                    
                     const selfId = String(currentUserId || '').trim().toLowerCase()
                     const count = surveyReports.filter(r => {
                       try {
                         if (!r) return false
                         if (String(r.surveyId) !== String(s.id)) return false
                         const reporter = String(r.reporterId || r.reporterEmail || '').trim().toLowerCase()
-                        // exclude reports created by the owner themself
-                        return reporter && reporter !== selfId
+                        // Admins see everything, owners see reports from others
+                        return isAdmin || (reporter && reporter !== selfId)
                       } catch (e) { return false }
                     }).length
                     if (count === 0) return false
@@ -783,7 +775,7 @@ export default function Surveys(): JSX.Element {
                                 </div>
                               </div>
                             )}
-                            
+
                             {/* Satisfaction Progress (Simple Survey) */}
                             {(() => {
                               if (isProjectType || !isOwnerOf(s)) return null;
@@ -858,7 +850,6 @@ export default function Surveys(): JSX.Element {
                                         <span className="material-symbols-outlined text-[15px]">link_off</span> Cerrar
                                       </button>
                                     </div>
-
                                   </div>
                                 ) : (
                                   <button type="button" onClick={() => setGenerateSatisfaccionLinkSurveyId(String(s.id))} className="text-[11px] bg-slate-100 border border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 font-black shadow-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap w-full md:w-auto mt-2 md:mt-0 active:scale-95">
@@ -926,10 +917,10 @@ export default function Surveys(): JSX.Element {
                                       }} className={`w-full xs:flex-1 flex items-center justify-center gap-2 text-[10px] font-black bg-white dark:bg-slate-800 border shadow-sm px-3 py-2 rounded-xl transition-all active:scale-95 whitespace-nowrap ${isProjectType ? 'border-indigo-200 dark:border-indigo-700/50 text-indigo-700 hover:text-indigo-800 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:border-indigo-600' : 'border-emerald-200 dark:border-emerald-700/50 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:border-emerald-600'}`} title="Copiar link">
                                         <span className="material-symbols-outlined text-[15px]">content_copy</span> Link
                                       </button>
-                                      <button 
-                                        type="button" 
+                                      <button
+                                        type="button"
                                         onClick={() => setConfirmDeactivateLinkSurveyId(String(s.id))}
-                                        className="w-full xs:flex-1 flex items-center justify-center gap-2 text-[10px] font-black bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700/50 shadow-sm text-amber-700 hover:text-amber-800 hover:bg-amber-50 dark:text-amber-400 dark:hover:border-amber-600 px-3 py-2 rounded-xl transition-all active:scale-95 whitespace-nowrap" 
+                                        className="w-full xs:flex-1 flex items-center justify-center gap-2 text-[10px] font-black bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700/50 shadow-sm text-amber-700 hover:text-amber-800 hover:bg-amber-50 dark:text-amber-400 dark:hover:border-amber-600 px-3 py-2 rounded-xl transition-all active:scale-95 whitespace-nowrap"
                                         title="Desactivar link"
                                       >
                                         <span className="material-symbols-outlined text-[15px]">link_off</span> Cerrar
@@ -1102,1062 +1093,433 @@ export default function Surveys(): JSX.Element {
         )
       })()}
 
-      {/* ── Categories Manager Modal ── */}
-      <ManageCategoriesModal 
+      {/* ── Manage Categories Modal ── */}
+      <ManageCategoriesModal
         isOpen={manageCategoriesId !== null}
         onClose={() => setManageCategoriesId(null)}
         initialCategories={manageCategoriesList}
         onSaveSuccess={(cats) => {
-          setSurveys(prev => prev.map(x => (x.type === 'project') ? { ...x, allowedCategories: cats, allowed_categories: cats } : x));
+          setSurveys((prev: any[]) => prev.map(x => (x.type === 'project') ? { ...x, allowedCategories: cats, allowed_categories: cats } : x));
           setToastMessage('Categorías guardadas globalmente');
           setTimeout(() => setToastMessage(null), 3000);
         }}
       />
 
-
-      {/* Modal for viewing a survey */}
-
-      {(modalSurveyId !== null || isModalVisible) && ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-slate-900/60 transition-opacity" onClick={() => closeModal()} />
-          <div className={`relative w-full sm:mx-4 sm:mb-0 transition-all duration-300 ${
-            modalKind === 'view' ? 'sm:max-w-2xl' : 
-            (modalKind === 'projects' && viewingProjectId) ? 'sm:max-w-3xl' : 
-            'sm:max-w-4xl'
-          }`}>
-            <div
-              ref={modalRef}
-              role="dialog"
-              aria-modal="true"
-              tabIndex={-1}
-              className={`bg-slate-50 dark:bg-slate-900 rounded-t-[20px] sm:rounded-[20px] shadow-2xl h-[95dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col transform transition-all duration-300 ${isModalVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`}
-              style={{
-                overscrollBehaviorY: 'contain',
-                ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
-              }}
-              onTouchStart={(e) => {
-                const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
-                touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
-              }}
-              onTouchEnd={() => {
-                if (pullDownY > 80) closeModal();
-                setPullDownY(0);
-              }}>
-              {/* Drag handle for mobile */}
-              <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => closeModal()}>
-                <div className="w-12 h-1.5 rounded-full bg-slate-900/40 dark:bg-white/30"></div>
-              </div>
-              {/* Header (sticky) */}
-              <div className="sticky top-0 z-10 border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between bg-white dark:bg-slate-900 flex-shrink-0 pt-7 sm:pt-4 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]" style={{ borderTopLeftRadius: 'inherit', borderTopRightRadius: 'inherit', top: '-1px', touchAction: 'none' }}>
-                <div className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 truncate mr-4 tracking-tight max-w-[calc(100%-48px)]">{activeSurvey ? activeSurvey.title : 'Encuesta'}</div>
-                <div className="ml-auto hidden sm:block">
-                  <button 
-                    type="button" 
-                    onClick={() => closeModal()} 
-                    aria-label="Cerrar" 
-                    title="Cerrar" 
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white transition-all active:scale-95 shadow-sm group"
-                  >
-                    <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
-                  </button>
-                </div>
-              </div>
-              {/* Split scrolling responsibilities to children */}
-              <div className="flex-1 flex flex-col min-h-0 w-full relative">
-
-                {/* If survey is a project-type, show projects list or the RateProject UI */}
-                {(() => {
-                  const s = surveys.find(x => String(x.id) === String(modalSurveyId))
-                  if (!s) return !surveysLoaded
-                    ? <div className="flex-1 w-full h-full flex flex-col items-center justify-center p-8"><Loader size={56} text="Cargando..." /></div>
-                    : <div className="p-6 text-slate-600">Encuesta no encontrada.</div>
-                  if (modalKind === 'projects') {
-                    // if viewing a single project, render RateProject
-                    if (viewingProjectId) {
-                      console.debug('[Surveys] rendering RateProject for surveyId=', s.id, 'viewingProjectId=', viewingProjectId)
-                      const proj = (s.projects || []).find((p: any) => String(p.id) === String(viewingProjectId))
-                      if (!proj) return <div className="text-slate-600">Proyecto no encontrado.</div>
-                      return <React.Suspense fallback={<div className="flex-1 flex items-center justify-center py-16"><Loader size={56} text="Cargando..." innerColor="#a5b4fc" outerColor="#4f46e5" /></div>}><RateProject survey={s} project={proj} readOnly={viewingReadOnly} onClose={() => setViewingProjectId(null)} onSaved={(opts) => {
-                        // After saving a project's rating, return to the projects list view
-                        // Update local ratedMap so the UI shows 'Calificado' immediately for this project
-                        try {
-                          const pid = opts && (opts as any).projectId
-                          if (pid) {
-                            setRatedMap(prev => {
-                              const copy: Record<string, string[]> = { ...(prev || {}) }
-                              const arr = Array.isArray(copy[String(s.id)]) ? copy[String(s.id)] : []
-                              if (!arr.includes(String(pid))) arr.push(String(pid))
-                              copy[String(s.id)] = arr
-                              return copy
-                            })
-                          }
-                        } catch (e) { }
-                        setViewingProjectId(null)
-                      }} /></React.Suspense>
-                    }
-
-                    // otherwise render list of projects with Calificar buttons
-                    const allProjects = (s.projects || [])
-                    // Calificados globales: proyectos calificados por CUALQUIER evaluador
-                    const globalRatedArr = Array.isArray(globalRatedMap[String(s.id)]) ? globalRatedMap[String(s.id)] : []
-                    const globalProgress = { rated: globalRatedArr.length, total: allProjects.length }
-                    // compute categories for dropdown
-                    const categories = Array.from(new Set(allProjects.map((p: any) => (p.category || '').trim()).filter(Boolean))) as string[]
-
-                    // apply project-level filter + search + category + assignment restrictions
-                    const isSurveyOwnerOrAdmin = isOwnerOf(s) || isAdmin
-                    // we remove the filter that hides projects not assigned to this evaluator, 
-                    // instead we show them all and conditionally disable the button below
-                    const filteredProjects = allProjects.filter((p: any) => {
-                      // search by name or category
-                      const q = projectSearch.trim().toLowerCase()
-                      if (q) {
-                        const hay = `${p.name || ''} ${p.category || ''}`.toLowerCase()
-                        if (!hay.includes(q)) return false
+      {/* Main Survey View/Project Modal */}
+      <Modal 
+        isOpen={!!modalSurveyId} 
+        onClose={closeModal} 
+        maxWidth={modalKind === 'projects' ? 'max-w-6xl' : 'max-w-4xl'}
+        fullHeightOnMobile={true}
+      >
+        <div className="h-full flex flex-col">
+          <React.Suspense fallback={<div className="flex-1 flex items-center justify-center py-20"><Loader size={60} text="Abriendo..." /></div>}>
+            {modalKind === 'projects' ? (
+              viewingProjectId ? (
+                <RateProject 
+                  survey={surveys.find(s => String(s.id) === modalSurveyId)} 
+                  project={surveys.find(s => String(s.id) === modalSurveyId)?.projects?.find((p: any) => String(p.id) === viewingProjectId)} 
+                  readOnly={viewingReadOnly} 
+                  onClose={() => setViewingProjectId(null)} 
+                  onSaved={(opts) => {
+                    try {
+                      const pid = opts && (opts as any).projectId
+                      if (pid) {
+                        setRatedMap(prev => {
+                          const copy = { ...prev }
+                          const arr = Array.isArray(copy[modalSurveyId!]) ? [...copy[modalSurveyId!]] : []
+                          if (!arr.includes(String(pid))) arr.push(String(pid))
+                          copy[modalSurveyId!] = arr
+                          return copy
+                        })
                       }
-                      // category filter
-                      if (projectCategory !== 'all') {
-                        if ((p.category || '').trim() !== projectCategory) return false
-                      }
-                      const isRated = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id));
-                      const evs = Array.isArray(p.evaluators) ? p.evaluators : (p.evaluator ? [p.evaluator] : []);
-                      const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase();
-                      const canEvaluate = isSurveyOwnerOrAdmin || evs.some((e: any) => e && String(e).trim().toLowerCase() === currentUserEmail);
-                      
-                      if (projectFilter === 'pending') {
-                        return canEvaluate && !isRated;
-                      }
-                      if (projectFilter === 'rated') {
-                        return canEvaluate && isRated;
-                      }
-                      if (projectFilter === 'unassigned') {
-                        return !canEvaluate;
-                      }
-                      return true
-                    })
-                    // ... other branches
-                    return (
-                      <div className="flex flex-col flex-1 min-h-0 w-full h-full">
-                        {/* Static stats + filters bar — casts shadow downward */}
-                        <div className="shrink-0 px-3 sm:px-6 py-3 sm:py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
-                          <div className="flex flex-col gap-3">
-                            {/* Stats */}
-                            <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 bg-slate-50 dark:bg-slate-800/50 p-2 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                              <div className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 whitespace-nowrap">Total Proyectos: <span className="font-bold text-slate-800 dark:text-slate-200">{allProjects.length}</span></div>
-                              <div className="text-xs sm:text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0"><span className="material-symbols-outlined text-[13px] sm:text-[16px]">done_all</span> Calificados: {globalProgress.rated} / {globalProgress.total}</div>
-                            </div>
-                            {/* Filters */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <FilterDropdown 
-                                value={projectFilter} 
-                                label="Todos los proyectos" 
-                                icon="filter_list"
-                                color="indigo"
-                                options={[
-                                  { id: 'all', label: 'Todos los proyectos' },
-                                  { id: 'pending', label: 'Mis pendientes' },
-                                  { id: 'rated', label: 'Mis calificados' },
-                                  { id: 'unassigned', label: 'No asignados a mí' }
-                                ]} 
-                                onChange={(val) => setProjectFilter(val as any)} 
-                              />
-                              <FilterDropdown 
-                                value={projectCategory} 
-                                label="Todas las categorías" 
-                                icon="category"
-                                color="indigo"
-                                options={[
-                                  { id: 'all', label: 'Todas las categorías' },
-                                  ...categories.map(c => ({ id: c, label: c }))
-                                ]} 
-                                onChange={(val) => setProjectCategory(val)} 
-                              />
-                              <div className="relative w-full">
-                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
-                                <input placeholder="Buscar proyecto..." value={projectSearch} onChange={e => setProjectSearch(e.target.value)} className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Scrollable projects list */}
-                        <div className="flex-1 overflow-y-auto p-3 sm:p-6 w-full custom-scrollbar-sm relative z-0">
-                          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                            {filteredProjects.length === 0 && !isSurveyOwnerOrAdmin && (
-                              <div className="col-span-full py-12 flex flex-col items-center justify-center text-center">
-                                <span className="material-symbols-outlined text-[48px] text-slate-300 dark:text-slate-600 mb-3 block">inventory_2</span>
-                                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-1">Aún no se te han asignado proyectos</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">
-                                  El administrador debe asignarte proyectos individualmente para poder calificarlos.
-                                </p>
-                              </div>
-                            )}
-                            {filteredProjects.map((p: any) => {
-                              const ratedLocal = Array.isArray(ratedMap[String(s.id)]) && ratedMap[String(s.id)].includes(String(p.id))
-                              const rated = ratedLocal || surveyHelpers.hasUserRated(String(s.id), String(p.id))
-                              return (
-                                <div key={p.id} className="p-4 sm:p-5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 group h-full">
-                                  <div>
-                                    <div className="mb-3">
-                                      <h4 
-                                    onClick={(e) => toggleTitleExpansion(e, p.id)}
-                                    className={`font-bold text-slate-800 dark:text-slate-100 text-[15px] leading-snug break-all cursor-pointer transition-all ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
-                                    title={p.name}
-                                  >
-                                    {p.name || 'Proyecto sin nombre'}
-                                  </h4>
-                                    </div>
-                                    {p.category && (
-                                      <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-3">
-                                        <span className="material-symbols-outlined text-[13px]">category</span> {p.category}
-                                      </div>
-                                    )}
-                                    <div className="space-y-2 mt-1">
-                                      {p.members && (
-                                        <div className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                          <span className="material-symbols-outlined text-[15px] mt-[1px] text-slate-400">groups</span>
-                                          <div className="flex-1 leading-relaxed whitespace-pre-wrap"><span className="font-semibold text-slate-700 dark:text-slate-300 block mb-0.5">Integrantes:</span>{String(p.members).replace(/([a-zñáéíóú])([A-Z])/g, '$1, $2')}</div>
-                                        </div>
-                                      )}
-                                      {p.advisor && (
-                                        <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                          <span className="material-symbols-outlined text-[15px] text-slate-400">school</span>
-                                          <div className="flex-1 leading-relaxed truncate"><span className="font-semibold text-slate-700 dark:text-slate-300 mr-1">Asesor:</span>{p.advisor}</div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
-                                    {(() => {
-                                      const evs = Array.isArray(p.evaluators) ? p.evaluators : (p.evaluator ? [p.evaluator] : []);
-                                      const currentUserEmail = String(currentUser?.email || currentUserId || '').trim().toLowerCase();
-                                      const canEvaluate = isSurveyOwnerOrAdmin || evs.some((e: any) => e && String(e).trim().toLowerCase() === currentUserEmail);
-                                      
-                                      if (!canEvaluate) {
-                                        return (
-                                          <button type="button" disabled className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed flex justify-center items-center gap-2 shadow-inner">
-                                            <span className="material-symbols-outlined text-[18px]">lock</span> No Asignado
-                                          </button>
-                                        )
-                                      }
-
-                                      if (rated) {
-                                        return <button type="button" disabled className="w-full sm:w-auto px-4 py-2 text-sm font-bold rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 flex justify-center items-center gap-2 cursor-default"><span className="material-symbols-outlined text-[18px]">check_circle</span> Calificado</button>
-                                      }
-                                      
-                                      return (
-                                        <button type="button" onClick={() => { setModalSurveyId(String(s.id)); setModalKind('projects'); setViewingReadOnly(false); setViewingProjectId(String(p.id)) }} className="w-full sm:w-auto px-5 py-2 text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all flex justify-center items-center gap-2"><span className="material-symbols-outlined text-[18px]">edit_document</span> Calificar</button>
-                                      )
-                                    })()}
-                                  </div>
-                                </div>
-                              )
-                            })}
-                          </div>
+                    } catch (e) {}
+                    setViewingProjectId(null)
+                  }}
+                />
+              ) : (
+                <div className="flex flex-col flex-1 min-h-0 w-full h-full">
+                  <div className="shrink-0 px-4 sm:px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-sm">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Proyectos: <span className="font-bold text-slate-800 dark:text-slate-200">{surveys.find(s => String(s.id) === modalSurveyId)?.projects?.length || 0}</span></div>
+                        <div className="text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm">
+                          <span className="material-symbols-outlined text-[16px]">done_all</span>
+                          Calificados: {(globalRatedMap[modalSurveyId!] || []).length} / {surveys.find(s => String(s.id) === modalSurveyId)?.projects?.length || 0}
                         </div>
                       </div>
-                    )
-                  }
-                  // default for non-project surveys
-                  return <React.Suspense fallback={<div className="flex-1 flex items-center justify-center py-16"><Loader size={56} text="Cargando..." /></div>}><ViewSurvey surveyId={modalSurveyId ?? undefined} onClose={() => closeModal()} hideCloseButton={true} /></React.Suspense>
-                })()}
-              </div>
-            </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="relative w-full">
+                          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">search</span>
+                          <input 
+                            placeholder="Buscar proyecto..." 
+                            value={projectSearch} 
+                            onChange={e => setProjectSearch(e.target.value)} 
+                            className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 shadow-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400" 
+                          />
+                        </div>
+                        <FilterDropdown
+                          value={projectFilter}
+                          label="Todos los proyectos"
+                          icon="filter_list"
+                          color="indigo"
+                          options={[
+                            { id: 'all', label: 'Todos los proyectos' },
+                            { id: 'pending', label: 'Mis pendientes' },
+                            { id: 'rated', label: 'Mis calificados' }
+                          ]}
+                          onChange={(val) => setProjectFilter(val as any)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar-sm">
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                      {(surveys.find(s => String(s.id) === modalSurveyId)?.projects || [])
+                        .filter((p: any) => {
+                          if (projectSearch && !p.name?.toLowerCase().includes(projectSearch.toLowerCase())) return false;
+                          const isRated = (ratedMap[modalSurveyId!] || []).includes(String(p.id));
+                          if (projectFilter === 'pending' && isRated) return false;
+                          if (projectFilter === 'rated' && !isRated) return false;
+                          return true;
+                        })
+                        .map((p: any) => {
+                          const isRated = (ratedMap[modalSurveyId!] || []).includes(String(p.id));
+                          return (
+                            <div key={p.id} className="p-5 border border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md transition-all hover:border-indigo-300">
+                              <div>
+                                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-[15px] leading-snug mb-3 line-clamp-2">{p.name}</h4>
+                                {p.category && (
+                                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-3">
+                                    <span className="material-symbols-outlined text-[13px]">category</span> {p.category}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                                {isRated ? (
+                                  <button disabled className="w-full px-4 py-2 text-sm font-bold rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 flex justify-center items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px]">check_circle</span> Calificado
+                                  </button>
+                                ) : (
+                                  <button onClick={() => setViewingProjectId(String(p.id))} className="w-full px-4 py-2 text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all flex justify-center items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px]">edit_document</span> Calificar
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      }
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : (
+              <ViewSurvey surveyId={modalSurveyId} onClose={closeModal} hideCloseButton={true} />
+            )}
+          </React.Suspense>
+        </div>
+      </Modal>
+
+      {/* Reports viewer modal */}
+      <Modal 
+        isOpen={!!viewReportsFor} 
+        onClose={closeReportsModal} 
+        maxWidth="max-w-3xl"
+        title={
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-rose-500">flag</span>
+            Reportes Recibidos
           </div>
-        </div>, document.body
-      )}
+        }
+      >
+        <div className="p-6">
+          {(() => {
+            const rs = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
+            if (rs.length === 0) return <div className="text-center py-10 text-slate-500">No hay reportes para esta encuesta.</div>
+            return (
+              <div className="space-y-4">
+                {rs.map((r, i) => (
+                  <div key={i} className="p-4 rounded-xl border bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{new Date(r.createdAt).toLocaleString()}</span>
+                      <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded text-[10px] font-black">REPORTE #{i+1}</span>
+                    </div>
+                    <p className="text-slate-700 dark:text-slate-300 text-sm">{r.comment || 'Sin comentario.'}</p>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
+        </div>
+      </Modal>
+
+      {/* Confirm Report Modal */}
+      <Modal 
+        isOpen={!!confirmReportId} 
+        onClose={closeConfirmReportModal} 
+        maxWidth="max-w-md"
+        title={
+          <div className="flex items-center gap-2 text-rose-600">
+            <span className="material-symbols-outlined">report</span>
+            Reportar Encuesta
+          </div>
+        }
+      >
+        <div className="p-6">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">
+            Si consideras que esta encuesta contiene contenido inapropiado, descríbelo a continuación:
+          </p>
+          <textarea 
+            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-rose-500 transition-all min-h-[120px] mb-6"
+            placeholder="Motivo del reporte..."
+            value={reportComment}
+            onChange={e => setReportComment(e.target.value)}
+          />
+          <button 
+            type="button" 
+            onClick={async () => {
+              if (!confirmReportId) return
+              setConfirmReporting(true)
+              try {
+                const rep = { surveyId: confirmReportId, comment: reportComment.trim(), reporterId: currentUserId || 'anon', createdAt: new Date().toISOString() }
+                await (dataClientNow as any).pushReport(rep)
+                setToastMessage('Reporte enviado correctamente')
+                setTimeout(() => setToastMessage(null), 3000)
+              } catch (e) { console.error(e) }
+              finally { setConfirmReporting(false); closeConfirmReportModal() }
+            }} 
+            disabled={confirmReporting || !reportComment.trim()} 
+            className="btn btn-danger w-full py-3"
+          >
+            {confirmReporting ? <><ButtonLoader size={20} /> Enviando...</> : <><span className="material-symbols-outlined text-[20px]">send</span> Enviar Reporte</>}
+          </button>
+        </div>
+      </Modal>
+
+      {/* Create Survey Modal */}
+      <Modal 
+        isOpen={createModalOpen} 
+        onClose={closeCreateModal} 
+        maxWidth="max-w-4xl"
+        fullHeightOnMobile={true}
+      >
+        <div className="h-full flex flex-col">
+          <React.Suspense fallback={<div className="flex-1 flex items-center justify-center py-20"><Loader size={60} text="Cargando..." /></div>}>
+            <CreateSurvey 
+              editSurvey={editSurvey} 
+              initialType={createInitialType}
+              onClose={closeCreateModal} 
+              onSaved={() => { setEditSurvey(null); closeCreateModal() }}
+            />
+          </React.Suspense>
+        </div>
+      </Modal>
+
+      <React.Suspense fallback={null}>
+        <EvaluatorModalContent 
+          isOpen={!!manageAccessSurveyId} 
+          onClose={() => setManageAccessSurveyId(null)}
+          survey={surveys.find(s => String(s.id) === manageAccessSurveyId)}
+          evaluatorUsers={evaluatorUsers}
+          dataClientNow={dataClientNow}
+          onSave={(updatedSurvey: any) => {
+            setSurveys((prev: any[]) => prev.map(s => String(s.id) === String(updatedSurvey.id) ? { ...s, ...updatedSurvey } : s))
+            setManageAccessSurveyId(null)
+          }}
+        />
+      </React.Suspense>
+
+      <React.Suspense fallback={null}>
+        <GenerateLinkModal 
+          isOpen={!!generateLinkSurveyId}
+          onClose={() => setGenerateLinkSurveyId(null)}
+          survey={surveys.find(s => String(s.id) === generateLinkSurveyId)}
+          dataClientNow={dataClientNow}
+          onSave={(updated: any) => {
+            setSurveys((prev: any[]) => prev.map(s => String(s.id) === String(updated.id) ? { ...s, ...updated } : s))
+            setGenerateLinkSurveyId(null)
+          }}
+        />
+      </React.Suspense>
+
+      <React.Suspense fallback={null}>
+        <GenerateSatisfaccionLinkModal 
+          isOpen={!!generateSatisfaccionLinkSurveyId}
+          onClose={() => setGenerateSatisfaccionLinkSurveyId(null)}
+          survey={surveys.find(s => String(s.id) === generateSatisfaccionLinkSurveyId)}
+          dataClientNow={dataClientNow}
+          onSave={(updated: any) => {
+            setSurveys((prev: any[]) => prev.map(s => String(s.id) === String(updated.id) ? { ...s, ...updated } : s))
+            setGenerateSatisfaccionLinkSurveyId(null)
+          }}
+        />
+      </React.Suspense>
+
+      {/* View Satisfaction Results Modal */}
+      <SatisfaccionResultsModal 
+        isOpen={!!viewSatisfaccionResultsSurveyId}
+        onClose={() => setViewSatisfaccionResultsSurveyId(null)}
+        surveyId={String(viewSatisfaccionResultsSurveyId || '')}
+        surveyTitle={surveys.find(s => String(s.id) === viewSatisfaccionResultsSurveyId)?.title}
+      />
+
+      <Modal 
+        isOpen={!!confirmDeactivateSatisfaccionLinkSurveyId} 
+        onClose={() => setConfirmDeactivateSatisfaccionLinkSurveyId(null)} 
+        maxWidth="max-w-sm"
+      >
+        <div className="p-6 text-center">
+          <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-4 shadow-sm">
+            <span className="material-symbols-outlined text-[32px]">warning</span>
+          </div>
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Cerrar enlace de satisfacción?</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 font-medium">Esta acción invalidará el link de satisfacción inmediatamente. Los participantes ya no podrán acceder a él.</p>
+          <button 
+            type="button" 
+            onClick={async () => {
+              if (!confirmDeactivateSatisfaccionLinkSurveyId) return
+              try {
+                const s = surveys.find(x => String(x.id) === confirmDeactivateSatisfaccionLinkSurveyId)
+                if (s) {
+                  const updated = { ...s, satisfaccionToken: null, satisfaccionExpiresAt: null }
+                  await dataClientNow.setSurvey(String(s.id), updated)
+                  setSurveys((prev: any[]) => prev.map(x => String(x.id) === String(s.id) ? { ...x, ...updated } : x))
+                }
+              } catch (e) { console.error(e) }
+              finally { setConfirmDeactivateSatisfaccionLinkSurveyId(null) }
+            }} 
+            className="btn w-full py-3 text-white font-black rounded-xl transition-all"
+            style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', boxShadow: '0 4px 15px rgba(217, 119, 6, 0.3)' }}
+          >
+            Sí, cerrar enlace
+          </button>
+        </div>
+      </Modal>
+
       {/* Custom delete confirmation modal */}
       <Modal
         isOpen={confirmDeleteId !== null}
         onClose={() => { if (!confirmDeleting) setConfirmDeleteId(null) }}
         maxWidth="max-w-sm"
-        hideCloseButton={true}
-        noHeaderShadow={true}
-        scrollableBody={false}
+        hideCloseButton={false}
       >
-        <div className="p-6 text-center bg-white dark:bg-slate-900 flex-1 flex flex-col justify-center">
-          <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-4 shadow-sm">
+        <div className="p-6 text-center">
+          <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-4">
             <span className="material-symbols-outlined text-[32px]">delete_forever</span>
           </div>
-          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Eliminar esta encuesta?</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Esta acción es irreversible. ¿Deseas eliminarla definitivamente?</p>
-          <div className="flex flex-col-reverse sm:flex-row gap-3 mt-auto sm:mt-0">
-            <button type="button" onClick={() => setConfirmDeleteId(null)} disabled={confirmDeleting} className="btn btn-ghost flex-1">
-              Cancelar y Volver
-            </button>
-            <button type="button" onClick={async () => {
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Eliminar encuesta?</h3>
+          <p className="text-sm text-slate-500 mb-6 font-medium">Esta acción no se puede deshacer.</p>
+          <button 
+            onClick={async () => {
+              setConfirmDeleting(true);
               try {
-                setConfirmDeleting(true)
-                // If a DB backend is enabled, remove via its API
-                if (backendEnabled) {
-                  // find target in local state for ownership check
-                  const target = surveys.find((x: any) => String(x.id) === String(confirmDeleteId))
-                  if (target && !isOwnerOf(target)) {
-                    setToastMessage('No tienes permiso para eliminar esta encuesta')
-                    setTimeout(() => setToastMessage(null), 3000)
-                    setConfirmDeleting(false)
-                    setConfirmDeleteId(null)
-                    return
-                  }
-                  try {
-                    // remove survey and all related data (responses, userResponses, reports, notifications, published index)
-                    if ((dataClientNow as any).removeSurveyCascade) {
-                      await (dataClientNow as any).removeSurveyCascade(String(confirmDeleteId))
-                    } else {
-                      await dataClientNow.removeSurveyById(String(confirmDeleteId))
-                    }
-                  } catch (e: any) {
-                    console.error('delete survey failed', e)
-                    const msg = (e && e.message) ? String(e.message) : 'Error al eliminar la encuesta'
-                    setToastMessage(msg)
-                    setTimeout(() => setToastMessage(null), 4000)
-                    setConfirmDeleting(false)
-                    setConfirmDeleteId(null)
-                    return
-                  }
-                  // Only do optimistic removal after confirming DB delete succeeded
-                  setSurveys(prev => prev.filter(x => String(x.id) !== String(confirmDeleteId)))
-                  setToastMessage('Encuesta eliminada')
-                  setTimeout(() => setToastMessage(null), 3000)
-                  try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { surveyId: confirmDeleteId } })) } catch (e) { }
-                } else {
-                  // Not allowed when no backend is configured
-                  setToastMessage('No se puede eliminar: no hay servicio de datos configurado.')
-                  setTimeout(() => setToastMessage(null), 3000)
-                  setConfirmDeleting(false)
-                  setConfirmDeleteId(null)
-                  return
-                }
-              } catch (e) {
-                console.error(e)
-              } finally {
-                setConfirmDeleting(false)
-                setConfirmDeleteId(null)
-              }
-            }} disabled={confirmDeleting} className="btn btn-danger flex-1">
-              {confirmDeleting ? <><ButtonLoader size={20} /> Eliminando...</> : 'Eliminar Definitivamente'}
-            </button>
-          </div>
+                await dataClientNow.removeSurveyById(String(confirmDeleteId));
+                setSurveys((prev: any[]) => prev.filter(x => String(x.id) !== String(confirmDeleteId)));
+                setToastMessage('Encuesta eliminada');
+                setTimeout(() => setToastMessage(null), 3000);
+              } catch(e) { console.error(e) }
+              finally { setConfirmDeleting(false); setConfirmDeleteId(null); }
+            }}
+            disabled={confirmDeleting}
+            className="btn btn-danger w-full py-3"
+          >
+            {confirmDeleting ? <><ButtonLoader size={20} /> Eliminando...</> : 'Eliminar Definitivamente'}
+          </button>
         </div>
       </Modal>
-      {/* Publish / Unpublish confirmation modal */}
-      {confirmPublish && (() => {
-        const s = surveys.find(x => String(x.id) === String(confirmPublish.id))
-        if (!s) return null
 
-
-        const missing: string[] = []
-        const warnings: string[] = []
-        if (confirmPublish.action === 'publish') {
-          if (s.type !== 'project' && !(s.questions && s.questions.length > 0)) missing.push('Al menos 1 pregunta')
-          if (s.type === 'project') {
-            if (!(s.rubric && s.rubric.length > 0)) missing.push('Al menos 1 criterio (rubric)')
-            
-            const hasProjects = s.projects && s.projects.length > 0;
-            const isLinkActive = s.linkExpiresAt && new Date(s.linkExpiresAt).getTime() > Date.now();
-            
-            if (!hasProjects) {
-              missing.push('No hay proyectos inscritos. Debes esperar a que los estudiantes se inscriban.')
-            } else if (isLinkActive) {
-              warnings.push('El periodo de inscripción sigue abierto. Al publicar, se desactivará el enlace de inscripción.')
-            }
-          }
-        }
-
-        return (
-          <Modal 
-            isOpen={confirmPublish !== null} 
-            onClose={() => { if (!confirmPublishing) setConfirmPublish(null) }} 
-            maxWidth="max-w-md"
-            hideCloseButton={true}
-            noHeaderShadow={true}
-            scrollableBody={false}
-            title={
-              <div className="flex items-center gap-2">
-                <span className={`material-symbols-outlined ${confirmPublish.action === 'publish' ? 'text-indigo-500' : 'text-amber-500'}`}>
-                  {confirmPublish.action === 'publish' ? 'publish' : 'unpublished'}
-                </span>
-                {confirmPublish.action === 'publish' ? 'Publicar encuesta' : 'Retirar publicación'}
-              </div>
-            }
-          >
-            <div className="p-6 pt-0">
-              <div className="text-sm mb-6 mt-4">
-                {confirmPublish.action === 'publish' ? (
-                  missing.length === 0 ? (
-                    warnings.length === 0 ? (
-                      <p className="text-slate-600 dark:text-slate-400 font-medium">Confirma que deseas publicar esta encuesta. Será visible para el público.</p>
-                    ) : (
-                      <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-200 dark:border-amber-900/50">
-                        <div className="font-bold flex items-center gap-2 mb-2 text-amber-700 dark:text-amber-400">
-                          <span className="material-symbols-outlined text-[18px]">warning</span> Advertencia
-                        </div>
-                        <ul className="list-disc pl-6 mt-1 text-sm font-semibold text-amber-600/90 dark:text-amber-400/90 space-y-1">
-                          {warnings.map(w => <li key={w}>{w}</li>)}
-                        </ul>
-                        <p className="mt-3 text-amber-800 dark:text-amber-300 font-bold">¿Estás seguro que quieres publicar sin haber finalizado el tiempo del link?</p>
-                      </div>
-                    )
-                  ) : (
-                    <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-900/50">
-                      <div className="font-bold flex items-center gap-2 mb-2 text-red-700 dark:text-red-400">
-                        <span className="material-symbols-outlined text-[18px]">error</span> No se puede publicar todavía:
-                      </div>
-                      <ul className="list-disc pl-6 mt-1 text-sm font-semibold text-red-600/90 dark:text-red-400/90 space-y-1">
-                        {missing.map(m => <li key={m}>{m}</li>)}
-                      </ul>
-                    </div>
-                  )
-                ) : (
-                  <p className="text-slate-600 dark:text-slate-400 font-medium">Confirma que deseas retirar la publicación de esta encuesta. La encuesta dejará de estar visible.</p>
-                )}
-              </div>
-
-              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
-                <button type="button" onClick={() => setConfirmPublish(null)} disabled={confirmPublishing} className="btn btn-ghost px-8">
-                  Cancelar y Volver
-                </button>
-                {(confirmPublish.action !== 'publish' || missing.length === 0) && (
-                  <button type="button" onClick={async () => {
-                    try {
-                      setConfirmPublishing(true)
-                      if (backendEnabled) {
-                        const target = surveys.find((x: any) => String(x.id) === String(confirmPublish.id))
-                        if (target && !isOwnerOf(target)) {
-                          setToastMessage('No tienes permiso para cambiar el estado de publicación')
-                          setTimeout(() => setToastMessage(null), 3000)
-                          setConfirmPublishing(false)
-                          setConfirmPublish(null)
-                          return
-                        }
-                        const updated = { ...(target || {}), ...(confirmPublish.action === 'publish' ? { published: true, publishedAt: new Date().toISOString() } : { published: false }) }
-                        if (confirmPublish.action !== 'publish') { delete (updated as any).publishedAt }
-                        
-                        if (confirmPublish.action === 'publish' && updated.type === 'project') {
-                          updated.linkExpiresAt = null;
-                          updated.linkToken = null;
-                        }
-                        try {
-                          await dataClientNow.setSurvey(String(confirmPublish.id), updated)
-                          
-                          // optimistic update IF SUCCESSFUL
-                          setSurveys(prev => prev.map(x => (String(x.id) === String(confirmPublish.id) ? updated : x)))
-                          setToastMessage(confirmPublish.action === 'publish' ? 'Encuesta publicada' : 'Publicación retirada')
-                          
-                          // Notify all components that this survey changed
-                          try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { newId: confirmPublish.id, survey: updated } })) } catch (e) { }
-                          
-                          setTimeout(() => setToastMessage(null), 3000)
-                          
-                          // create a global notification when publishing
-                          if (confirmPublish.action === 'publish') {
-                          try {
-                            const s = updated
-                            const note = {
-                              id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                              type: 'survey_published',
-                              surveyId: confirmPublish.id,
-                              title: s ? (`Nueva encuesta: ${s.title}`) : 'Nueva encuesta publicada',
-                              message: '',
-                              createdAt: new Date().toISOString(),
-                              read: false
-                            }
-                            try {
-                              await dataClientNow.pushNotification(note)
-                              // Supabase realtime does NOT echo the insert back to the sender,
-                              // so we manually re-fetch and dispatch the fresh list so the
-                              // publisher's own NotificationsPanel updates immediately.
-                              try {
-                                const freshNotifs = await dataClientNow.getNotificationsOnce()
-                                window.dispatchEvent(new CustomEvent('notifications:updated', { detail: { notifications: freshNotifs } }))
-                              } catch (e) {
-                                window.dispatchEvent(new CustomEvent('notifications:updated', { detail: { notification: note } }))
-                              }
-                            } catch (e) { console.error(e) }
-                          } catch (e) { console.error(e) }
-                        }
-                        // when unpublishing, remove any previous notifications and user reports for this survey
-                        if (confirmPublish.action !== 'publish') {
-                          try {
-                            if (dataClientNow.removeNotificationsBySurveyId) {
-                              await dataClientNow.removeNotificationsBySurveyId(String(confirmPublish.id))
-                            }
-                            try { window.dispatchEvent(new CustomEvent('notifications:updated', { detail: { surveyId: String(confirmPublish.id) } })) } catch (e) { }
-                          } catch (e) { }
-                          try {
-                            if (dataClientNow.removeSurveyReportsBySurveyId) {
-                              await dataClientNow.removeSurveyReportsBySurveyId(String(confirmPublish.id))
-                            }
-                            try { window.dispatchEvent(new CustomEvent('survey:reports:updated', { detail: { surveyId: String(confirmPublish.id) } })) } catch (e) { }
-                          } catch (e) { }
-                        }
-                        try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { surveyId: confirmPublish.id, survey: updated } })) } catch (e) { }
-                        } catch (e: any) { 
-                          console.error('SERVER ERROR PUBLISHING SURVEY:', e)
-                          setToastMessage('Error de servidor: No se pudo guardar la publicación. Revisa los permisos de base de datos.')
-                          setTimeout(() => setToastMessage(null), 6000)
-                        }
-
-                      } else {
-                        // Not allowed when no backend is configured
-                        setToastMessage('No se puede cambiar el estado de publicación: no hay servicio de datos configurado.')
-                        setTimeout(() => setToastMessage(null), 3000)
-                        setConfirmPublishing(false)
-                        setConfirmPublish(null)
-                        return
-                      }
-                    } catch (e: any) { 
-                      console.error('UNEXPECTED ERROR:', e)
-                    }
-                    finally { setConfirmPublishing(false); setConfirmPublish(null) }
-                  }} disabled={confirmPublishing} className="btn btn-primary px-10">
-                    {confirmPublishing ? <><ButtonLoader size={20} /> Procesando...</> : (confirmPublish.action === 'publish' ? 'Publicar Ahora' : 'Confirmar Retiro')}
-                  </button>
-                )}
-              </div>
-            </div>
-          </Modal>
-        )
-      })()}
-      {/* Reports viewer modal (owner) */}
-      {viewReportsFor && ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-slate-900/60" onClick={() => { setViewReportsFor(null); setHighlightedReportId(null) }} />
-          <div className={`relative w-full sm:max-w-2xl sm:mx-4 sm:mb-0 bg-slate-50 dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col h-[90dvh] sm:h-auto sm:max-h-[80vh] overflow-hidden transform transition-all duration-300 ${isReportsVisible ? 'opacity-100 translate-y-0 sm:scale-100' : 'opacity-0 translate-y-full sm:translate-y-4 sm:scale-95'}`} role="dialog" aria-modal="true"
-            ref={reportsModalRef}
-            style={{
-              overscrollBehaviorY: 'contain',
-              ...(pullDownY > 0 ? { transform: `translateY(${pullDownY}px)`, transition: 'none' } : undefined)
-            }}
-            onTouchStart={(e) => {
-              const scrollContainer = e.currentTarget.querySelector('.overflow-y-auto');
-              touchStartRef.current = { y: e.touches[0].clientY, scrollY: scrollContainer ? scrollContainer.scrollTop : 0 };
-            }}
-            onTouchEnd={() => {
-              if (pullDownY > 80) closeReportsModal();
-              setPullDownY(0);
-            }}>
-            {/* Drag handle */}
-            <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => closeReportsModal()}>
-              <div className="w-12 h-1.5 rounded-full bg-slate-900/40 dark:bg-white/30"></div>
-            </div>
-            {/* Header */}
-            <div className="px-5 py-3.5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]" style={{ touchAction: 'none' }}>
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-2xl bg-red-100 text-red-600 dark:bg-red-900/30 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-[24px]">flag</span>
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <h3 className="text-[17px] font-bold text-slate-800 dark:text-slate-100 leading-tight">Buzón de Reportes</h3>
-                  <div className="text-xs font-bold text-slate-500 dark:text-slate-400 truncate mt-0.5 tracking-tight">
-                    {(() => {
-                      const reportsSurvey = surveys.find(x => String(x.id) === String(viewReportsFor))
-                      return reportsSurvey ? (reportsSurvey.title || reportsSurvey.name) : 'Cargando información...'
-                    })()}
-                  </div>
-                </div>
-              </div>
-              <div className="ml-auto hidden sm:block">
-                <button
-                  type="button"
-                  onClick={() => closeReportsModal()}
-                  aria-label="Cerrar"
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 active:scale-95 transition-all duration-300 outline-none shadow-sm group"
-                >
-                  <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Static filter bar */}
-            <div className="shrink-0 px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
-              <div className="flex flex-col sm:flex-row gap-2">
-                {/* User filter dropdown — options built from current survey reports */}
-                {(() => {
-                  const currentReports = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
-                  const uniqueUsers = Array.from(new Set(currentReports.map(r => r.reporterEmail || r.reporterId || 'Anónimo').filter(Boolean)))
-                  return uniqueUsers.length > 1 ? (
-                    <div className="sm:w-56 shrink-0">
-                      <FilterDropdown
-                        value={reportUserFilter}
-                        label="Todos los usuarios"
-                        icon="person_alert"
-                        options={[
-                          { id: 'all', label: 'Todos los usuarios' },
-                          ...uniqueUsers.map(u => ({ id: u, label: u }))
-                        ]}
-                        onChange={(val) => setReportUserFilter(val)}
-                      />
-                    </div>
-                  ) : null
-                })()}
-                {/* Text search */}
-                <div className="relative flex-1">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none text-[18px]">search</span>
-                  <input
-                    type="text"
-                    placeholder="Buscar por usuario o mensaje..."
-                    value={reportSearch ?? ''}
-                    onChange={e => setReportSearch(e.target.value)}
-                    className="w-full pl-9 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 text-slate-700 dark:text-slate-300 placeholder:text-slate-400 transition-all"
-                  />
-                  {reportSearch && (
-                    <button type="button" onClick={() => setReportSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">close</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Scrollable list */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 relative z-0 custom-scrollbar-sm">
-              {(() => {
-                if (!reportsLoaded) return (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader size={48} text="Cargando reportes..." />
-                  </div>
-                )
-                const allReports = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
-                const reports = allReports.filter(r => {
-                  // User filter
-                  if (reportUserFilter !== 'all') {
-                    const userKey = r.reporterEmail || r.reporterId || 'Anónimo'
-                    if (userKey !== reportUserFilter) return false
-                  }
-                  // Text search filter
-                  const q = (reportSearch ?? '').trim().toLowerCase()
-                  if (q) {
-                    const hay = `${r.reporterEmail || r.reporterId || ''} ${r.comment || ''}`.toLowerCase()
-                    if (!hay.includes(q)) return false
-                  }
-                  return true
-                })
-                if (!allReports || allReports.length === 0) return <div className="text-slate-600 text-sm py-4 text-center">No hay reportes para esta encuesta.</div>
-                if (reports.length === 0) return (
-                  <div className="py-10 flex flex-col items-center text-center gap-2">
-                    <span className="material-symbols-outlined text-[40px] text-slate-300 dark:text-slate-600">manage_search</span>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sin resultados{reportSearch ? <span className="font-bold"> para "{reportSearch}"</span> : ''}</p>
-                  </div>
-                )
-                return reports.map(r => {
-                  const isHighlighted = highlightedReportId && String(r.id) === String(highlightedReportId)
-                  return (
-                    <div
-                      key={r.id}
-                      id={`report-item-${r.id}`}
-                      ref={isHighlighted ? (el) => { if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80) } : undefined}
-                      className={`p-4 border rounded-2xl shadow-sm ${isHighlighted ? 'bg-amber-50 border-amber-300 dark:bg-amber-900/20 dark:border-amber-500/50 ring-4 ring-amber-400/20' : 'bg-white border-slate-200 dark:bg-slate-800/80 dark:border-slate-700'} relative overflow-hidden group`}
-                    >
-                      <div className="absolute top-0 left-0 w-1.5 h-full bg-red-400 dark:bg-red-500"></div>
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pl-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0 text-slate-500">
-                            <span className="material-symbols-outlined text-[16px]">person_alert</span>
-                          </div>
-                          <div className="text-sm font-bold text-slate-700 dark:text-slate-300 truncate">{r.reporterEmail || r.reporterId || 'Usuario Anónimo'}</div>
-                        </div>
-                        <div className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700/50 px-2 py-1 rounded-md self-start sm:self-auto flex items-center gap-1.5 font-medium whitespace-nowrap ml-10 sm:ml-0"><span className="material-symbols-outlined text-[14px]">schedule</span>{new Date(r.createdAt).toLocaleString()}</div>
-                      </div>
-                      <div className="text-[15px] leading-relaxed text-slate-700 dark:text-slate-300 pl-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 ml-10 sm:ml-0">{r.comment}</div>
-                      {isHighlighted && <div className="mt-3 text-xs text-amber-700 dark:text-amber-400 font-bold bg-amber-100 dark:bg-amber-900/40 inline-flex px-2 py-1.5 rounded-md flex items-center gap-1.5 w-fit ml-10 sm:ml-0"><span className="material-symbols-outlined text-[14px]">notifications_active</span> Este es el reporte referenciado de la notificación</div>}
-                    </div>
-                  )
-                })
-              })()}
-            </div>
-          </div>
-        </div>, document.body
-      )}
-      {/* Report modal */}
-      {confirmReportId && ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center overscroll-none touch-none">
-          <div className={`absolute inset-0 bg-slate-900/60 transition-opacity duration-300 pointer-events-auto ${isConfirmReportVisible ? 'opacity-100' : 'opacity-0'}`} onClick={() => !confirmReporting && closeConfirmReportModal()} style={{ touchAction: 'none' }} />
-          <div 
-            ref={confirmReportRef}
-            className={`relative w-full sm:max-w-md sm:mx-4 sm:mb-0 transform transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${isConfirmReportVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 sm:translate-y-4 sm:scale-95'}`}
-            style={{ 
-              transform: pullDownY > 0 ? `translateY(${pullDownY}px)` : '',
-              overscrollBehaviorY: 'contain',
-              touchAction: 'pan-y'
-            }}
-            onTouchStart={(e) => {
-              touchStartRef.current = { y: e.touches[0].clientY, scrollY: confirmReportRef.current?.querySelector('.overflow-y-auto')?.scrollTop || 0 }
-            }}
-            onTouchMove={(e) => {
-              const deltaY = e.touches[0].clientY - touchStartRef.current.y
-              if (deltaY > 0 && touchStartRef.current.scrollY <= 0) {
-                setPullDownY(deltaY)
-                if (e.cancelable) e.preventDefault()
-              }
-            }}
-            onTouchEnd={() => {
-              if (pullDownY > 150) {
-                closeConfirmReportModal()
-              }
-              setPullDownY(0)
-            }}
-          >
-            <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 flex flex-col max-h-[85vh]">
-              {/* Drag handle for mobile */}
-              <div className="w-full flex justify-center pt-2 pb-1 sm:hidden cursor-pointer shrink-0" style={{ touchAction: 'none' }} onClick={() => !confirmReporting && closeConfirmReportModal()}>
-                <div className="w-12 h-1.5 rounded-full bg-slate-900/40 dark:bg-white/30"></div>
-              </div>
-
-              <div className="px-6 py-5 sm:p-8 overflow-y-auto overscroll-contain">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 shadow-sm">
-                      <span className="material-symbols-outlined text-[26px]">warning</span>
-                    </div>
-                    <span>Reportar encuesta</span>
-                  </h3>
-                  <button 
-                    type="button" 
-                    onClick={() => closeConfirmReportModal()} 
-                    disabled={confirmReporting} 
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white active:scale-95 transition-all duration-300 outline-none shadow-sm group hidden sm:flex"
-                    aria-label="Cerrar"
-                  >
-                    <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform duration-300">close</span>
-                  </button>
-                </div>
-                
-                <p className="text-[15px] text-slate-500 dark:text-slate-400 mb-8 leading-relaxed font-medium pl-1">
-                  Describe detalladamente el problema con esta encuesta para que la moderación evalúe el caso.
-                </p>
-
-                <div className="mb-8">
-                  <textarea 
-                    value={reportComment} 
-                    onChange={e => setReportComment(e.target.value)} 
-                    rows={5} 
-                    className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 focus:border-red-400 focus:ring-4 focus:ring-red-400/20 rounded-2xl text-sm p-4 text-slate-700 dark:text-slate-200 outline-none resize-none transition-all placeholder:text-slate-400 shadow-inner" 
-                    placeholder="¿Qué problema encontraste?" 
-                  />
-                </div>
-                
-                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row justify-end gap-3">
-                  <button 
-                    type="button" 
-                    onClick={() => closeConfirmReportModal()} 
-                    disabled={confirmReporting} 
-                    className="btn btn-ghost px-8"
-                  >
-                    Cancelar y Volver
-                  </button>
-                  <button 
-                    type="button" 
-                    disabled={confirmReporting}
-                    onClick={async () => {
-                      try {
-                        if (!reportComment || reportComment.trim().length < 3) {
-                          setToastMessage('Escribe un comentario válido para reportar')
-                          setTimeout(() => setToastMessage(null), 3000)
-                          return
-                        }
-                        const myEmail = currentUser?.email || (typeof currentUserId === 'string' && currentUserId.includes('@') ? currentUserId : null);
-                        const myUid = currentUser?.id || (typeof currentUserId === 'string' && !currentUserId.includes('@') ? currentUserId : null);
-                        
-                        const existingReport = (surveyReports || []).find(r => {
-                          if (String(r.surveyId) !== String(confirmReportId)) return false;
-                          const rId = String(r.reporterId || '');
-                          const rEmail = String(r.reporterEmail || '');
-                          return (myUid && rId === String(myUid)) || (myEmail && (rEmail === String(myEmail) || rId === String(myEmail)));
-                        });
-                        if (existingReport) {
-                          setToastMessage('Ya has reportado esta encuesta. Solo se permite un reporte activo por encuesta.')
-                          setTimeout(() => setToastMessage(null), 4000)
-                          closeConfirmReportModal()
-                          return
-                        }
-                        setConfirmReporting(true)
-                        const _reportSurvey = (surveys || []).find((sv: any) => String(sv.id) === String(confirmReportId))
-                        const report = {
-                          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                          surveyId: confirmReportId,
-                          reporterId: currentUserId,
-                          reporterEmail: currentUser && (currentUser.email || null),
-                          comment: reportComment.trim(),
-                          createdAt: new Date().toISOString(),
-                          payload: { surveyTitle: (_reportSurvey && (_reportSurvey.title || _reportSurvey.name)) || '' }
-                        }
-                        if (backendEnabled) {
-                          try {
-                            await (dataClientNow as any).pushSurveyReport(report)
-                          } catch (e: any) {
-                            console.error('[Surveys] pushSurveyReport failed:', e?.code, e?.message, e?.details, e?.hint)
-                            setToastMessage('Error al enviar el reporte: ' + (e?.message || 'Error desconocido'))
-                            setTimeout(() => setToastMessage(null), 5000)
-                            setConfirmReporting(false)
-                            return
-                          }
-                          closeConfirmReportModal()
-                          setSurveyReports(prev => [...prev, report])
-                          try { window.dispatchEvent(new CustomEvent('survey:reported', { detail: { report } })) } catch (e) { }
-                          setToastMessage('Reporte enviado. Gracias.')
-                          setTimeout(() => setToastMessage(null), 3000)
-                        } else {
-                          setToastMessage('No se puede enviar reportes: no hay servicio de datos configurado.')
-                          setTimeout(() => setToastMessage(null), 3000)
-                          setConfirmReporting(false)
-                          return
-                        }
-                      } catch (e) { console.error(e) }
-                      finally { setConfirmReporting(false) }
-                    }} 
-                    className={`btn btn-primary px-10 ${confirmReporting ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  >
-                    {confirmReporting ? (
-                      <><ButtonLoader size={18} /> Procesando...</>
-                    ) : (
-                      <><span className="material-symbols-outlined text-[20px]">send</span> Enviar reporte</>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>, document.body
-      )}
-      {/* Create modal */}
-      <Modal
-        isOpen={createModalOpen}
-        onClose={closeCreateModal}
-        maxWidth="max-w-xl"
-        title={editSurvey ? (editSurvey.type === 'project' ? 'Editar Proyecto Avanzado' : 'Editar Encuesta de Opinión') : (createInitialType === 'project' ? 'Crear Proyecto Avanzado' : 'Nueva Encuesta de Opinión')}
-        fullHeightOnMobile={true}
-        scrollableBody={false}
-      >
-        <div className="flex-1 flex flex-col min-h-0 w-full h-full relative">
-          <React.Suspense fallback={<div className="flex items-center justify-center h-full min-h-[50vh]"><Loader size={56} text="Cargando..." innerColor="#a5b4fc" outerColor="#4f46e5" /></div>}>
-            <CreateSurvey
-              hideTypeSelector={true}
-              initialType={createInitialType}
-              editSurvey={editSurvey}
-              onSaved={(key: any, surveyData?: any) => {
-                const wasEditing = !!editSurvey
-                closeCreateModal()
-                setEditSurvey(null)
-                setCreateInitialType(undefined)
-                setToastMessage(wasEditing ? 'Encuesta actualizada' : 'Encuesta creada')
-                setTimeout(() => setToastMessage(null), 3000)
-                // Optimistic: add/update survey in local state immediately
-                if (surveyData) {
-                  setSurveys(prev => {
-                    const copy = Array.isArray(prev) ? [...prev] : []
-                    const idx = copy.findIndex((s: any) => String(s.id) === String(key))
-                    return idx >= 0
-                      ? copy.map((s: any) => String(s.id) === String(key) ? surveyData : s)
-                      : [...copy, surveyData]
-                  })
-                }
-                // Then sync from server in case optimistic data differs
-                try {
-                  dataClientNow.getSurveysOnce().then((arr: any[]) => {
-                    try { setSurveys(arr) } catch (e) { }
-                  }).catch(() => { })
-                } catch (e) { }
-              }}
-              onClose={() => { setCreateModalOpen(false); setEditSurvey(null); setCreateInitialType(undefined); }}
-            />
-          </React.Suspense>
-        </div>
-      </Modal>
-      {/* Manage Access (Evaluators) modal */}
-      {manageAccessSurveyId && (() => {
-        const s = surveys.find(x => String(x.id) === String(manageAccessSurveyId))
-        if (!s) return null;
-        return (
-          <EvaluatorModalContent 
-            isOpen={manageAccessSurveyId !== null}
-            onClose={() => setManageAccessSurveyId(null)}
-            survey={s}
-            evaluatorUsers={evaluatorUsers}
-            dataClientNow={dataClientNow}
-            onSave={(updatedSurvey: any) => {
-              setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updatedSurvey : x))
-              setToastMessage('Evaluadores guardados')
-              setTimeout(() => setToastMessage(null), 3000)
-              setManageAccessSurveyId(null)
-            }}
-          />
-        );
-      })()}
-      {generateLinkSurveyId && (() => {
-        const s = surveys.find(x => String(x.id) === String(generateLinkSurveyId))
-        if (!s) return null;
-        return (
-          <GenerateLinkModal 
-            isOpen={generateLinkSurveyId !== null}
-            onClose={() => setGenerateLinkSurveyId(null)}
-            survey={s}
-            dataClientNow={dataClientNow}
-            onSave={(updatedSurvey: any) => {
-              setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updatedSurvey : x))
-              setToastMessage('Fecha guardada correctamente')
-              setTimeout(() => setToastMessage(null), 3000)
-              setGenerateLinkSurveyId(null)
-            }}
-          />
-        );
-      })()}
-      <style>{`
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 0.4s ease-out forwards;
-          opacity: 0;
-        }
-        /* Mobile-only: forzar alineación izquierda en el header de encuestas */
-        @media (max-width: 767px) {
-          #surveys-header-inner {
-            align-items: flex-start !important;
-          }
-          #surveys-header-title-row {
-            justify-content: flex-start !important;
-            align-items: center !important;
-          }
-          #surveys-header-text {
-            width: 100% !important;
-            text-align: left !important;
-          }
-          #surveys-header-buttons {
-            width: 100% !important;
-            flex-direction: row !important;
-          }
-          #surveys-header-buttons button {
-            flex: 1 1 0 !important;
-          }
-        }
-      `}</style>
-      {/* Confirm Deactivate Link modal */}
       <Modal
         isOpen={confirmDeactivateLinkSurveyId !== null}
         onClose={() => setConfirmDeactivateLinkSurveyId(null)}
         maxWidth="max-w-sm"
-        hideCloseButton={true}
-        noHeaderShadow={true}
-        scrollableBody={false}
       >
-        <div className="p-6 text-center bg-white dark:bg-slate-900 flex-1 flex flex-col justify-center">
+        <div className="p-6 text-center">
           <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-4 shadow-sm">
             <span className="material-symbols-outlined text-[32px]">warning</span>
           </div>
-          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Desactivar enlace?</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Esta acción invalidará el link de inscripción inmediatamente. No podrás deshacer este cambio.</p>
-          <div className="flex flex-col-reverse sm:flex-row gap-3 mt-auto sm:mt-0">
-            <button 
-              type="button" 
-              onClick={() => setConfirmDeactivateLinkSurveyId(null)} 
-              className="btn btn-ghost flex-1"
-            >
-              Cancelar y Volver
-            </button>
-            <button 
-              type="button" 
-              onClick={async () => {
-                try {
-                  const s = surveys.find(x => String(x.id) === String(confirmDeactivateLinkSurveyId));
-                  if (s) {
-                    const updated = { ...s, linkExpiresAt: null, linkToken: null };
-                    await dataClientNow.setSurvey(String(s.id), updated);
-                    setSurveys(prev => prev.map(x => String(x.id) === String(s.id) ? updated : x));
-                    setToastMessage('Enlace desactivado');
-                    setTimeout(() => setToastMessage(null), 3000);
-                  }
-                  setConfirmDeactivateLinkSurveyId(null);
-                } catch (err) {
-                  setToastMessage('Error');
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Cerrar enlace de inscripción?</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 font-medium">Esta acción invalidará el link de inscripción inmediatamente. No podrás deshacer este cambio.</p>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const s = surveys.find(x => String(x.id) === String(confirmDeactivateLinkSurveyId));
+                if (!s) return;
+                const updated = { ...s, linkToken: null, linkExpiresAt: null };
+                await dataClientNow.setSurvey(String(s.id), updated);
+                setSurveys((prev: any[]) => prev.map((x: any) => String(x.id) === String(updated.id) ? updated : x));
+                setConfirmDeactivateLinkSurveyId(null);
+                setToastMessage('Enlace desactivado');
+                setTimeout(() => setToastMessage(null), 3000);
+                try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { newId: updated.id, survey: updated } })) } catch (e) { }
+              } catch (e) {
+                setToastMessage('Error');
+                setTimeout(() => setToastMessage(null), 3000);
+              }
+            }}
+            className="btn w-full py-3 text-white font-black rounded-xl transition-all"
+            style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', boxShadow: '0 4px 15px rgba(217, 119, 6, 0.3)' }}
+          >
+            Sí, cerrar enlace
+          </button>
+        </div>
+      </Modal>
+
+      {/* Confirm Publish/Unpublish Modal */}
+      <Modal 
+        isOpen={confirmPublish !== null} 
+        onClose={() => setConfirmPublish(null)} 
+        maxWidth="max-w-sm"
+        hideCloseButton={false}
+      >
+        <div className="p-6 text-center">
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${confirmPublish?.action === 'publish' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+            <span className="material-symbols-outlined text-[32px]">{confirmPublish?.action === 'publish' ? 'publish' : 'visibility_off'}</span>
+          </div>
+          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">
+            {confirmPublish?.action === 'publish' ? '¿Publicar encuesta?' : '¿Retirar publicación?'}
+          </h3>
+          <p className="text-sm text-slate-500 mb-6">
+            {confirmPublish?.action === 'publish' 
+              ? 'Los usuarios podrán ver y responder esta encuesta una vez publicada.' 
+              : 'La encuesta ya no estará visible para el público.'}
+          </p>
+          <button 
+            onClick={async () => {
+              if (!confirmPublish) return;
+              setConfirmPublishing(true);
+              try {
+                const s = surveys.find(x => String(x.id) === confirmPublish.id);
+                if (s) {
+                  const updated = { ...s, published: confirmPublish.action === 'publish' };
+                  await dataClientNow.setSurvey(String(s.id), updated);
+                  setSurveys((prev: any[]) => prev.map(x => String(x.id) === String(s.id) ? updated : x));
+                  setToastMessage(confirmPublish.action === 'publish' ? 'Encuesta publicada' : 'Publicación retirada');
                   setTimeout(() => setToastMessage(null), 3000);
                 }
-              }} 
-              className="btn btn-amber flex-1"
-            >
-              Sí, desactivar
-            </button>
-          </div>
+              } catch(e) { console.error(e) }
+              finally { setConfirmPublishing(false); setConfirmPublish(null); }
+            }}
+            disabled={confirmPublishing}
+            className={`btn w-full py-3 ${confirmPublish?.action === 'publish' ? 'btn-emerald' : 'btn-amber'}`}
+          >
+            {confirmPublishing ? <ButtonLoader size={20} /> : 'Confirmar'}
+          </button>
         </div>
       </Modal>
 
-      {/* Generate Satisfaction Link Modal */}
-      <GenerateSatisfaccionLinkModal
-        isOpen={generateSatisfaccionLinkSurveyId !== null}
-        onClose={() => setGenerateSatisfaccionLinkSurveyId(null)}
-        survey={surveys.find((x: any) => String(x.id) === String(generateSatisfaccionLinkSurveyId))}
-        dataClientNow={dataClientNow}
-        onSave={(updated: any) => {
-          setSurveys((prev: any[]) => prev.map((x: any) => String(x.id) === String(updated.id) ? updated : x))
-          setGenerateSatisfaccionLinkSurveyId(null)
-          setToastMessage('Link de satisfacción actualizado')
-          
-          // Notify other hooks to keep them in sync
-          try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { newId: updated.id, survey: updated } })) } catch (e) { }
-          
-          setTimeout(() => setToastMessage(null), 3000)
-        }}
-      />
-
-      {/* Confirm Deactivate Satisfaction Link Modal */}
-      <Modal
-        isOpen={confirmDeactivateSatisfaccionLinkSurveyId !== null}
-        onClose={() => setConfirmDeactivateSatisfaccionLinkSurveyId(null)}
-        maxWidth="max-w-sm"
-        hideCloseButton={true}
-        noHeaderShadow={true}
-        scrollableBody={false}
-      >
-        <div className="p-6 text-center bg-white dark:bg-slate-900 flex-1 flex flex-col justify-center">
-          <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-4 shadow-sm">
-            <span className="material-symbols-outlined text-[32px]">warning</span>
-          </div>
-          <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Cerrar enlace de satisfacción?</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Esta acción invalidará el link de satisfacción inmediatamente. Los participantes ya no podrán acceder a él.</p>
-          <div className="flex flex-col-reverse sm:flex-row gap-3 mt-auto sm:mt-0">
-            <button type="button" onClick={() => setConfirmDeactivateSatisfaccionLinkSurveyId(null)} className="btn btn-ghost flex-1">
-              Cancelar y Volver
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  const s = surveys.find((x: any) => String(x.id) === String(confirmDeactivateSatisfaccionLinkSurveyId))
-                  if (s) {
-                    const updated = { ...s, satisfaccionToken: null, satisfaccionExpiresAt: null }
-                    await dataClientNow.setSurvey(String(s.id), updated)
-                    setSurveys((prev: any[]) => prev.map((x: any) => String(x.id) === String(s.id) ? updated : x))
-                    
-                    // Notify other hooks
-                    try { window.dispatchEvent(new CustomEvent('surveys:updated', { detail: { newId: s.id, survey: updated } })) } catch (e) { }
-                    
-                    setToastMessage('Enlace de satisfacción cerrado')
-                    setTimeout(() => setToastMessage(null), 3000)
-                  }
-                  setConfirmDeactivateSatisfaccionLinkSurveyId(null)
-                } catch {
-                  setToastMessage('Error')
-                  setTimeout(() => setToastMessage(null), 3000)
-                }
-              }}
-              className="btn btn-amber flex-1"
-            >
-              Sí, cerrar enlace
-            </button>
+      {/* Custom toast message */}
+      {toastMessage && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[999999] animate-fade-in-up">
+          <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/10 dark:border-slate-200">
+            <span className="material-symbols-outlined text-emerald-400">check_circle</span>
+            <span className="text-sm font-bold">{toastMessage}</span>
           </div>
         </div>
-      </Modal>
+      )}
 
-      {/* Satisfaction Results Modal */}
-      <SatisfaccionResultsModal
-        isOpen={viewSatisfaccionResultsSurveyId !== null}
-        onClose={() => setViewSatisfaccionResultsSurveyId(null)}
-        surveyId={viewSatisfaccionResultsSurveyId || ''}
-        surveyTitle={surveys.find((x: any) => String(x.id) === String(viewSatisfaccionResultsSurveyId))?.title}
-      />
+      <ScrollFloatingButton />
     </div>
   )
 }
