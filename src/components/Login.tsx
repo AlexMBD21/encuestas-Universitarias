@@ -148,6 +148,37 @@ export default function Login() {
         .animate-float-premium {
           animation: float-premium 6s ease-in-out infinite;
         }
+
+        /* Floating Label Logic - Premium Boxed Style */
+        .floating-group {
+          position: relative;
+        }
+        
+        .floating-label {
+          position: absolute;
+          left: 3rem;
+          top: 50%;
+          transform: translateY(-50%);
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          pointer-events: none;
+          z-index: 20;
+          background: transparent;
+          border: 1px solid transparent;
+        }
+
+        .floating-input:focus ~ .floating-label,
+        .floating-input:not(:placeholder-shown) ~ .floating-label {
+          top: 0;
+          transform: translateY(-50%) scale(0.9);
+          left: 2.2rem;
+          color: #60a5fa; /* blue-400 */
+          background: #020617;
+          padding: 2px 12px;
+          border: 1.5px solid #3b82f6; /* Matching the focus border */
+          border-radius: 10px;
+          font-size: 9px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        }
       `}</style>
 
       {/* Cosmic Background Layer (Behind everything) */}
@@ -317,47 +348,55 @@ export default function Login() {
             </div>
 
             <form onSubmit={onSubmit} className="space-y-5">
-              <div className="space-y-2 group">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Correo Electrónico</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition-colors">
-                    <span className="material-symbols-outlined text-[22px]">alternate_email</span>
-                  </div>
-                  <input 
-                    required 
-                    type="email" 
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-blue-50/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(37,99,235,0.15)] focus:border-blue-500/50"
-                    placeholder="nombre@ejemplo.com"
-                  />
+              <div className="floating-group group">
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition-colors z-10">
+                  <span className="material-symbols-outlined text-[22px]">alternate_email</span>
                 </div>
+                <input 
+                  required 
+                  id="email-input"
+                  type="email" 
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)}
+                  className="floating-input w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-blue-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-transparent shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(37,99,235,0.15)]"
+                  placeholder="nombre@ejemplo.com"
+                />
+                <label 
+                  htmlFor="email-input"
+                  className="floating-label text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"
+                >
+                  Correo Electrónico
+                </label>
               </div>
 
-              <div className="space-y-2 group">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Contraseña</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition-colors">
-                    <span className="material-symbols-outlined text-[22px]">lock</span>
-                  </div>
-                  <input 
-                    required 
-                    type={showPassword ? "text" : "password"} 
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)}
-                    className="w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-blue-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(37,99,235,0.15)]"
-                    placeholder="••••••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-500 hover:text-blue-400 transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-xl">
-                      {showPassword ? 'visibility_off' : 'visibility'}
-                    </span>
-                  </button>
+              <div className="floating-group group">
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition-colors z-10">
+                  <span className="material-symbols-outlined text-[22px]">lock</span>
                 </div>
+                <input 
+                  required 
+                  id="password-input"
+                  type={showPassword ? "text" : "password"} 
+                  value={password} 
+                  onChange={e => setPassword(e.target.value)}
+                  className="floating-input w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-blue-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-transparent shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(37,99,235,0.15)]"
+                  placeholder="••••••••••••"
+                />
+                <label 
+                  htmlFor="password-input"
+                  className="floating-label text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"
+                >
+                  Contraseña
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-500 hover:text-blue-400 transition-colors z-10"
+                >
+                  <span className="material-symbols-outlined text-xl">
+                    {showPassword ? 'visibility_off' : 'visibility'}
+                  </span>
+                </button>
               </div>
 
               <div className="pt-4">
