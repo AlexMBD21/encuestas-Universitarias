@@ -702,28 +702,51 @@ export default function Configuracion() {
         <Modal 
           isOpen={modalOpen} 
           onClose={closeModal} 
-          title={modalType === 'edit' ? 'Editar usuario' : (modalType === 'delete' ? 'Confirmar eliminación' : 'Crear usuario')}
-          maxWidth="max-w-lg" 
+          title={modalType === 'delete' ? null : (modalType === 'edit' ? 'Editar usuario' : 'Crear usuario')}
+          maxWidth="max-w-md" 
           hideMobileIndicator={false} 
           scrollableBody={false}
           noHeaderShadow={true}
-          hideCloseButton={modalType === 'delete'}
+          hideCloseButton={false}
         >
           <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-white dark:bg-slate-900 px-6 pb-6 pt-2">
             {/* Content WITHOUT wrapping modal-scrollable-content to avoid gray bg if not needed */}
             {modalType === 'delete' ? (
-              <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 font-medium">¿Eliminar usuario <strong>{modalData.email}</strong>? Esta acción no se puede deshacer.</p>
-                <div className="flex flex-col sm:flex-row-reverse justify-end gap-3 mt-4">
-                  <button 
-                    className={`btn btn-danger w-full sm:w-auto px-8 ${(modalLoading || !modalData.adminPassword) ? 'opacity-50 grayscale cursor-not-allowed shadow-none' : ''}`} 
-                    onClick={confirmModalSave} 
-                    disabled={modalLoading || !modalData.adminPassword}
-                  >
-                    {modalLoading ? <><ButtonLoader size={18} /> Eliminando...</> : 'Eliminar'}
-                  </button>
-                  {/* Redundant button removed */}
+              <div className="text-center pt-4">
+                <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-4">
+                  <span className="material-symbols-outlined text-[32px]">delete_forever</span>
                 </div>
+                <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">¿Eliminar usuario?</h3>
+                <p className="text-sm text-slate-500 mb-6 font-medium">Se eliminará el usuario <strong>{modalData.email}</strong>. Esta acción no se puede deshacer.</p>
+
+                <div className="text-left mb-6 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="material-symbols-outlined text-red-600 text-sm">security</span>
+                    <p className="text-[10px] font-black text-red-700 dark:text-red-400 uppercase tracking-widest">Confirmación de Seguridad</p>
+                  </div>
+                  <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1.5 ml-1">Para confirmar, ingresa <span className="text-red-600 dark:text-red-400 font-black">TU</span> contraseña de administrador:</label>
+                  <div className="relative group">
+                    <input 
+                      type={modalShowAdminPassword ? 'text' : 'password'} 
+                      autoComplete="off"
+                      placeholder="Contraseña de administrador" 
+                      className="w-full bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all outline-none text-slate-700 dark:text-slate-200"
+                      value={modalData.adminPassword || ''} 
+                      onChange={e => setModalData({...modalData, adminPassword: e.target.value})} 
+                    />
+                    <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-600 transition-colors" onClick={() => setModalShowAdminPassword(s => !s)}>
+                      <span className="material-symbols-outlined text-[18px]">{modalShowAdminPassword ? 'visibility_off' : 'visibility'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <button 
+                  className={`btn btn-danger w-full py-3 ${(modalLoading || !modalData.adminPassword) ? 'opacity-50 grayscale cursor-not-allowed shadow-none' : ''}`} 
+                  onClick={confirmModalSave} 
+                  disabled={modalLoading || !modalData.adminPassword}
+                >
+                  {modalLoading ? <><ButtonLoader size={20} /> Eliminando...</> : 'Eliminar Definitivamente'}
+                </button>
               </div>
             ) : (
               <form onSubmit={async (e) => { e.preventDefault(); await confirmModalSave(); }} className="space-y-4">
