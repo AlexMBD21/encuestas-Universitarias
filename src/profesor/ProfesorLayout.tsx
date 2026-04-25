@@ -92,7 +92,7 @@ export default function ProfesorLayout({ onBack }: Props) {
 
       <main id="main-content" className="sidebar-main-content min-w-0 flex-1 overflow-x-hidden">
         <div className="layout-container flex h-full grow flex-col max-w-full overflow-x-hidden">
-          <div style={{padding: 'var(--space-md)', width: '100%', boxSizing: 'border-box', maxWidth: '100%'}} className="overflow-x-hidden">
+          <div style={{width: '100%', boxSizing: 'border-box', maxWidth: '100%'}} className="overflow-x-hidden flex-1 flex flex-col">
             <Outlet />
           </div>
         </div>
