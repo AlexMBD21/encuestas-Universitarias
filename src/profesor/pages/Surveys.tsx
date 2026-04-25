@@ -32,7 +32,7 @@ export default function Surveys(): JSX.Element {
     surveys, setSurveys, surveysLoaded,
     surveyReports, setSurveyReports, reportsLoaded,
     ratedMap, setRatedMap, globalRatedMap, setGlobalRatedMap,
-    toastMessage, setToastMessage, ownerEmailMap, evaluatorUsers,
+    setToastMessage, ownerEmailMap, evaluatorUsers,
     currentUser, currentUserId, authUser, authLoading, isAdmin, userAsignatura,
     isOwnerOf, getOwnerDisplay
   } = useSurveysData()
@@ -1282,8 +1282,14 @@ export default function Surveys(): JSX.Element {
               if (!confirmReportId) return
               setConfirmReporting(true)
               try {
-                const rep = { surveyId: confirmReportId, comment: reportComment.trim(), reporterId: currentUserId || 'anon', createdAt: new Date().toISOString() }
-                await (dataClientNow as any).pushReport(rep)
+                const rep = { 
+                  surveyId: confirmReportId, 
+                  comment: reportComment.trim(), 
+                  reporterId: currentUserId || 'anon', 
+                  createdAt: new Date().toISOString(),
+                  reportType: 'tracking'
+                }
+                await (dataClientNow as any).pushSurveyReport(rep)
                 setToastMessage('Reporte enviado correctamente')
                 setTimeout(() => setToastMessage(null), 3000)
               } catch (e) { console.error(e) }
@@ -1492,10 +1498,23 @@ export default function Surveys(): JSX.Element {
               try {
                 const s = surveys.find(x => String(x.id) === confirmPublish.id);
                 if (s) {
-                  const updated = { ...s, published: confirmPublish.action === 'publish' };
+                  const isPublishing = confirmPublish.action === 'publish';
+                  const updated = { ...s, published: isPublishing };
+                  
+                  // First update the survey status
                   await dataClientNow.setSurvey(String(s.id), updated);
+                  
+                  // If we are unpublishing, also clear all reports for this survey
+                  if (!isPublishing) {
+                    try {
+                      await dataClientNow.removeSurveyReportsBySurveyId(String(s.id));
+                    } catch (err) {
+                      console.error('Error removing reports on unpublish:', err);
+                    }
+                  }
+
                   setSurveys((prev: any[]) => prev.map(x => String(x.id) === String(s.id) ? updated : x));
-                  setToastMessage(confirmPublish.action === 'publish' ? 'Encuesta publicada' : 'Publicación retirada');
+                  setToastMessage(isPublishing ? 'Encuesta publicada' : 'Publicación retirada y reportes eliminados');
                   setTimeout(() => setToastMessage(null), 3000);
                 }
               } catch(e) { console.error(e) }
@@ -1510,14 +1529,6 @@ export default function Surveys(): JSX.Element {
       </Modal>
 
       {/* Custom toast message */}
-      {toastMessage && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[999999] animate-fade-in-up">
-          <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/10 dark:border-slate-200">
-            <span className="material-symbols-outlined text-emerald-400">check_circle</span>
-            <span className="text-sm font-bold">{toastMessage}</span>
-          </div>
-        </div>
-      )}
 
       <ScrollFloatingButton />
     </div>
