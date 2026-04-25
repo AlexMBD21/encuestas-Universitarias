@@ -135,6 +135,12 @@ export default function Login() {
     }
   }, [])
 
+  const handleAutoFill = (e: React.AnimationEvent<HTMLInputElement>, setter: (v: string) => void) => {
+    if (e.animationName === 'onAutoFillStart') {
+      setter(e.currentTarget.value)
+    }
+  }
+
   if (loading) return <Loader fullScreen text="Cargando sesión..." />
 
   return (
@@ -167,17 +173,41 @@ export default function Login() {
         }
 
         .floating-input:focus ~ .floating-label,
-        .floating-input:not(:placeholder-shown) ~ .floating-label {
+        .floating-input:not(:placeholder-shown) ~ .floating-label,
+        .floating-input:autofill ~ .floating-label,
+        .floating-input:-webkit-autofill ~ .floating-label {
           top: 0;
-          transform: translateY(-50%) scale(0.9);
-          left: 2.2rem;
-          color: #60a5fa; /* blue-400 */
-          background: #020617;
+          transform: translateY(-50%) scale(0.85);
+          left: 1.5rem;
+          color: #ffffff;
+          background: #0f172a; /* Slate-900: Matches the visual "glass" effect of the input interior */
           padding: 2px 12px;
-          border: 1.5px solid #3b82f6; /* Matching the focus border */
+          border: 2px solid rgba(148, 163, 184, 0.3);
           border-radius: 10px;
-          font-size: 9px;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.05em;
+          box-shadow: none;
+          transition: all 0.2s ease;
+          z-index: 30;
+        }
+
+        .floating-input:focus ~ .floating-label {
+          color: #3b82f6;
+          border-color: #3b82f6;
+          background: #1e293b; /* Slightly lighter on focus to match input focus bg */
+          transform: translateY(-50%) scale(0.9);
+        }
+
+        /* Autofill detection for React state synchronization and aesthetic override */
+        @keyframes onAutoFillStart { from { opacity: 1; } to { opacity: 1; } }
+        .floating-input:-webkit-autofill,
+        .floating-input:-webkit-autofill:hover, 
+        .floating-input:-webkit-autofill:focus {
+          -webkit-text-fill-color: white !important;
+          -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important;
+          animation-name: onAutoFillStart;
+          transition: background-color 50000s ease-in-out 0s;
         }
       `}</style>
 
@@ -355,9 +385,12 @@ export default function Login() {
                 <input 
                   required 
                   id="email-input"
+                  name="email"
+                  autoComplete="email"
                   type="email" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)}
+                  onAnimationStart={e => handleAutoFill(e, setEmail)}
                   className="floating-input w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-blue-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-6 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-transparent shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(37,99,235,0.15)]"
                   placeholder="nombre@ejemplo.com"
                 />
@@ -376,9 +409,12 @@ export default function Login() {
                 <input 
                   required 
                   id="password-input"
+                  name="password"
+                  autoComplete="current-password"
                   type={showPassword ? "text" : "password"} 
                   value={password} 
                   onChange={e => setPassword(e.target.value)}
+                  onAnimationStart={e => handleAutoFill(e, setPassword)}
                   className="floating-input w-full bg-slate-950/40 border-2 border-slate-700/50 focus:border-blue-500/50 focus:bg-slate-900/80 rounded-[22px] pl-12 pr-12 py-4 text-sm font-bold transition-all outline-none text-white placeholder:text-transparent shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] focus:shadow-[0_0_20px_rgba(37,99,235,0.15)]"
                   placeholder="••••••••••••"
                 />
