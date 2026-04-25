@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Modal } from '../../components/ui/Modal';
 import Loader from '../../components/Loader';
+import AuthAdapter from '../../services/AuthAdapter';
 
 const CategorySelect = ({ value, options, onChange, placeholder }: any) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -73,6 +74,7 @@ export default function Inscripcion() {
   // Email Validation Step State
   const [email, setEmail] = useState('');
   const [isEmailConfirmed, setIsEmailConfirmed] = useState(false);
+  const [alreadyRegisteredByAccount, setAlreadyRegisteredByAccount] = useState(false);
 
   // Form State
   const [globalAsignaturas, setGlobalAsignaturas] = useState<string[]>([]);
@@ -103,19 +105,36 @@ export default function Inscripcion() {
         if (!response.ok) {
            setError(result.error || 'El enlace no es válido o ha expirado.');
         } else {
-           setSurvey(result.survey);
+           const currentSurvey = result.survey;
+           setSurvey(currentSurvey);
            
            let cats: string[] = [];
            if (result.globalCategories && Array.isArray(result.globalCategories) && result.globalCategories.length > 0) {
              cats = result.globalCategories;
-           } else if (result.survey.allowed_categories && Array.isArray(result.survey.allowed_categories)) {
-             cats = result.survey.allowed_categories;
-           } else if (result.survey.allowedCategories && Array.isArray(result.survey.allowedCategories)) {
-             cats = result.survey.allowedCategories;
+           } else if (currentSurvey.allowed_categories && Array.isArray(currentSurvey.allowed_categories)) {
+             cats = currentSurvey.allowed_categories;
+           } else if (currentSurvey.allowedCategories && Array.isArray(currentSurvey.allowedCategories)) {
+             cats = currentSurvey.allowedCategories;
            } else {
              cats = ["Ingeniería de Software", "Sistemas", "Electrónica", "Otros"];
            }
            setGlobalAsignaturas(cats);
+
+           // Auto-identify check: Only if user is logged in AND hasn't registered yet
+           const user = AuthAdapter.getUser();
+           if (user && user.email && !isEmailConfirmed && !email) {
+             const cleanEmail = user.email.trim().toLowerCase();
+             const projects = currentSurvey.projects || [];
+             const alreadyRegistered = projects.some((p: any) => (p.contact_email || p.email || '').trim().toLowerCase() === cleanEmail);
+             
+             if (!alreadyRegistered) {
+               setEmail(user.email);
+               setIsEmailConfirmed(true);
+             } else {
+               // If already registered, we inform the user
+               setAlreadyRegisteredByAccount(true);
+             }
+           }
         }
       } catch (err) {
         setError('Error al conectar con el servidor.');
@@ -124,12 +143,22 @@ export default function Inscripcion() {
       }
     }
     load();
-  }, [token]);
+  }, [token, isEmailConfirmed]);
 
   const handleIdentify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !token) return;
     
+    // Check if email already exists in survey projects
+    if (survey && survey.projects) {
+      const cleanEmail = email.trim().toLowerCase();
+      const existing = (survey.projects as any[]).find(p => (p.contact_email || p.email || '').trim().toLowerCase() === cleanEmail);
+      if (existing) {
+        setModalError('Este correo electrónico ya ha registrado un proyecto para esta encuesta. No se permiten múltiples registros.');
+        return;
+      }
+    }
+
     // Re-validar que el enlace siga activo en caso de demora
     setLoading(true);
     try {
@@ -211,6 +240,41 @@ export default function Inscripcion() {
     );
   }
 
+  // --- ALREADY REGISTERED STATE (For Logged-in users) ---
+  if (alreadyRegisteredByAccount) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6 relative overflow-hidden font-outfit">
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]">
+          <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-900/20 rounded-full blur-[120px] opacity-40"></div>
+        </div>
+        <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[30px] p-10 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.5)] animate-fade-in-up text-center flex flex-col items-center">
+          <div className="w-20 h-20 rounded-full bg-rose-500/20 border border-rose-500/50 flex items-center justify-center mb-6 shadow-[0_0_50px_rgba(244,63,94,0.3)]">
+            <span className="material-symbols-outlined text-rose-400 text-[42px]">error</span>
+          </div>
+          <h1 className="text-2xl font-black text-white px-2 mb-3 tracking-tight">Ya has registrado</h1>
+          <p className="text-sm font-medium text-slate-400 leading-relaxed mb-8">
+            Tu cuenta (<strong className="text-blue-300">{AuthAdapter.getUser()?.email}</strong>) ya tiene un proyecto registrado para esta encuesta. 
+          </p>
+          <div className="w-full space-y-3">
+            <button 
+              onClick={() => navigate('/')} 
+              className="w-full bg-slate-800 text-white font-black py-4 rounded-[18px] hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-xs border border-white/10"
+            >
+              <span className="material-symbols-outlined text-lg">home</span>
+              Ir al Inicio
+            </button>
+            <button 
+              onClick={() => setAlreadyRegisteredByAccount(false)} 
+              className="w-full bg-blue-600/10 text-blue-400 font-bold py-3 rounded-[18px] hover:bg-blue-600/20 transition-all text-[11px] uppercase tracking-wider border border-blue-500/30"
+            >
+              Usar otro correo
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // --- SUCCESS STATE ---
   if (success) {
     return (
@@ -240,6 +304,8 @@ export default function Inscripcion() {
               setProjectCategory('');
               setSuccess(false);
               setEmail('');
+              // Force reload to re-check status if they want to register another
+              window.location.reload();
             }} 
             className="w-full bg-slate-800 text-white font-black py-4 rounded-[18px] hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-xs border border-white/10"
           >

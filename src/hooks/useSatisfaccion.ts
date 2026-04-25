@@ -30,7 +30,8 @@ export function useSatisfaccion(token: string | undefined) {
         // Shared link: always allow filling the form
         setSurveyData(data);
       } else if (data.respondida) {
-        setError('Esta encuesta de satisfacción ya ha sido completada anteriormente.');
+        // We set the survey data so the UI can show the "Already Responded" view
+        setSurveyData(data);
       } else if (data.token_expires_at && new Date(data.token_expires_at) < new Date()) {
         setError('El enlace de esta encuesta ha expirado.');
       } else {

@@ -266,14 +266,30 @@ export async function getOrCreateSatisfaccionToken(surveyId: string, email: stri
 
     const cleanEmail = email.trim().toLowerCase();
     
-    // 1. Buscar si ya existe
-    const { data, error } = await (supabase as any).from('encuestas_satisfaccion')
+    // 1. Buscar si ya existe por email directo
+    const { data: existingByEmail } = await (supabase as any).from('encuestas_satisfaccion')
       .select('token')
       .eq('encuesta_id', surveyId)
       .eq('participante_email', cleanEmail)
       .maybeSingle();
 
-    if (data?.token) return data.token;
+    if (existingByEmail?.token) return existingByEmail.token;
+
+    // 2. Buscar si existe un usuario registrado con ese email y si ese usuario ya respondió
+    const { data: userData } = await (supabase as any).from('app_users')
+      .select('id')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+
+    if (userData?.id) {
+      const { data: existingById } = await (supabase as any).from('encuestas_satisfaccion')
+        .select('token')
+        .eq('encuesta_id', surveyId)
+        .eq('participante_id', userData.id)
+        .maybeSingle();
+      
+      if (existingById?.token) return existingById.token;
+    }
 
     // 2. Si no existe, crearlo (RLS debe permitir INSERT público)
     const { data: newData, error: insertError } = await (supabase as any).from('encuestas_satisfaccion')

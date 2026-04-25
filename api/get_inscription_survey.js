@@ -39,7 +39,7 @@ module.exports = async function handler(req, res) {
     // 1. Encontrar la encuesta por token saltándose las reglas RLS (Service Role)
     const { data: surveys, error: findError } = await supabaseAdmin
       .from('surveys')
-      .select('id, title, link_token, link_expires_at, allowed_categories')
+      .select('id, title, link_token, link_expires_at, allowed_categories, projects')
       .limit(100);
 
     if (findError) {

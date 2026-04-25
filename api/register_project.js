@@ -61,14 +61,24 @@ module.exports = async function handler(req, res) {
       return res.status(403).json({ error: 'Este enlace de inscripción ha expirado.' });
     }
 
-    // 2. Validación de proyectos duplicados
+    // 2. Validación de duplicados (Nombre y Email)
     const currentProjects = Array.isArray(survey.projects) ? survey.projects : [];
     
     const incomingName = (projectData.name || '').trim().toLowerCase();
-    const isDuplicate = currentProjects.some(p => (p.name || '').trim().toLowerCase() === incomingName);
-    
-    if (isDuplicate) {
+    const incomingEmail = (projectData.email || '').trim().toLowerCase();
+
+    // Check for duplicate names
+    const isNameDuplicate = currentProjects.some(p => (p.name || '').trim().toLowerCase() === incomingName);
+    if (isNameDuplicate) {
       return res.status(400).json({ error: 'Ya existe un proyecto registrado con este nombre. Por favor, elige uno diferente.' });
+    }
+
+    // Check for duplicate emails
+    if (incomingEmail) {
+      const isEmailDuplicate = currentProjects.some(p => (p.contact_email || p.email || '').trim().toLowerCase() === incomingEmail);
+      if (isEmailDuplicate) {
+        return res.status(400).json({ error: 'Este correo electrónico ya ha registrado un proyecto para esta encuesta.' });
+      }
     }
 
     const newProject = {

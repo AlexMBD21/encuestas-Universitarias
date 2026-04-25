@@ -4,6 +4,7 @@ import { useSatisfaccion } from '../../hooks/useSatisfaccion';
 import Loader from '../../components/Loader';
 import { getOrCreateSatisfaccionToken } from '../../services/satisfaccion.service';
 import ButtonLoader from '../../components/ButtonLoader';
+import AuthAdapter from '../../services/AuthAdapter';
 
 export default function SatisfaccionEncuesta() {
   const { token: urlToken, surveyId: urlSurveyId } = useParams<{ token?: string, surveyId?: string }>();
@@ -21,6 +22,23 @@ export default function SatisfaccionEncuesta() {
   const [linkError, setLinkError] = useState<string | null>(null);
 
   React.useEffect(() => {
+    // Auto-identify if user is already logged in
+    if (urlSurveyId && !token) {
+      const user = AuthAdapter.getUser();
+      if (user && user.email) {
+        setEmail(user.email);
+        const autoIdentify = async () => {
+          setIsIdentifying(true);
+          try {
+            const newToken = await getOrCreateSatisfaccionToken(urlSurveyId, user.email, urlPublicToken);
+            if (newToken) setToken(newToken);
+          } catch (e) {}
+          finally { setIsIdentifying(false); }
+        };
+        autoIdentify();
+      }
+    }
+
     if (urlSurveyId && !token && urlPublicToken) {
       setIsValidatingLink(true);
       import('../../services/supabaseClient').then(({ getRawSupabaseClient }) => {
@@ -152,25 +170,26 @@ export default function SatisfaccionEncuesta() {
 
   // Duplicate prevention: if this token was already used to respond
   if (surveyData && surveyData.respondida === true) {
+    const userEmail = AuthAdapter.getUser()?.email || email || 'tu correo';
     return (
       <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6 relative overflow-hidden font-outfit">
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[radial-gradient(circle_at_50%_0%,_#0f172a_0%,_#020617_100%)]">
-          <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-amber-600/20 rounded-full blur-[120px] opacity-60"></div>
+          <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-900/20 rounded-full blur-[120px] opacity-40"></div>
         </div>
         <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[30px] p-10 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.5)] animate-fade-in-up text-center flex flex-col items-center">
-          <div className="w-20 h-20 rounded-full bg-amber-500/20 border border-amber-500/50 flex items-center justify-center mb-6 shadow-[0_0_50px_rgba(245,158,11,0.3)]">
-            <span className="material-symbols-outlined text-amber-400 text-[42px]">check_circle</span>
+          <div className="w-20 h-20 rounded-full bg-rose-500/20 border border-rose-500/50 flex items-center justify-center mb-6 shadow-[0_0_50px_rgba(244,63,94,0.3)]">
+            <span className="material-symbols-outlined text-rose-400 text-[42px]">error</span>
           </div>
           <h1 className="text-2xl font-black text-white px-2 mb-3 tracking-tight">Ya has respondido</h1>
           <p className="text-sm font-medium text-slate-400 leading-relaxed mb-8">
-            Tu opinión ya fue registrada anteriormente con este correo. Solo se permite una respuesta por persona para garantizar resultados confiables.
+            Tu cuenta (<strong className="text-blue-300">{userEmail}</strong>) ya ha completado esta encuesta de satisfacción anteriormente. Solo se permite una respuesta por persona para garantizar resultados confiables.
           </p>
           <button 
             onClick={() => navigate('/')} 
             className="w-full bg-slate-800 text-white font-black py-4 rounded-[18px] hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-xs border border-white/10"
           >
             <span className="material-symbols-outlined text-lg">home</span>
-            Finalizar
+            Ir al Inicio
           </button>
         </div>
       </div>
