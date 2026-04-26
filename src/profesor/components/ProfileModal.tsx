@@ -137,59 +137,57 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
         {/* Avatar */}
         <div className="flex flex-col items-center mb-8">
           <div
-            className={`relative w-28 h-28 rounded-3xl cursor-pointer group transition-all duration-300 ${isDragging ? 'ring-4 ring-blue-400 ring-offset-4' : ''} ${loadingProfile ? 'opacity-50' : ''}`}
+            className={`relative cursor-pointer group transition-all duration-500 ${isDragging ? 'scale-105' : ''} ${loadingProfile ? 'opacity-50' : ''}`}
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
             onClick={() => !loadingProfile && fileRef.current?.click()}
             title="Haz clic o arrastra una imagen"
           >
-            <div className="w-full h-full rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 group-hover:border-blue-400 group-hover:bg-blue-50/30 transition-all">
-              {loadingProfile ? (
-                <span className="material-symbols-outlined text-3xl text-blue-500 animate-spin">progress_activity</span>
-              ) : avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex flex-col items-center">
-                  {initials ? (
-                    <span className="text-3xl font-black text-slate-400">{initials}</span>
+            {/* Anillo de Gradiente Eléctrico Circular */}
+            <div className="p-[3.5px] rounded-full bg-gradient-to-tr from-[#06b6d4] via-[#3b82f6] to-[#6366f1] shadow-[0_0_25px_rgba(59,130,246,0.4)] transition-all duration-500 group-hover:shadow-[0_0_45px_rgba(59,130,246,0.6)] group-hover:scale-[1.02]">
+              <div className="p-[3px] bg-white dark:bg-slate-900 rounded-full">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 group-hover:border-indigo-400/50 group-hover:bg-indigo-50/10 transition-all relative">
+                  {loadingProfile ? (
+                    <div className="flex items-center justify-center p-4">
+                      <ButtonLoader size={45} outerColor="#0f172a" innerColor="#3b82f6" />
+                    </div>
+                  ) : avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 rounded-full" />
                   ) : (
-                    <span className="material-symbols-outlined text-4xl text-slate-300">account_circle</span>
+                    <div className="flex flex-col items-center justify-center w-full h-full bg-slate-50/50 dark:bg-slate-800/30">
+                      <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600 group-hover:text-indigo-400 transition-colors" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48" }}>person</span>
+                    </div>
+                  )}
+                  
+                  {/* Overlay on hover */}
+                  {!loadingProfile && (
+                    <div className="absolute inset-0 bg-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                    </div>
                   )}
                 </div>
-              )}
+              </div>
             </div>
-            {!loadingProfile && (
-              <div className="absolute -right-2 -bottom-2 w-10 h-10 bg-white dark:bg-slate-700 rounded-full shadow-lg border-4 border-slate-50 dark:border-slate-900 flex items-center justify-center text-blue-600 dark:text-blue-400 z-10">
-                <span className="material-symbols-outlined text-[22px] font-bold">photo_camera</span>
-              </div>
-            )}
-            {!loadingProfile && (
-              <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-3xl">
-              </div>
-            )}
-          </div>
 
-          <div className="flex gap-3 mt-8 w-full max-w-[320px]">
-            <button 
-              type="button"
-              onClick={() => !loadingProfile && fileRef.current?.click()}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-[0.98]"
-            >
-              <span className="material-symbols-outlined text-[18px]">upload</span>
-              Subir foto
-            </button>
+            {/* Camera Badge */}
+            {!loadingProfile && (
+              <div className="absolute -right-1 -bottom-1 w-10 h-10 bg-white dark:bg-slate-800 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-slate-200 dark:border-slate-700 flex items-center justify-center text-indigo-600 dark:text-indigo-400 z-10 transition-all duration-300 group-hover:scale-110">
+                <span className="material-symbols-outlined text-[20px] font-bold">photo_camera</span>
+              </div>
+            )}
+            {/* Trash Button (Remove) - Now inside the relative container */}
             {avatarUrl && !loadingProfile && (
-              <button 
+              <button
                 type="button"
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all text-[11px] font-black uppercase tracking-wider shadow-sm active:scale-[0.98]" 
-                onClick={handleRemoveAvatar}
+                onClick={(e) => { e.stopPropagation(); handleRemoveAvatar(); }}
+                className="absolute -left-2 -top-2 w-9 h-9 bg-white dark:bg-slate-800 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-slate-200 dark:border-slate-700 flex items-center justify-center text-red-600 dark:text-red-400 z-30 transition-all hover:scale-110 active:scale-95 hover:bg-red-50 dark:hover:bg-red-900/20"
+                title="Quitar foto"
               >
-                <span className="material-symbols-outlined text-[18px]">delete</span>
-                Eliminar
+                <span className="material-symbols-outlined text-[20px]">delete</span>
               </button>
             )}
           </div>
+
           <input
             ref={fileRef}
             type="file"
@@ -200,7 +198,7 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
         </div>
 
         {/* Name input */}
-        <div className="space-y-1.5 mb-8">
+        <div className="space-y-1.5 mb-8 mt-4">
           <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1" htmlFor="profile-name-input">Nombre completo</label>
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">

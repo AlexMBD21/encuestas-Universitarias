@@ -262,11 +262,17 @@ export default function Topbar({ notificationsOpen, onToggleNotifications, notif
           aria-label="Abrir perfil"
           title="Mi perfil"
         >
-          {profile.avatarUrl ? (
-            <img src={profile.avatarUrl} alt="Avatar" className="user-avatar user-avatar-photo" />
-          ) : (
-            <div className="user-avatar placeholder">{avatarInitials}</div>
-          )}
+          <div className="flex items-center justify-center p-[2px] rounded-full bg-gradient-to-tr from-[#06b6d4] via-[#3b82f6] to-[#6366f1] shadow-[0_0_12px_rgba(59,130,246,0.25)]">
+            <div className="p-[1.5px] bg-white dark:bg-slate-900 rounded-full">
+              {profile.avatarUrl ? (
+                <img src={profile.avatarUrl} alt="Avatar" className="w-7 h-7 rounded-full object-cover block" />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500">
+                  <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+                </div>
+              )}
+            </div>
+          </div>
           <span className="user-chip-name">{roleLabel}</span>
         </button>
       </div>
