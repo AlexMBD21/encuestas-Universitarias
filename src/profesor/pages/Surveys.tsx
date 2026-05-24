@@ -26,6 +26,25 @@ import { Modal } from '../../components/ui/Modal';
 import ButtonLoader from '../../components/ButtonLoader';
 import { getSatisfaccionTokensBySurveyId } from '../../services/satisfaccion.service';
 
+// Barra de progreso con animación de entrada desde 0% hasta el valor real
+function AnimatedProgressBar({ pct, color }: { pct: number; color: string }) {
+  const [displayPct, setDisplayPct] = React.useState(0);
+  React.useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      setTimeout(() => setDisplayPct(pct), 50);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [pct]);
+  return (
+    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+      <div
+        className={`${color} h-1.5 rounded-full transition-all duration-700 ease-out`}
+        style={{ width: `${displayPct}%` }}
+      />
+    </div>
+  );
+}
+
 export default function Surveys(): JSX.Element {
   const location = useLocation()
   const {
@@ -761,9 +780,10 @@ export default function Surveys(): JSX.Element {
                                   <span>Progreso de calificación</span>
                                   <span className="font-bold">{progress.rated} / {progress.total}</span>
                                 </div>
-                                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
-                                  <div className="bg-indigo-500 h-1.5 transition-all duration-700 ease-out" style={{ width: `${progress.total > 0 ? (progress.rated / progress.total) * 100 : 0}%` }}></div>
-                                </div>
+                                <AnimatedProgressBar
+                                  pct={progress.total > 0 ? (progress.rated / progress.total) * 100 : 0}
+                                  color="bg-indigo-500"
+                                />
                               </div>
                             )}
 
@@ -780,9 +800,10 @@ export default function Surveys(): JSX.Element {
                                     <span>Progreso de satisfacción</span>
                                     <span className="font-bold">{respondidas} / {total}</span>
                                   </div>
-                                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
-                                    <div className="bg-emerald-500 h-1.5 transition-all duration-700 ease-out" style={{ width: `${total > 0 ? (respondidas / total) * 100 : 0}%` }}></div>
-                                  </div>
+                                  <AnimatedProgressBar
+                                    pct={total > 0 ? (respondidas / total) * 100 : 0}
+                                    color="bg-emerald-500"
+                                  />
                                 </div>
                               );
                             })()}
