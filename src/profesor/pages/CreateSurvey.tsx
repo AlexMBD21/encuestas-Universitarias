@@ -284,8 +284,8 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
         </nav>
       )}
 
-      <form onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0">
-        <div className={isModal ? 'flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-2 pt-5 sm:pt-4 pb-4 relative z-0 bg-white dark:bg-slate-900' : ''}>
+      <form id="create-survey-form" onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0">
+        <div className={isModal ? 'flex-1 overflow-y-auto custom-scrollbar px-6 sm:px-10 pt-6 pb-6 relative z-0 bg-white dark:bg-slate-900' : ''}>
         {!hideTypeSelector && (
           <div className="mb-6">
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Formato de la Encuesta</label>
@@ -599,21 +599,23 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
         )}
         </div>
 
-        <div className={`shrink-0 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-4 flex-wrap ${isModal ? 'p-4 sm:p-6 bg-white dark:bg-slate-900 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.08)]' : 'pt-6 mt-10'}`}>
-          <button type="submit" disabled={saving} className="btn btn-primary px-10">
-             {saving ? (
-               <>
-                 <ButtonLoader size={20} />
-                 Guardando...
-               </>
-             ) : (
-               <>
-                 <span className="material-symbols-outlined text-[20px]">save</span>
-                 {editSurvey ? 'Actualizar Encuesta' : 'Guardar Encuesta'}
-               </>
-             )}
-          </button>
-        </div>
+        {!isModal && (
+          <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-4 flex-wrap pt-6 mt-10">
+            <button type="submit" disabled={saving} className="btn btn-primary px-10">
+               {saving ? (
+                 <>
+                   <ButtonLoader size={20} />
+                   Guardando...
+                 </>
+               ) : (
+                 <>
+                   <span className="material-symbols-outlined text-[20px]">save</span>
+                   {editSurvey ? 'Actualizar Encuesta' : 'Guardar Encuesta'}
+                 </>
+               )}
+            </button>
+          </div>
+        )}
       </form>
 
       {/* Confirmation Modal for Project Cleanup */}

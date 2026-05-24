@@ -13,9 +13,10 @@ export interface ModalProps {
   hideCloseButton?: boolean;
   noHeaderShadow?: boolean;
   closeButtonVariant?: 'default' | 'premium';
+  footer?: React.ReactNode;
 }
 
-export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true, hideCloseButton = false, noHeaderShadow = false, closeButtonVariant = 'premium' }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true, hideCloseButton = false, noHeaderShadow = false, closeButtonVariant = 'premium', footer }: ModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosingBtn, setIsClosingBtn] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -91,6 +92,19 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
 
   if (!isOpen && !isVisible) return null;
 
+  // Premium spacious layout mapping:
+  const widthScaleMap: Record<string, string> = {
+    'max-w-md': 'max-w-lg sm:max-w-xl md:max-w-2xl', 
+    'max-w-lg': 'max-w-xl sm:max-w-2xl md:max-w-3xl',
+    'max-w-xl': 'max-w-2xl sm:max-w-3xl md:max-w-4xl',
+    'max-w-2xl': 'max-w-3xl sm:max-w-4xl md:max-w-5xl',
+    'max-w-3xl': 'max-w-4xl sm:max-w-5xl md:max-w-6xl',
+    'max-w-4xl': 'max-w-5xl sm:max-w-6xl md:max-w-7xl',
+    'max-w-6xl': 'max-w-7xl sm:max-w-[90vw] xl:max-w-[85vw]'
+  };
+
+  const resolvedWidthClass = widthScaleMap[maxWidth] || maxWidth || 'max-w-2xl sm:max-w-4xl';
+
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 perspective-1000">
       {/* Backdrop */}
@@ -102,7 +116,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
       {/* Modal Container */}
       <div 
         ref={modalRef}
-        className={`relative w-full ${maxWidth} bg-white dark:bg-slate-900 
+        className={`relative w-full ${resolvedWidthClass} bg-white dark:bg-slate-900 
           ${fullHeightOnMobile ? 'h-[90vh] sm:h-auto sm:max-h-[85vh]' : 'max-h-[90vh]'} 
           rounded-t-[20px] sm:rounded-[20px] shadow-2xl flex flex-col overflow-hidden 
           transition-all duration-300 ease-[cubic-bezier(0.2,0.9,0.3,1.1)]
@@ -129,11 +143,13 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
         )}
 
         {/* Header */}
-        {title && (
-          <div className={`flex items-center px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 relative z-10 ${noHeaderShadow ? '' : 'shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]'}`}>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight pr-12">
-              {title}
-            </h2>
+        {(title || !hideCloseButton) && (
+          <div className={`flex items-center px-6 sm:px-10 py-5 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 relative z-10 ${noHeaderShadow ? '' : 'shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]'} min-h-[60px] sm:min-h-[72px]`}>
+            {title && (
+              <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight pr-12">
+                {title}
+              </h2>
+            )}
           </div>
         )}
 
@@ -142,7 +158,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
           <button 
             type="button"
             onClick={handleClose} 
-            className={`absolute top-3 right-3 sm:top-4 sm:right-6 z-[60] flex w-10 h-10 items-center justify-center rounded-full transition-all duration-500 border border-white/30 group bg-red-500 text-white outline-none
+            className={`absolute top-3 right-3 sm:top-4 sm:right-8 z-[60] flex w-10 h-10 items-center justify-center rounded-full transition-all duration-500 border border-white/30 group bg-red-500 text-white outline-none
               ${isClosingBtn 
                 ? 'scale-0 rotate-[360deg] shadow-none opacity-0' 
                 : 'shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_20px_rgba(239,68,68,0.4)] hover:-translate-y-1 hover:scale-110 active:scale-90 active:translate-y-0 ring-0 hover:ring-4 ring-red-500/20'}`}
@@ -156,9 +172,16 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
         )}
 
         {/* Body content */}
-        <div className={`flex-1 flex flex-col ${scrollableBody ? 'overflow-y-auto overscroll-contain modal-scrollable-content bg-slate-50 dark:bg-slate-900/50' : 'overflow-hidden bg-white dark:bg-slate-900'}`}>
+        <div className={`flex-1 min-h-0 flex flex-col ${scrollableBody ? 'overflow-y-auto overscroll-contain modal-scrollable-content bg-slate-50 dark:bg-slate-900/50' : 'overflow-hidden bg-white dark:bg-slate-900'}`}>
           {children}
         </div>
+
+        {/* Footer */}
+        {footer && (
+          <div className="flex items-center justify-end px-6 sm:px-10 py-5 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
+            {footer}
+          </div>
+        )}
       </div>
     </div>,
     document.body

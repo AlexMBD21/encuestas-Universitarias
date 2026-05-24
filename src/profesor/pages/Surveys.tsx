@@ -1111,8 +1111,9 @@ export default function Surveys(): JSX.Element {
         onClose={closeModal} 
         maxWidth={modalKind === 'projects' ? 'max-w-6xl' : 'max-w-4xl'}
         fullHeightOnMobile={true}
+        scrollableBody={false}
       >
-        <div className="h-full flex flex-col">
+        <div className="h-full min-h-0 flex flex-col flex-1">
           <React.Suspense fallback={<div className="flex-1 flex items-center justify-center py-20"><Loader size={60} text="Abriendo..." /></div>}>
             {modalKind === 'projects' ? (
               viewingProjectId ? (
@@ -1139,7 +1140,7 @@ export default function Surveys(): JSX.Element {
                 />
               ) : (
                 <div className="flex flex-col flex-1 min-h-0 w-full h-full">
-                  <div className="shrink-0 px-4 sm:px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-sm">
+                  <div className="shrink-0 px-6 sm:px-10 py-5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-sm">
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                         <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Proyectos: <span className="font-bold text-slate-800 dark:text-slate-200">{surveys.find(s => String(s.id) === modalSurveyId)?.projects?.length || 0}</span></div>
@@ -1173,7 +1174,7 @@ export default function Surveys(): JSX.Element {
                       </div>
                     </div>
                   </div>
-                  <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar-sm">
+                  <div className="flex-1 overflow-y-auto px-6 sm:px-10 py-6 custom-scrollbar-sm">
                     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                       {(surveys.find(s => String(s.id) === modalSurveyId)?.projects || [])
                         .filter((p: any) => {
@@ -1309,6 +1310,25 @@ export default function Surveys(): JSX.Element {
         onClose={closeCreateModal} 
         maxWidth="max-w-4xl"
         fullHeightOnMobile={true}
+        title={editSurvey ? 'Editar Encuesta' : 'Nueva Encuesta'}
+        footer={
+          <div className="flex items-center justify-end gap-3 w-full">
+            <button
+              type="button"
+              onClick={closeCreateModal}
+              className="btn btn-ghost px-6"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              form="create-survey-form"
+              className="btn btn-primary px-10"
+            >
+              {editSurvey ? 'Actualizar Encuesta' : 'Guardar Encuesta'}
+            </button>
+          </div>
+        }
       >
         <div className="h-full flex flex-col">
           <React.Suspense fallback={<div className="flex-1 flex items-center justify-center py-20"><Loader size={60} text="Cargando..." /></div>}>

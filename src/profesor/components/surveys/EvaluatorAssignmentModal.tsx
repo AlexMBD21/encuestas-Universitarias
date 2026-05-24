@@ -182,137 +182,140 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
   }, [survey?.projects]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose || onCancel} maxWidth="max-w-3xl" hideMobileIndicator={true} scrollableBody={false}>
-      <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden">
-        {/* Drag handle for mobile */}
-        <div className="w-full flex justify-center pt-2 pb-2 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={onClose || onCancel}>
-          <div className="w-12 h-1.5 rounded-full bg-slate-900/40 dark:bg-white/30"></div>
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose || onCancel} 
+      maxWidth="max-w-3xl" 
+      hideMobileIndicator={true} 
+      scrollableBody={false}
+      title="Configurar Evaluadores"
+      footer={
+        <div className="w-full flex justify-end">
+          <button 
+            type="button" 
+            disabled={saving} 
+            onClick={async () => {
+               setSaving(true);
+               try {
+                 const updatedSurvey = { ...survey, projects: draftProjects };
+                 await dataClientNow.setSurvey(String(survey.id), updatedSurvey);
+                 onSave(updatedSurvey);
+               } catch(e) { console.error(e) }
+               finally { setSaving(false); }
+            }} 
+            className="btn btn-primary px-10"
+          >
+            {saving ? <><ButtonLoader size={20} /> Guardando...</> : <><span className="material-symbols-outlined text-[20px]">save</span> Guardar Cambios</>}
+          </button>
+        </div>
+      }
+    >
+      <div className="flex flex-col h-full relative overflow-hidden">
+        {/* Fixed Instructions at the top */}
+        <div className="px-6 sm:px-10 py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
+          <p className="text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
+            Asigna uno o más profesores evaluadores a cada proyecto. Los profesores asignados podrán revisar y calificar el proyecto de forma independiente desde su cuenta.
+          </p>
         </div>
 
-        {/* Header — clean premium */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 rounded-t-[2rem] sm:rounded-[1.5rem] sm:rounded-b-none pt-8 sm:pt-4 z-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 relative pr-12">
-          <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Configurar Evaluadores</h3>
-        </div>
-      {/* Fixed Instructions at the top */}
-      <div className="p-4 sm:px-6 sm:py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
-        <p className="text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
-          Asigna uno o más profesores evaluadores a cada proyecto. Los profesores asignados podrán revisar y calificar el proyecto de forma independiente desde su cuenta.
-        </p>
-      </div>
+        {/* Scrollable Content Area */}
+        <div className="modal-scrollable-content flex-1 overflow-y-auto w-full bg-slate-50 dark:bg-slate-900 px-6 sm:px-10 py-6 pt-5 pb-32 sm:pb-10 relative z-0">
+          {draftProjects.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center h-full">
+              <span className="material-symbols-outlined text-[60px] text-slate-300 dark:text-slate-600 mb-4 opacity-75">inbox</span>
+              <h4 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">Sin proyectos</h4>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-sm">
+                Esta encuesta aún no tiene proyectos inscritos para evaluar.
+              </p>
+            </div>
+          ) : (
+            <div className="bg-transparent sm:bg-white dark:sm:bg-slate-800 rounded-xl sm:border sm:border-slate-200 dark:sm:border-slate-700 sm:shadow-sm overflow-visible min-h-[350px]">
+              {/* Desktop Table View */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[500px]">
+                  <thead>
+                    <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400">
+                      <th className="p-3">Proyecto</th>
+                      <th className="p-3 w-40">Categoría</th>
+                      <th className="p-3 w-80">Evaluadores Asignados</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {draftProjects.map((p: any) => (
+                      <tr key={p.id} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                        <td className="p-3">
+                          <div 
+                            onClick={(e) => toggleTitleExpansion(e, p.id)}
+                            className={`font-bold text-sm text-slate-800 dark:text-slate-200 cursor-pointer transition-all break-all max-w-[250px] sm:max-w-[300px] ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
+                            title={p.name}
+                          >
+                            {p.name || 'Sin nombre'}
+                          </div>
+                          <div className="text-xs text-slate-500 truncate max-w-[200px]">Asesor: {p.advisor || '-'}</div>
+                        </td>
+                        <td className="p-3">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-bold dark:bg-slate-800 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50">
+                            <span className="material-symbols-outlined text-[14px]">category</span>
+                            {p.category || 'N/A'}
+                          </span>
+                        </td>
+                        <td className="p-3 align-top pt-5">
+                          <MultiEvaluatorSelector 
+                            values={p.evaluators || (p.evaluator ? [p.evaluator] : [])}
+                            evaluatorUsers={evaluatorUsers}
+                            onChange={(newEmails: string[]) => {
+                               setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluators: newEmails, evaluator: newEmails[0] || '' } : x));
+                            }}
+                            onSave={() => {}}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-      {/* Scrollable Content Area */}
-      <div className="modal-scrollable-content flex-1 overflow-y-auto w-full bg-slate-50 dark:bg-slate-900 p-4 sm:p-6 pt-5 pb-32 sm:pb-10 relative z-0">
-        {draftProjects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center h-full">
-            <span className="material-symbols-outlined text-[60px] text-slate-300 dark:text-slate-600 mb-4 opacity-75">inbox</span>
-            <h4 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">Sin proyectos</h4>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-sm">
-              Esta encuesta aún no tiene proyectos inscritos para evaluar.
-            </p>
-          </div>
-        ) : (
-          <div className="bg-transparent sm:bg-white dark:sm:bg-slate-800 rounded-xl sm:border sm:border-slate-200 dark:sm:border-slate-700 sm:shadow-sm overflow-visible min-h-[350px]">
-            {/* Desktop Table View */}
-          <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[500px]">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400">
-                  <th className="p-3">Proyecto</th>
-                  <th className="p-3 w-40">Categoría</th>
-                  <th className="p-3 w-80">Evaluadores Asignados</th>
-                </tr>
-              </thead>
-              <tbody>
+              {/* Mobile Card View */}
+              <div className="block sm:hidden space-y-3">
                 {draftProjects.map((p: any) => (
-                  <tr key={p.id} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
-                    <td className="p-3">
-                      <div 
-                        onClick={(e) => toggleTitleExpansion(e, p.id)}
-                        className={`font-bold text-sm text-slate-800 dark:text-slate-200 cursor-pointer transition-all break-all max-w-[250px] sm:max-w-[300px] ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
-                        title={p.name}
-                      >
-                        {p.name || 'Sin nombre'}
+                  <div key={p.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-1">
+                        <span className="self-start inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[9px] font-black uppercase tracking-wider dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700/50">
+                          <span className="material-symbols-outlined text-[11px]">category</span>
+                          {p.category || 'N/A'}
+                        </span>
+                        <h4 
+                          onClick={(e) => toggleTitleExpansion(e, p.id)}
+                          className={`text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight break-all cursor-pointer transition-all ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
+                          title={p.name}
+                        >
+                          {p.name || 'Sin nombre'}
+                        </h4>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[13px]">person</span>
+                          {p.advisor || '-'}
+                        </div>
                       </div>
-                      <div className="text-xs text-slate-500 truncate max-w-[200px]">Asesor: {p.advisor || '-'}</div>
-                    </td>
-                    <td className="p-3">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-bold dark:bg-slate-800 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50">
-                        <span className="material-symbols-outlined text-[14px]">category</span>
-                        {p.category || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="p-3 align-top pt-5">
-                      <MultiEvaluatorSelector 
-                        values={p.evaluators || (p.evaluator ? [p.evaluator] : [])}
-                        evaluatorUsers={evaluatorUsers}
-                        onChange={(newEmails: string[]) => {
-                           setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluators: newEmails, evaluator: newEmails[0] || '' } : x));
-                        }}
-                        onSave={() => {}}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
 
-          {/* Mobile Card View */}
-          <div className="block sm:hidden space-y-3">
-            {draftProjects.map((p: any) => (
-              <div key={p.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm">
-                <div className="flex flex-col gap-2">
-                  <div className="flex flex-col gap-1">
-                    <span className="self-start inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[9px] font-black uppercase tracking-wider dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700/50">
-                      <span className="material-symbols-outlined text-[11px]">category</span>
-                      {p.category || 'N/A'}
-                    </span>
-                    <h4 
-                      onClick={(e) => toggleTitleExpansion(e, p.id)}
-                      className={`text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight break-all cursor-pointer transition-all ${expandedTitles.has(p.id) ? 'whitespace-normal' : 'line-clamp-2'}`} 
-                      title={p.name}
-                    >
-                      {p.name || 'Sin nombre'}
-                    </h4>
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[13px]">person</span>
-                      {p.advisor || '-'}
+                      {/* Evaluator Assignment Field */}
+                      <div className="mt-1 pt-3 border-t border-slate-100 dark:border-slate-700/50">
+                        <MultiEvaluatorSelector 
+                          values={p.evaluators || (p.evaluator ? [p.evaluator] : [])}
+                          evaluatorUsers={evaluatorUsers}
+                          onChange={(newEmails: string[]) => {
+                             setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluators: newEmails, evaluator: newEmails[0] || '' } : x));
+                          }}
+                          onSave={() => {}}
+                        />
+                      </div>
                     </div>
                   </div>
-
-                  {/* Evaluator Assignment Field */}
-                  <div className="mt-1 pt-3 border-t border-slate-100 dark:border-slate-700/50">
-                    <MultiEvaluatorSelector 
-                      values={p.evaluators || (p.evaluator ? [p.evaluator] : [])}
-                      evaluatorUsers={evaluatorUsers}
-                      onChange={(newEmails: string[]) => {
-                         setDraftProjects(prev => prev.map(x => x.id === p.id ? { ...x, evaluators: newEmails, evaluator: newEmails[0] || '' } : x));
-                      }}
-                      onSave={() => {}}
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
-        )}
-      </div>
-
-      {/* Fixed Footer at the bottom */}
-      <div className="border-t border-slate-200 dark:border-slate-800 p-4 sm:px-6 bg-white dark:bg-slate-900 flex justify-end gap-3 shrink-0 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
-        <button type="button" disabled={saving} onClick={async () => {
-           setSaving(true);
-           try {
-             const updatedSurvey = { ...survey, projects: draftProjects };
-             await dataClientNow.setSurvey(String(survey.id), updatedSurvey);
-             onSave(updatedSurvey);
-           } catch(e) { console.error(e) }
-           finally { setSaving(false); }
-        }} className="btn btn-primary px-10">
-          {saving ? <><ButtonLoader size={20} /> Guardando...</> : <><span className="material-symbols-outlined text-[20px]">save</span> Guardar Cambios</>}
-        </button>
-      </div>
       </div>
     </Modal>
   )

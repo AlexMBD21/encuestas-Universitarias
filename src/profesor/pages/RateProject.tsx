@@ -160,7 +160,7 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
   return (
     <div className="animate-in fade-in zoom-in-95 duration-200 flex flex-col flex-1 h-full min-h-0 w-full relative">
       <form onSubmit={submit} className="flex flex-col flex-1 min-h-0 relative">
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6 custom-scrollbar-sm w-full relative z-0 bg-white dark:bg-slate-900">
+        <div className="flex-1 overflow-y-auto px-6 sm:px-10 pt-6 pb-6 custom-scrollbar-sm w-full relative z-0 bg-white dark:bg-slate-900">
           <div className="mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
             <h3 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100 mb-2 leading-tight break-all" title={project.name}>{project.name || 'Proyecto sin nombre'}</h3>
         <div className="flex flex-col gap-3 mb-6">
@@ -300,10 +300,10 @@ export default function RateProject({ survey, project, onClose, onSaved, readOnl
         )}
         </div> {/* close scrollable container */}
         
-        <div className="shrink-0 p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-b-[20px] flex justify-end gap-3 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
+        <div className="shrink-0 px-6 sm:px-10 py-5 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-b-[20px] flex justify-end gap-3 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
           {!readonlyMode && (
             <button type="submit" disabled={saving || already} className="btn btn-indigo w-full sm:w-auto px-10 flex items-center justify-center gap-2 active:scale-[0.95] disabled:opacity-60 disabled:cursor-not-allowed">
-              {saving ? <><ButtonLoader size={20} /> Guardando...</> : <><span className="material-symbols-outlined text-[20px]">save</span> Guardar Calificación</>}
+              {saving ? <><ButtonLoader size={20} /> Guardando...</> : 'Guardar Calificación'}
             </button>
           )}
         </div>

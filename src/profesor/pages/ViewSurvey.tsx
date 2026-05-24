@@ -186,7 +186,7 @@ export default function ViewSurvey({ surveyId, onClose, hideCloseButton }: ViewS
     <div className={isModal ? "animate-in fade-in duration-300 flex flex-col flex-1 h-full min-h-0 w-full relative" : "bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xl shadow-slate-200/40 dark:shadow-none mb-6 animate-in fade-in zoom-in-95 duration-300 flex flex-col flex-1 h-full min-h-0 w-full relative overflow-hidden"}>
       {!isModal && <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: 'var(--color-primary)' }}></div>}
       
-      <div className={isModal ? "flex-1 px-4 sm:px-6 pt-4 sm:pt-6 pb-6 w-full relative z-0 bg-white dark:bg-slate-900" : ""}>
+      <div className={isModal ? "flex-1 overflow-y-auto px-6 sm:px-10 pt-6 pb-6 w-full relative z-0 bg-white dark:bg-slate-900 custom-scrollbar-sm" : ""}>
 
       <div className={`flex justify-between items-start pb-6 border-b border-slate-100 dark:border-slate-800 ${isModal ? 'mb-6' : 'mb-8'}`}>
         <div className="w-full">

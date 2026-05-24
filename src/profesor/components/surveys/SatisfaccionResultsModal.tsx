@@ -28,30 +28,26 @@ export function SatisfaccionResultsModal({ isOpen, onClose, surveyId, surveyTitl
   const EMOJI_LABELS = ['Muy insatisfecho', 'Insatisfecho', 'Neutral', 'Satisfecho', 'Muy satisfecho'];
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-2xl" hideMobileIndicator={true}>
-      <div className="bg-white dark:bg-slate-900 rounded-t-[2rem] sm:rounded-2xl flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden">
-        {/* Drag handle mobile */}
-        <div className="w-full flex justify-center pt-2 pb-1 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={onClose}>
-          <div className="w-12 h-1.5 rounded-full bg-slate-900/40 dark:bg-white/30"></div>
-        </div>
-
-        {/* Header */}
-        <div className="shrink-0 px-6 pt-6 sm:pt-8 pb-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <div className="flex items-center justify-between mt-4 sm:mt-0 pr-10">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-11 h-11 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm shrink-0">
-                <span className="material-symbols-outlined text-[26px]">rate_review</span>
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 truncate">Resultados de Satisfacción</h3>
-                {surveyTitle && <p className="text-xs font-medium text-slate-400 truncate">{surveyTitle}</p>}
-              </div>
-            </div>
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      maxWidth="max-w-2xl" 
+      hideMobileIndicator={true}
+      title={
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm shrink-0">
+            <span className="material-symbols-outlined text-[26px]">rate_review</span>
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight truncate">Resultados de Satisfacción</h2>
+            {surveyTitle && <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-0.5 truncate">{surveyTitle}</p>}
           </div>
         </div>
-
+      }
+    >
+      <div className="flex flex-col h-full relative overflow-hidden">
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar-sm">
+        <div className="flex-1 overflow-y-auto px-6 sm:px-10 py-6 custom-scrollbar-sm bg-white dark:bg-slate-900">
           {loading ? (
             <div className="flex items-center justify-center py-16"><Loader size={48} text="Cargando métricas..." /></div>
           ) : !results || results.respondidas === 0 ? (
@@ -232,10 +228,6 @@ export function SatisfaccionResultsModal({ isOpen, onClose, surveyId, surveyTitl
               )}
             </div>
           )}
-        </div>
-
-        <div className="shrink-0 p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-end">
-          {/* Redundant button removed in favor of Modal's premium close button */}
         </div>
       </div>
     </Modal>
