@@ -38,7 +38,13 @@ app.use(helmet({
 const allowedOrigins = [
   'http://localhost:5173',  // Servidor de desarrollo de Vite
   'http://localhost:8787',  // Puerto del backend local
+  'https://encuestas-universitarias.onrender.com', // Dominio de producción en Render
 ];
+
+// Render expone automáticamente RENDER_EXTERNAL_URL con el dominio del servicio
+if (process.env.RENDER_EXTERNAL_URL) {
+  allowedOrigins.push(process.env.RENDER_EXTERNAL_URL);
+}
 
 if (process.env.ALLOWED_ORIGINS) {
   const envOrigins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
