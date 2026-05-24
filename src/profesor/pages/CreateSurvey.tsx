@@ -4,6 +4,7 @@ import '../styles/dashboard-profesor.css'
 import AuthAdapter from '../../services/AuthAdapter'
 import supabaseClient from '../../services/supabaseClient'
 import { Modal } from '../../components/ui/Modal'
+import { Dropdown } from '../../components/ui/Dropdown'
 import ButtonLoader from '../../components/ButtonLoader'
 
 type CreateSurveyProps = {
@@ -287,16 +288,20 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
       <form id="create-survey-form" onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0">
         <div className={isModal ? 'flex-1 overflow-y-auto custom-scrollbar px-6 sm:px-10 pt-6 pb-6 relative z-0 bg-white dark:bg-slate-900' : ''}>
         {!hideTypeSelector && (
-          <div className="mb-6">
+          <div className="mb-6 w-full flex flex-col">
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Formato de la Encuesta</label>
-            <div className="relative">
-              <select value={surveyType} onChange={e => setSurveyType(e.target.value as any)} className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-800 font-medium rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 transition-shadow">
-                <option value="simple">Encuesta de Opinión (Preguntas, escalas y calificaciones)</option>
-                <option value="project">Proyecto Avanzado (Rúbricas y equipos)</option>
-              </select>
-              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 flex items-center text-slate-400">
-                <span className="material-symbols-outlined text-[20px] select-none">expand_more</span>
-              </div>
+            <div className="w-full [&>div]:w-full [&_button]:!w-full [&_button]:!py-3 [&_button]:!px-4 [&_button]:!text-base">
+              <Dropdown
+                value={surveyType}
+                onChange={val => setSurveyType(val as any)}
+                label="Selecciona un formato"
+                icon="view_list"
+                color="slate"
+                options={[
+                  { id: 'simple', label: 'Encuesta de Opinión (Preguntas, escalas y calificaciones)', color: 'emerald', icon: 'assignment' },
+                  { id: 'project', label: 'Proyecto Avanzado (Rúbricas y equipos)', color: 'indigo', icon: 'engineering' }
+                ]}
+              />
             </div>
           </div>
         )}
@@ -314,7 +319,7 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
         {surveyType === 'simple' ? (
           <div className="mb-4">
             <div className="flex flex-col gap-1 mb-6 mt-6 border-b border-slate-100 dark:border-slate-800 pb-4">
-               <label className="block text-xl font-bold text-slate-800 dark:text-slate-100">Batería de Preguntas</label>
+               <label className="block text-xl font-bold text-slate-800 dark:text-slate-100">Batería de Preguntas <span className="text-red-500">*</span></label>
                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                  Agrega y diseña las preguntas de tu encuesta. Puedes usar formatos de texto, opción múltiple o escalas de calificación.
                </p>
@@ -329,18 +334,24 @@ export default function CreateSurvey({ onClose, editSurvey, onSaved, hideTypeSel
                       <div className="flex-1 min-w-0 w-full">
                         <input className="w-full bg-transparent border-b border-slate-200 dark:border-slate-700 sm:border-transparent hover:border-slate-300 focus:border-blue-500 text-slate-800 text-base sm:text-sm font-medium px-2 py-2 sm:py-1.5 outline-none dark:text-slate-100 transition-all placeholder:text-slate-400" value={q.text} onChange={e => setQuestionText(q.id, e.target.value)} placeholder={`Pregunta ${i + 1}`} />
                       </div>
-                      <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
-                        <div className="relative bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 flex-1 sm:flex-none">
-                          <select value={q.type} onChange={e => setQuestionType(q.id, e.target.value as any)} className="w-full appearance-none bg-transparent pl-3 pr-10 py-2 sm:py-1.5 text-sm sm:text-xs font-semibold text-slate-600 dark:text-slate-300 outline-none cursor-pointer">
-                            <option value="text">Texto Libre</option>
-                            <option value="multiple">Opción Múltiple</option>
-                            <option value="emoji">Escala Emojis</option>
-                            <option value="nps">Escala Numérica (NPS)</option>
-                          </select>
-                          <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[16px] select-none">expand_more</span>
+                      <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto mt-2 sm:mt-0 pt-2 sm:pt-0 border-t border-slate-100 sm:border-t-0 dark:border-slate-800">
+                        <div className="shrink-0 w-[180px] sm:w-[200px] border-l border-slate-200 dark:border-slate-700/50 pl-2 [&>div]:w-full [&_button]:!w-full [&_button]:!py-1.5 [&_button]:!px-2 [&_button]:!text-xs">
+                          <Dropdown
+                            value={q.type}
+                            onChange={(val) => setQuestionType(q.id, val as any)}
+                            label="Tipo"
+                            icon="tune"
+                            color="slate"
+                            options={[
+                              { id: 'text', label: 'Texto Libre' },
+                              { id: 'multiple', label: 'Opción Múltiple' },
+                              { id: 'emoji', label: 'Escala Emojis' },
+                              { id: 'nps', label: 'Escala Numérica' }
+                            ]}
+                          />
                         </div>
-                        <button type="button" onClick={() => removeQuestion(q.id)} className="text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-2 sm:p-1.5 rounded-lg transition-colors flex shrink-0" title="Eliminar pregunta">
-                          <span className="material-symbols-outlined text-[20px] sm:text-[18px]">delete</span>
+                        <button type="button" onClick={() => removeQuestion(q.id)} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors shrink-0" title="Eliminar pregunta">
+                          <span className="material-symbols-outlined text-[18px]">delete</span>
                         </button>
                       </div>
                     </div>

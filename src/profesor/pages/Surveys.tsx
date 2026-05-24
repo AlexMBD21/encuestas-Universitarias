@@ -425,15 +425,9 @@ export default function Surveys(): JSX.Element {
           <div id="surveys-header-buttons" className="flex gap-3 shrink-0 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
             <button type="button" onClick={() => {
               if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
-              handleCreate()
-            }} className={`btn btn-emerald ${!backendEnabled ? 'opacity-50 grayscale cursor-not-allowed' : ''}`} disabled={!backendEnabled}>
-              <span className="material-symbols-outlined text-[18px]">add_circle</span> <span className="hidden sm:inline">Nueva</span> Opinión
-            </button>
-            <button type="button" onClick={() => {
-              if (!backendEnabled) { setToastMessage('No se puede crear: no hay servicio de datos configurado.'); setTimeout(() => setToastMessage(null), 3000); return }
-              setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true)
-            }} className={`btn btn-indigo ${!backendEnabled ? 'opacity-50 grayscale cursor-not-allowed' : ''}`} disabled={!backendEnabled}>
-              <span className="material-symbols-outlined text-[18px]">fact_check</span> <span className="hidden sm:inline">Calificar</span> Proyecto
+              setEditSurvey(null); setCreateInitialType('simple'); setCreateModalOpen(true)
+            }} className={`btn btn-primary px-6 ${!backendEnabled ? 'opacity-50 grayscale cursor-not-allowed' : ''}`} disabled={!backendEnabled}>
+              <span className="material-symbols-outlined text-[18px]">add_circle</span> Nueva Encuesta
             </button>
           </div>
         </div>
@@ -579,11 +573,8 @@ export default function Surveys(): JSX.Element {
                 Comienza a recopilar información valiosa. Crea tu primera campaña, ya sea una encuesta de opinión para recabar percepciones o un proyecto de calificación avanzada.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
-                <button type="button" onClick={() => handleCreate()} className="btn btn-emerald px-6">
-                  <span className="material-symbols-outlined text-lg">add_circle</span> Encuesta de Opinión
-                </button>
-                <button type="button" onClick={() => { setEditSurvey(null); setCreateInitialType('project'); setCreateModalOpen(true) }} className="btn btn-indigo px-6">
-                  <span className="material-symbols-outlined text-lg">fact_check</span> Proyecto
+                <button type="button" onClick={() => { setEditSurvey(null); setCreateInitialType('simple'); setCreateModalOpen(true) }} className="btn btn-primary px-6">
+                  <span className="material-symbols-outlined text-lg">add_circle</span> Nueva Encuesta
                 </button>
               </div>
             </div>

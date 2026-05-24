@@ -51,7 +51,26 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Configurar Impresión" maxWidth="max-w-lg" scrollableBody={false} noHeaderShadow>
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title="Configurar Impresión" 
+      maxWidth="max-w-lg" 
+      scrollableBody={false}
+      noHeaderShadow={true}
+      footer={
+        <div className="w-full flex justify-end">
+          <button 
+            type="button" 
+            onClick={() => onPrint(config)}
+            className="btn btn-primary w-full sm:w-auto px-10"
+          >
+            <span className="material-symbols-outlined text-[20px]">print</span> 
+            Generar PDF
+          </button>
+        </div>
+      }
+    >
       <div className="flex flex-col flex-1 min-h-0">
         <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-2 shrink-0 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
           {/* Helper alert */}
@@ -135,19 +154,6 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
           />
         </div>
 
-        </div>
-        {/* Footer estático igual al de Categorías */}
-        <div className="flex justify-end gap-3 px-5 py-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0 rounded-b-[1.5rem] relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
-          <button 
-            type="button" 
-            onClick={() => {
-              onPrint(config);
-            }}
-            className="btn btn-primary w-full sm:w-auto px-10"
-          >
-            <span className="material-symbols-outlined text-[20px]">print</span> 
-            Generar PDF
-          </button>
         </div>
       </div>
     </Modal>

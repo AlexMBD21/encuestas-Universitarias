@@ -12,11 +12,12 @@ export interface ModalProps {
   scrollableBody?: boolean;
   hideCloseButton?: boolean;
   noHeaderShadow?: boolean;
+  noFooterShadow?: boolean;
   closeButtonVariant?: 'default' | 'premium';
   footer?: React.ReactNode;
 }
 
-export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true, hideCloseButton = false, noHeaderShadow = false, closeButtonVariant = 'premium', footer }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true, hideCloseButton = false, noHeaderShadow = false, noFooterShadow = false, closeButtonVariant = 'premium', footer }: ModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosingBtn, setIsClosingBtn] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -137,38 +138,34 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
       >
         {/* Mobile Drag Indicator */}
         {!hideMobileIndicator && (
-          <div className="w-full flex justify-center py-4 sm:hidden shrink-0 touch-none active:bg-slate-50 dark:active:bg-slate-800 transition-colors" onClick={handleClose}>
-            <div className="w-12 h-1.5 bg-slate-900/40 dark:bg-white/30 rounded-full" />
+          <div className="w-full flex justify-center py-4 sm:hidden shrink-0 touch-none bg-[#0d1425] active:bg-[#1a233a] transition-colors" onClick={handleClose}>
+            <div className="w-12 h-1.5 bg-white/30 rounded-full" />
           </div>
         )}
 
         {/* Header */}
         {(title || !hideCloseButton) && (
-          <div className={`flex items-center px-6 sm:px-10 py-5 border-b border-transparent shrink-0 bg-[#0d1425] relative z-10 ${noHeaderShadow ? '' : 'shadow-[0_8px_20px_-4px_rgba(13,20,37,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_1px_0_0_rgba(255,255,255,0.05),inset_-1px_0_0_rgba(255,255,255,0.05)]'} min-h-[60px] sm:min-h-[72px]`}>
+          <div className={`flex items-center justify-between px-6 sm:px-10 py-5 sm:py-6 border-b border-transparent shrink-0 bg-[#0d1425] relative z-10 ${noHeaderShadow ? '' : 'shadow-[0_8px_20px_-4px_rgba(13,20,37,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_1px_0_0_rgba(255,255,255,0.05),inset_-1px_0_0_rgba(255,255,255,0.05)]'} min-h-[60px] sm:min-h-[80px]`}>
             {title && (
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight pr-12 drop-shadow-sm">
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-sm m-0 leading-none">
                 {title}
               </h2>
             )}
+            
+            {!hideCloseButton && (
+              <button 
+                type="button"
+                onClick={handleClose} 
+                className={`ml-auto z-[60] flex shrink-0 w-10 h-10 items-center justify-center rounded-full transition-all duration-300 border border-white/20 group bg-white/10 text-white outline-none -mr-2 sm:-mr-4
+                  ${isClosingBtn 
+                    ? 'scale-0 rotate-[360deg] shadow-none opacity-0' 
+                    : 'shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-red-500 hover:border-red-400 hover:shadow-[0_4px_20px_rgba(239,68,68,0.4)] hover:scale-110 active:scale-95 active:bg-red-600 ring-0 hover:ring-4 ring-red-500/30'}`}
+                aria-label="Cerrar"
+              >
+                <span className="material-symbols-outlined text-[22px] transition-transform duration-300 group-hover:rotate-90">close</span>
+              </button>
+            )}
           </div>
-        )}
-
-        {/* Close Button - Absolute Positioned */}
-        {!hideCloseButton && (
-          <button 
-            type="button"
-            onClick={handleClose} 
-            className={`absolute top-3 right-3 sm:top-4 sm:right-8 z-[60] flex w-10 h-10 items-center justify-center rounded-full transition-all duration-500 border border-white/20 group bg-white/10 hover:bg-white/25 backdrop-blur-md text-white outline-none
-              ${isClosingBtn 
-                ? 'scale-0 rotate-[360deg] shadow-none opacity-0' 
-                : 'shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_8px_20px_rgba(255,255,255,0.25)] hover:-translate-y-1 hover:scale-110 active:scale-90 active:translate-y-0 ring-0 hover:ring-4 ring-white/20'}`}
-            aria-label="Cerrar"
-          >
-            <span className={`material-symbols-outlined text-[20px] transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-              ${isClosingBtn ? 'rotate-[720deg] scale-50' : 'group-hover:rotate-180 group-active:scale-75'}`}>
-              close
-            </span>
-          </button>
         )}
 
         {/* Body content */}
@@ -178,7 +175,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end px-6 sm:px-10 py-5 border-t border-blue-100/50 dark:border-slate-800 shrink-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md relative z-10 shadow-[0_-8px_20px_-4px_rgba(59,130,246,0.06)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.3)]">
+          <div className={`flex items-center justify-end px-6 sm:px-10 py-5 border-t border-slate-200/60 dark:border-slate-800 shrink-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md relative z-10 ${noFooterShadow ? '' : 'shadow-[0_-8px_24px_-4px_rgba(0,0,0,0.12)] dark:shadow-[0_-8px_24px_-4px_rgba(0,0,0,0.4)]'}`}>
             {footer}
           </div>
         )}
