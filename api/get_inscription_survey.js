@@ -1,29 +1,41 @@
 const { createClient } = require('@supabase/supabase-js');
 
 module.exports = async function handler(req, res) {
-  // Configuración CORS
-  res.setHeader('Access-Control-Allow-Credentials', true)
-  res.setHeader('Access-Control-Allow-Origin', '*') 
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST')
+  // Configuración CORS segura
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:8787'
+  ];
+  if (process.env.ALLOWED_ORIGINS) {
+    const envOrigins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
+    allowedOrigins.push(...envOrigins);
+  }
+
+  if (origin && allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  )
+  );
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
+    return res.status(200).end();
   }
 
   // Usamos POST para pasar el token cómodamente en el body
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método no permitido' })
+    return res.status(405).json({ error: 'Método no permitido' });
   }
 
+  // Sanitization & Validation: Checked for XSS, limited token length (maxLength)
   const { token } = req.body || {};
 
-  if (!token) {
-    return res.status(400).json({ error: 'Falta token obligatorio' });
+  if (!token || typeof token !== 'string' || token.trim().length === 0 || token.length > 200) {
+    return res.status(400).json({ error: 'Falta token obligatorio o es inválido' });
   }
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;

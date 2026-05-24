@@ -1,30 +1,54 @@
 const { createClient } = require('@supabase/supabase-js');
 
 module.exports = async function handler(req, res) {
-  // Configuración CORS
-  res.setHeader('Access-Control-Allow-Credentials', true)
-  res.setHeader('Access-Control-Allow-Origin', '*') // O un origen específico en prod
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
+  // Configuración CORS segura
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:8787'
+  ];
+  if (process.env.ALLOWED_ORIGINS) {
+    const envOrigins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
+    allowedOrigins.push(...envOrigins);
+  }
+
+  if (origin && allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  )
+  );
 
   // Manejar OPTIONS para CORS
   if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
+    return res.status(200).end();
   }
 
   // Solo permitir POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método no permitido' })
+    return res.status(405).json({ error: 'Método no permitido' });
   }
 
-  const { token, projectData } = req.body;
+  const { token, projectData } = req.body || {};
 
-  if (!token || !projectData) {
-    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  if (!token || typeof token !== 'string' || token.trim().length === 0 || token.length > 200) {
+    return res.status(400).json({ error: 'Falta token obligatorio o es inválido' });
+  }
+
+  if (!projectData || typeof projectData !== 'object') {
+    return res.status(400).json({ error: 'Datos del proyecto no válidos' });
+  }
+
+  if (!projectData.name || typeof projectData.name !== 'string' || projectData.name.trim().length === 0) {
+    return res.status(400).json({ error: 'El nombre del proyecto es obligatorio' });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (projectData.email && !emailRegex.test(String(projectData.email).trim())) {
+    return res.status(400).json({ error: 'El correo electrónico no es válido' });
   }
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -40,7 +64,7 @@ module.exports = async function handler(req, res) {
     // 1. Encontrar la encuesta por token (ignorando RLS con el Service Role)
     const { data: surveys, error: findError } = await supabaseAdmin
       .from('surveys')
-      .select('*')
+      .select('id, title, link_token, linkToken, link_expires_at, linkExpiresAt, projects')
       // Buscamos primero en el JSON. Al haber estado cambiando entre snake y camelCase...
       // Hacemos un select exhaustivo y filtramos en backend
       .limit(100);
@@ -81,14 +105,50 @@ module.exports = async function handler(req, res) {
       }
     }
 
+    // Helper function to escape HTML characters (mitigates XSS)
+    function escapeHTML(str) {
+      if (typeof str !== 'string') return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Escape and limit string lengths for Supabase persistence
+    const escapedName = escapeHTML((projectData.name || '').trim()).substring(0, 150);
+    const escapedDescription = escapeHTML((projectData.description || '').trim()).substring(0, 1000);
+    const escapedAdvisor = escapeHTML((projectData.advisor || '').trim()).substring(0, 150);
+    const escapedCategory = escapeHTML((projectData.category || '').trim()).substring(0, 100);
+    const escapedEmail = escapeHTML((projectData.email || '').trim().toLowerCase()).substring(0, 150);
+
+    let escapedMembers = '';
+    if (typeof projectData.members === 'string') {
+      escapedMembers = escapeHTML(projectData.members.trim()).substring(0, 500);
+    } else if (Array.isArray(projectData.members)) {
+      escapedMembers = projectData.members.map(m => {
+        if (typeof m === 'string') return escapeHTML(m.trim()).substring(0, 150);
+        if (m && typeof m === 'object') {
+          return {
+            name: escapeHTML((m.name || '').trim()).substring(0, 150),
+            rol: escapeHTML((m.rol || '').trim()).substring(0, 100)
+          };
+        }
+        return '';
+      }).filter(Boolean);
+    } else {
+      escapedMembers = escapeHTML(String(projectData.members || '')).substring(0, 500);
+    }
+
     const newProject = {
       id: `p_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
-      name: projectData.name,
-      description: projectData.description || '',
-      category: projectData.category,
-      members: projectData.members,
-      advisor: projectData.advisor || '',
-      contact_email: (projectData.email || '').trim().toLowerCase()
+      name: escapedName,
+      description: escapedDescription,
+      category: escapedCategory,
+      members: escapedMembers,
+      advisor: escapedAdvisor,
+      contact_email: escapedEmail
     };
 
     const updatedProjects = [...currentProjects, newProject];

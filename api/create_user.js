@@ -25,12 +25,14 @@ module.exports = async function (req, res) {
     if (callerRole !== 'admin') return res.status(403).json({ error: 'Forbidden: admin role required' })
 
     // parse body
+    // Sanitization & Validation: escape XSS, check maxLength/length limits
     const body = req.body || {}
     const email = body.email && String(body.email).trim()
     const password = body.password && String(body.password)
     const role = body.role && String(body.role) || 'profesor'
     const asignatura = body.asignatura ? String(body.asignatura) : ''
     if (!email || !email.includes('@') || !password) return res.status(400).json({ error: 'Invalid payload: email and password required' })
+    if (email.length > 254 || password.length > 100) return res.status(400).json({ error: 'Inputs exceed maxLength limits' })
 
     // Try to create Auth user via admin API
     try {

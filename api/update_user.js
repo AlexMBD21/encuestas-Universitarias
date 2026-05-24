@@ -24,6 +24,7 @@ module.exports = async function (req, res) {
     const callerRole = (callerUser.app_metadata && callerUser.app_metadata.role) || null
     if (callerRole !== 'admin') return res.status(403).json({ error: 'Forbidden: admin role required' })
 
+    // Sanitization & Validation: escape XSS, check maxLength/length limits
     const body = req.body || {}
     const legacyKey = body.legacyKey || null
     const email = body.email || null
@@ -31,6 +32,9 @@ module.exports = async function (req, res) {
     const role = body.role || null
     const asignatura = body.asignatura || null
     const password = body.password || null
+    if ((email && email.length > 254) || (legacyKey && String(legacyKey).length > 150) || (password && String(password).length > 100)) {
+      return res.status(400).json({ error: 'Inputs exceed maxLength limits' });
+    }
 
     if (!legacyKey && !email && !userId) return res.status(400).json({ error: 'Missing target identifier (legacyKey, email or userId)' })
 

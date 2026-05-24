@@ -9,12 +9,15 @@
     "dev:all": "concurrently -k \"npm run dev\" \"npm run dev:functions\"",
     "build": "vite build",
     "preview": "vite preview",
-    "create-admin": "node backend/scripts/create_admin_user.js"
+    "create-admin": "node backend/scripts/create_admin_user.js",
+    "security-scan": "node security-qa-scan.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.9.6",

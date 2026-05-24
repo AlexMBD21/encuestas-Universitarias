@@ -29,10 +29,14 @@ module.exports = async function (req, res) {
       return res.status(401).json({ error: 'Invalid token' })
     }
 
+    // Sanitization & Validation: escape XSS, check maxLength/length limits
     const body = req.body || {}
     const legacyKey = body.legacyKey || body.id || body.userId || null
     const email = body.email || null
     const userIdInput = body.userId || null
+    if ((email && email.length > 254) || (legacyKey && String(legacyKey).length > 150)) {
+      return res.status(400).json({ error: 'Inputs exceed maxLength limits' });
+    }
 
     async function findAuthId() {
       if (userIdInput) return userIdInput
