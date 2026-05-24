@@ -20,6 +20,7 @@ export interface ModalProps {
 export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl', fullHeightOnMobile = false, hideMobileIndicator = false, scrollableBody = true, hideCloseButton = false, noHeaderShadow = false, noFooterShadow = false, closeButtonVariant = 'premium', footer }: ModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosingBtn, setIsClosingBtn] = useState(false);
+  const [isCloseBtnTouched, setIsCloseBtnTouched] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const [pullDownY, setPullDownY] = useState(0);
   const touchStartRef = useRef({ y: 0, scrollY: 0 });
@@ -156,13 +157,24 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
               <button 
                 type="button"
                 onClick={handleClose} 
-                className={`ml-auto z-[60] flex shrink-0 w-10 h-10 items-center justify-center rounded-full transition-all duration-300 border border-white/20 group bg-white/10 text-white outline-none -mr-2 sm:-mr-4
+                onTouchStart={() => setIsCloseBtnTouched(true)}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  // Mantener el rojo visible brevemente antes de cerrar
+                  setTimeout(() => {
+                    setIsCloseBtnTouched(false);
+                    handleClose();
+                  }, 150);
+                }}
+                className={`ml-auto z-[60] flex shrink-0 w-10 h-10 items-center justify-center rounded-full transition-all duration-300 border group outline-none -mr-2 sm:-mr-4
                   ${isClosingBtn 
-                    ? 'scale-0 rotate-[360deg] shadow-none opacity-0' 
-                    : 'shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-red-500 hover:border-red-400 hover:shadow-[0_4px_20px_rgba(239,68,68,0.4)] hover:scale-110 active:scale-95 active:bg-red-600 ring-0 hover:ring-4 ring-red-500/30'}`}
+                    ? 'scale-0 rotate-[360deg] shadow-none opacity-0 bg-white/10 border-white/20 text-white' 
+                    : isCloseBtnTouched
+                      ? 'bg-red-500 border-red-400 shadow-[0_4px_20px_rgba(239,68,68,0.5)] scale-110 text-white ring-4 ring-red-500/30'
+                      : 'bg-white/10 border-white/20 text-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-red-500 hover:border-red-400 hover:shadow-[0_4px_20px_rgba(239,68,68,0.4)] hover:scale-110 active:scale-95 active:bg-red-600 ring-0 hover:ring-4 ring-red-500/30'}`}
                 aria-label="Cerrar"
               >
-                <span className="material-symbols-outlined text-[22px] transition-transform duration-300 group-hover:rotate-90">close</span>
+                <span className={`material-symbols-outlined text-[22px] transition-transform duration-300 group-hover:rotate-90 ${isCloseBtnTouched ? 'rotate-90' : ''}`}>close</span>
               </button>
             )}
           </div>
