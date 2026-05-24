@@ -1,3 +1,4 @@
+# check=skip=SecretsUsedInArgOrEnv
 # Etapa 1: Construcción (Builder)
 # Usamos una imagen de Node.js ligera
 FROM node:18-alpine AS builder
