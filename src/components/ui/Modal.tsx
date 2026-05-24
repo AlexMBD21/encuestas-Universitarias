@@ -109,7 +109,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
     <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 perspective-1000">
       {/* Backdrop */}
       <div 
-        className={`absolute inset-0 bg-slate-900/60 dark:bg-slate-950/80 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 bg-slate-900/40 dark:bg-slate-950/70 backdrop-blur-sm transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
         onClick={handleClose}
       />
       
@@ -118,7 +118,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
         ref={modalRef}
         className={`relative w-full ${resolvedWidthClass} bg-white dark:bg-slate-900 
           ${fullHeightOnMobile ? 'h-[90vh] sm:h-auto sm:max-h-[85vh]' : 'max-h-[90vh]'} 
-          rounded-t-[20px] sm:rounded-[20px] shadow-2xl flex flex-col overflow-hidden 
+          rounded-t-[20px] sm:rounded-[20px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border border-white/60 dark:border-white/20 flex flex-col overflow-hidden 
           transition-all duration-300 ease-[cubic-bezier(0.2,0.9,0.3,1.1)]
           ${isVisible ? 'translate-y-0 opacity-100 sm:scale-100' : 'translate-y-full opacity-0 sm:translate-y-8 sm:scale-95'}`}
         style={{
@@ -144,9 +144,9 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
 
         {/* Header */}
         {(title || !hideCloseButton) && (
-          <div className={`flex items-center px-6 sm:px-10 py-5 border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 relative z-10 ${noHeaderShadow ? '' : 'shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]'} min-h-[60px] sm:min-h-[72px]`}>
+          <div className={`flex items-center px-6 sm:px-10 py-5 border-b border-transparent shrink-0 bg-[#0d1425] relative z-10 ${noHeaderShadow ? '' : 'shadow-[0_8px_20px_-4px_rgba(13,20,37,0.4),inset_0_1px_0_rgba(255,255,255,0.15),inset_1px_0_0_rgba(255,255,255,0.05),inset_-1px_0_0_rgba(255,255,255,0.05)]'} min-h-[60px] sm:min-h-[72px]`}>
             {title && (
-              <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight pr-12">
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight pr-12 drop-shadow-sm">
                 {title}
               </h2>
             )}
@@ -158,10 +158,10 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
           <button 
             type="button"
             onClick={handleClose} 
-            className={`absolute top-3 right-3 sm:top-4 sm:right-8 z-[60] flex w-10 h-10 items-center justify-center rounded-full transition-all duration-500 border border-white/30 group bg-red-500 text-white outline-none
+            className={`absolute top-3 right-3 sm:top-4 sm:right-8 z-[60] flex w-10 h-10 items-center justify-center rounded-full transition-all duration-500 border border-white/20 group bg-white/10 hover:bg-white/25 backdrop-blur-md text-white outline-none
               ${isClosingBtn 
                 ? 'scale-0 rotate-[360deg] shadow-none opacity-0' 
-                : 'shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_20px_rgba(239,68,68,0.4)] hover:-translate-y-1 hover:scale-110 active:scale-90 active:translate-y-0 ring-0 hover:ring-4 ring-red-500/20'}`}
+                : 'shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_8px_20px_rgba(255,255,255,0.25)] hover:-translate-y-1 hover:scale-110 active:scale-90 active:translate-y-0 ring-0 hover:ring-4 ring-white/20'}`}
             aria-label="Cerrar"
           >
             <span className={`material-symbols-outlined text-[20px] transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]
@@ -172,13 +172,13 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
         )}
 
         {/* Body content */}
-        <div className={`flex-1 min-h-0 flex flex-col ${scrollableBody ? 'overflow-y-auto overscroll-contain modal-scrollable-content bg-slate-50 dark:bg-slate-900/50' : 'overflow-hidden bg-white dark:bg-slate-900'}`}>
+        <div className={`flex-1 min-h-0 flex flex-col ${scrollableBody ? 'overflow-y-auto overscroll-contain modal-scrollable-content bg-gradient-to-b from-blue-50/50 to-slate-50 dark:from-slate-900 dark:to-slate-900/50' : 'overflow-hidden bg-gradient-to-b from-blue-50/50 to-slate-50 dark:from-slate-900 dark:to-slate-900/50'}`}>
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end px-6 sm:px-10 py-5 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900 relative z-10 shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.45)]">
+          <div className="flex items-center justify-end px-6 sm:px-10 py-5 border-t border-blue-100/50 dark:border-slate-800 shrink-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md relative z-10 shadow-[0_-8px_20px_-4px_rgba(59,130,246,0.06)] dark:shadow-[0_-8px_20px_-4px_rgba(0,0,0,0.3)]">
             {footer}
           </div>
         )}
