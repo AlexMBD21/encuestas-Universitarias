@@ -1021,7 +1021,7 @@ export default function Dashboard() {
         <div className="absolute top-[20%] right-[-10%] w-[60vw] max-w-[600px] h-[600px] bg-emerald-500/5 dark:bg-emerald-600/15 rounded-full blur-[120px]"></div>
       </div>
       {/* Welcome Section */}
-      <div className="flex flex-wrap justify-between items-start gap-3 px-4 py-0.5 relative z-10 dash-animate dash-delay-0">
+      <div className="flex flex-wrap justify-between items-start gap-3 pl-8 pr-4 md:pl-10 py-0.5 relative z-10 dash-animate dash-delay-0">
         <div>
           <h1 className="text-slate-900 dark:text-slate-50 text-2xl md:text-3xl font-black leading-tight tracking-[-0.033em] mb-1">
             {profileName ? (
@@ -1065,7 +1065,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-2 overflow-hidden border border-slate-200/50 dark:border-slate-700/50 group">
-                    <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-1000 ease-out group-hover:opacity-80" 
+                    <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-1000 ease-out group-hover:opacity-80 stat-progress-fill" 
                          style={{ width: `${activeCount > 0 ? (myActiveCount/activeCount)*100 : 0}%` }}></div>
                   </div>
                 </div>
@@ -1088,7 +1088,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
-                    <div className="h-full rounded-full bg-gradient-to-r from-slate-400 to-slate-600 dark:from-slate-500 dark:to-slate-300 transition-all duration-1000 ease-out w-full opacity-60"></div>
+                    <div className="h-full rounded-full bg-gradient-to-r from-slate-400 to-slate-600 dark:from-slate-500 dark:to-slate-300 transition-all duration-1000 ease-out w-full opacity-60 stat-progress-fill"></div>
                   </div>
                 </div>
                 <div className="flex flex-col w-full">
@@ -1099,7 +1099,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
-                    <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000 ease-out" 
+                    <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000 ease-out stat-progress-fill" 
                          style={{ width: `${surveyResponseSurveyCounts.total > 0 ? (surveyResponseSurveyCounts.mine/surveyResponseSurveyCounts.total)*100 : 0}%` }}></div>
                   </div>
                 </div>
@@ -1122,7 +1122,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
-                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-1000 ease-out" 
+                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-1000 ease-out stat-progress-fill" 
                          style={{ width: `${surveyResponseSurveyCounts.total > 0 ? (surveyResponseSurveyCounts.simple/surveyResponseSurveyCounts.total)*100 : 0}%` }}></div>
                   </div>
                 </div>
@@ -1134,7 +1134,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
-                    <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-indigo-400 transition-all duration-1000 ease-out" 
+                    <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-indigo-400 transition-all duration-1000 ease-out stat-progress-fill" 
                          style={{ width: `${surveyResponseSurveyCounts.total > 0 ? (surveyResponseSurveyCounts.project/surveyResponseSurveyCounts.total)*100 : 0}%` }}></div>
                   </div>
                 </div>
