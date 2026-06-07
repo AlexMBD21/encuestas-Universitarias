@@ -53,10 +53,11 @@ const CardNotchBg = () => {
     return <div ref={containerRef} className="absolute inset-0 pointer-events-none" style={{ zIndex: -1 }} />;
   }
 
-  const R = 24;     // Card corner radius
-  const NW = Math.min(164, W - 48);   // Notch width dynamically capped
-  const NH = 48;    // Notch height
-  const Rn = Math.min(16, (W - NW) / 2);    // Notch inner/outer radius dynamically capped
+  const isMobileWidth = W < 450;
+  const R = isMobileWidth ? 20 : 24;     // Card corner radius
+  const NW = isMobileWidth ? Math.min(115, W - 32) : Math.min(164, W - 48);   // Notch width dynamically capped
+  const NH = isMobileWidth ? 36 : 48;    // Notch height
+  const Rn = isMobileWidth ? Math.min(10, (W - NW) / 2) : Math.min(16, (W - NW) / 2);    // Notch inner/outer radius dynamically capped
 
   const path = `
     M ${R},0
