@@ -12,6 +12,117 @@ import { DashboardStatCardsSkeleton, DashboardNoticesSkeleton } from '../../comp
 import { getSatisfaccionResultsBySurveyId } from '../../services/satisfaccion.service'
 import ScrollFloatingButton from '../components/ScrollFloatingButton'
 
+/** 
+ * Background layer for stat-cards: creates the S-curve notch in the top-right corner.
+ * Uses two overlapping divs instead of SVG for maximum browser compatibility.
+ * 
+ * Structure:
+ *  - A base rounded-rect div (the card background with border)
+ *  - A "notch eraser" div positioned at the top-right that covers the corner,
+ *    painted with the page background color so it looks like a cutout
+ *  - A small curved connector div that creates the smooth S-curve transition
+ */
+const CardNotchBg = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    // Measure initial size
+    const rect = el.getBoundingClientRect();
+    setDimensions({ width: rect.width, height: rect.height });
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setDimensions({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        });
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const { width: W, height: H } = dimensions;
+
+  // Render a simple fallback background while measuring
+  if (W === 0 || H === 0) {
+    return <div ref={containerRef} className="absolute inset-0 pointer-events-none" style={{ zIndex: -1 }} />;
+  }
+
+  const R = 24;     // Card corner radius
+  const NW = Math.min(164, W - 48);   // Notch width dynamically capped
+  const NH = 48;    // Notch height
+  const Rn = Math.min(16, (W - NW) / 2);    // Notch inner/outer radius dynamically capped
+
+  const path = `
+    M ${R},0
+    L ${W - NW - Rn},0
+    A ${Rn},${Rn} 0 0,1 ${W - NW},${Rn}
+    L ${W - NW},${NH - Rn}
+    A ${Rn},${Rn} 0 0,0 ${W - NW + Rn},${NH}
+    L ${W - Rn},${NH}
+    A ${Rn},${Rn} 0 0,1 ${W},${NH + Rn}
+    L ${W},${H - R}
+    A ${R},${R} 0 0,1 ${W - R},${H}
+    L ${R},${H}
+    A ${R},${R} 0 0,1 0,${H - R}
+    L 0,${R}
+    A ${R},${R} 0 0,1 ${R},0
+    Z
+  `;
+
+  // Path for the top accent line that matches the top-left rounded corner and the S-curve down into the notch
+  const accentPath = `
+    M 0,${R}
+    A ${R},${R} 0 0,1 ${R},0
+    L ${W - NW - Rn},0
+    A ${Rn},${Rn} 0 0,1 ${W - NW},${Rn}
+    L ${W - NW},${NH - Rn}
+    A ${Rn},${Rn} 0 0,0 ${W - NW + Rn},${NH}
+  `;
+
+  return (
+    <div ref={containerRef} className="absolute inset-0 pointer-events-none stat-card-bg-layer" style={{ zIndex: -1 }}>
+      <svg 
+        width="100%" 
+        height="100%" 
+        viewBox={`-2 -2 ${W + 4} ${H + 4}`}
+        fill="none" 
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ overflow: 'visible' }}
+      >
+        <defs>
+          <linearGradient id="accent-gradient" x1="0" y1="0" x2={W - NW + Rn} y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="transparent" />
+            <stop offset="15%" stopColor="#1e293b" />
+            <stop offset="50%" stopColor="#3b82f6" />
+            <stop offset="85%" stopColor="#1e293b" />
+            <stop offset="100%" stopColor="transparent" />
+          </linearGradient>
+        </defs>
+        <path
+          d={path}
+          fill="var(--card-bg, #ffffff)"
+          stroke="var(--card-border, #e2e8f0)"
+          strokeWidth="1.5"
+        />
+        <path
+          d={accentPath}
+          stroke="url(#accent-gradient)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </svg>
+    </div>
+  );
+};
+
+
 export default function Dashboard() {
   const navigate = useNavigate()
   const [showDebugPanel, setShowDebugPanel] = useState<boolean>(() => {
@@ -926,7 +1037,7 @@ export default function Dashboard() {
 
       {/* Stats Cards */}
       <div className="px-4 pt-2 dash-animate dash-delay-1">
-        <div className="bg-white/90 dark:bg-slate-900/90 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 md:p-10 shadow-lg transition-shadow duration-300 w-full max-w-full">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 md:p-10 shadow-lg transition-shadow duration-300 w-full max-w-full">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
               <span className="material-symbols-outlined text-slate-700 dark:text-slate-300 text-2xl font-bold">query_stats</span>
@@ -938,6 +1049,7 @@ export default function Dashboard() {
           ) : (
           <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full">
             <li className="stat-card">
+              <CardNotchBg />
               <div className="stat-left"><span className="material-symbols-outlined stat-icon">insights</span></div>
               <div className="stat-body">
                 <div className="stat-value">{activeCount}</div>
@@ -960,6 +1072,7 @@ export default function Dashboard() {
               </div>
             </li>
             <li className="stat-card">
+              <CardNotchBg />
               <div className="stat-left"><span className="material-symbols-outlined stat-icon">grading</span></div>
               <div className="stat-body">
                 <div className="stat-value">{surveyResponseSurveyCounts.total}</div>
@@ -993,7 +1106,8 @@ export default function Dashboard() {
               </div>
             </li>
             <li className="stat-card">
-              <div className="stat-left"><span className="material-symbols-outlined stat-icon">emoji_emotions</span></div>
+              <CardNotchBg />
+              <div className="stat-left"><span className="material-symbols-outlined stat-icon">timer</span></div>
               <div className="stat-body">
                 <div className="stat-value">{(displaySatisfaction !== null ? displaySatisfaction : 0)}/5</div>
                 <div className="stat-label">Satisfacción promedio</div>

@@ -1,5 +1,17 @@
 @import './theme-dashboard.css';
 
+/* CSS Variables for CardNotchBg component */
+:root {
+    --page-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+}
+.dark {
+    --page-bg: #071033;
+    --card-bg: #0f172a;
+    --card-border: rgba(255, 255, 255, 0.08);
+}
+
 /* ========================= */
 /*  DASHBOARD ENTRANCE ANIMS  */
 /* ========================= */
@@ -904,14 +916,14 @@
 }
 
 .sidebar-nav-item.active {
-    background: var(--color-primary);
-    color: #ffffff;
-    font-weight: 700;
+    background: #ffffff;
+    color: #0d1425;
+    font-weight: 800;
     border: none;
     box-shadow: 
-        0 4px 12px -2px rgba(59, 130, 246, 0.25), 
-        inset 0 1px 1px rgba(255, 255, 255, 0.15), 
-        inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+        0 4px 12px -2px rgba(0, 0, 0, 0.15), 
+        inset 0 1px 1px rgba(255, 255, 255, 0.8), 
+        inset 0 -1px 1px rgba(0, 0, 0, 0.05);
     transition: all 200ms ease-out;
     position: relative;
     overflow: hidden;
@@ -921,9 +933,9 @@
 .sidebar-nav-item.active:hover {
     transform: translateY(-1px) scale(1.01);
     box-shadow: 
-        0 6px 16px -2px rgba(59, 130, 246, 0.3), 
-        inset 0 1px 1px rgba(255, 255, 255, 0.2),
-        inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+        0 6px 16px -2px rgba(0, 0, 0, 0.2), 
+        inset 0 1px 1px rgba(255, 255, 255, 0.9),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.05);
 }
 
 /* Indicator Bar */
@@ -935,9 +947,9 @@
     transform: translateY(-50%);
     height: 60%;
     width: 4px;
-    background: #ffffff;
+    background: #0d1425;
     border-radius: 0 4px 4px 0;
-    box-shadow: 2px 0 8px rgba(255, 255, 255, 0.3); /* Lighter white glow */
+    box-shadow: 2px 0 6px rgba(13, 20, 37, 0.15); /* Dark glow */
     z-index: 2;
 }
 
@@ -974,10 +986,10 @@
 }
 
 .app-sidebar.collapsed .sidebar-nav-item.active {
-    background: #2563eb; /* Azul Primario Sólido (Blue 600) */
+    background: #ffffff; /* Blanco */
     border: none;
-    color: #ffffff; /* Ícono blanco brillante */
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); /* Resplandor suave */
+    color: #0d1425; /* Ícono color oscuro del sidebar */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Resplandor suave oscuro */
 }
 
 .app-sidebar.collapsed .sidebar-nav-item.active::before {
@@ -2945,18 +2957,26 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     flex-wrap: wrap;
     align-items: flex-start;
     gap: 16px;
-    background: #ffffff;
-    border-radius: 24px;
+    background: transparent;
+    border-radius: 24px; /* Maintain bounding box rounded corners for hover/glow boundaries */
     padding: 24px;
-    box-shadow: 
-        0 4px 6px -1px rgba(15, 23, 42, 0.05), 
-        0 2px 4px -2px rgba(15, 23, 42, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 1);
-    border: 1px solid #e2e8f0;
+    border: none;
+    box-shadow: none;
     position: relative;
-    overflow: hidden;
+    overflow: visible; 
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 1;
+}
+
+/* Old ::before removed. We use SVG background now. */
+.stat-card::before {
+    display: none !important;
+}
+
+/* SVG Card Background Layer (Drop shadows) */
+.stat-card-bg-layer {
+    filter: drop-shadow(0 4px 6px rgba(15, 23, 42, 0.05));
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Efecto de luz ambiental / Mesh sutil en el fondo de la tarjeta */
@@ -2969,62 +2989,41 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     height: 150px;
     background: radial-gradient(circle, rgba(79, 70, 229, 0.04) 0%, transparent 70%);
     border-radius: 50%;
-    z-index: -1;
+    z-index: -2;
     transition: transform 0.6s ease;
 }
 
 .stat-card:hover {
-    box-shadow: 
-        0 20px 40px -8px rgba(15, 23, 42, 0.12),
-        0 10px 15px -3px rgba(15, 23, 42, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 1);
     transform: translateY(-4px) scale(1.01);
-    border-color: #cbd5e1;
+}
+
+.stat-card:hover .stat-card-bg-layer {
+    filter: drop-shadow(0 15px 25px rgba(15, 23, 42, 0.08));
 }
 
 .stat-card:hover::after {
     transform: scale(1.5) translate(-10px, 10px);
 }
 
-/* Línea superior vibrante (Top Accent) - Estética Slate & Blue */
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, #1e293b 0%, #3b82f6 50%, #1e293b 100%);
-    opacity: 0.9;
-    transition: opacity 0.3s ease, height 0.3s ease;
-}
-
-.stat-card:hover::before {
-    opacity: 1;
-    height: 6px;
-}
-
 /* Modo oscuro puro (Deep Slate) */
 .dark .stat-card {
-    background: #0f172a;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 
-        0 4px 6px -1px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.dark .stat-card-bg-layer {
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }
 
 .dark .stat-card::after {
     background: radial-gradient(circle, rgba(129, 140, 248, 0.06) 0%, transparent 70%);
 }
 
-.dark .stat-card:hover {
-    box-shadow: 
-        0 20px 40px -8px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
+.dark .stat-card:hover .stat-card-bg-layer {
+    filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
 }
 
-/* Icon Block Premium */
 .stat-left {
     width: 52px;
     height: 52px;
@@ -3037,7 +3036,7 @@ body:not(.sidebar-closed) #close-sidebar-btn {
         inset 0 2px 4px rgba(255, 255, 255, 0.8), 
         0 8px 16px -4px rgba(79, 70, 229, 0.2);
     flex-shrink: 0;
-    color: #4f46e5;
+    color: #000000;
     position: relative;
     transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -3051,16 +3050,16 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     box-shadow: 
         inset 0 2px 4px rgba(255, 255, 255, 0.1), 
         0 8px 16px -4px rgba(0, 0, 0, 0.5);
-    color: #818cf8;
+    color: #ffffff;
 }
 
 .stat-icon {
     font-size: 26px;
-    filter: drop-shadow(0 2px 4px rgba(79, 70, 229, 0.4));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
 .dark .stat-icon {
-    filter: drop-shadow(0 2px 4px rgba(129, 140, 248, 0.3));
+    filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.1));
 }
 
 /* Cuerpo de la métrica */
@@ -3101,30 +3100,24 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     color: #94a3b8;
 }
 
-/* Badges estilo Glass / Neo */
+/* Badges estilo Glass / Neo - Ahora flotando en el notch superior derecho */
 .stat-badge {
     position: absolute;
-    top: 18px;
-    right: 18px;
-    background: #f1f5f9;
+    top: 6px; /* Ajustado para sentarse perfectamente en el notch de 42px de profundidad */
+    right: 4px;
+    background: #ffffff;
     color: #3b82f6;
-    padding: 5px 12px;
-    border-radius: 12px;
-    font-weight: 800;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 900;
     font-size: 10px;
     letter-spacing: 0.1em;
     white-space: nowrap;
-    border: 1px solid #e2e8f0;
+    border: 2px solid #e2e8f0;
     text-transform: uppercase;
-    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.03);
+    box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.15);
     transition: all 0.3s ease;
-    z-index: 2;
-}
-
-.stat-card:hover .stat-badge {
-    background: #eff6ff;
-    border-color: #bfdbfe;
-    color: #2563eb;
+    z-index: 10;
 }
 
 .dark .stat-badge {
@@ -3132,11 +3125,6 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     color: #818cf8;
     border-color: rgba(51, 65, 85, 0.8);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.dark .stat-card:hover .stat-badge {
-    background: rgba(30, 41, 59, 0.8);
-    border-color: rgba(71, 85, 105, 1);
 }
 
 /* Sub-listas detalladas */
