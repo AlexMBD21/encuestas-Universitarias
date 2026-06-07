@@ -131,7 +131,7 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
       title="Mi perfil"
       maxWidth="max-w-md"
       noHeaderShadow={true}
-      scrollableBody={false}
+      scrollableBody={true}
     >
       <div className="p-6">
         {/* Avatar */}
@@ -147,7 +147,7 @@ export default function ProfileModal({ open, onClose, userId, onSave }: Props) {
             {/* Anillo de Gradiente Eléctrico Circular */}
             <div className="p-[3.5px] rounded-full bg-gradient-to-tr from-[#06b6d4] via-[#3b82f6] to-[#6366f1] shadow-[0_0_25px_rgba(59,130,246,0.4)] transition-all duration-500 group-hover:shadow-[0_0_45px_rgba(59,130,246,0.6)] group-hover:scale-[1.02]">
               <div className="p-[3px] bg-white dark:bg-slate-900 rounded-full">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 group-hover:border-indigo-400/50 group-hover:bg-indigo-50/10 transition-all relative">
+        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full  bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 group-hover:border-indigo-400/50 group-hover:bg-indigo-50/10 transition-all relative">
                   {loadingProfile ? (
                     <div className="flex items-center justify-center p-4">
                       <ButtonLoader size={45} outerColor="#0f172a" innerColor="#3b82f6" />

@@ -64,7 +64,7 @@ module.exports = async function handler(req, res) {
     // 1. Encontrar la encuesta por token (ignorando RLS con el Service Role)
     const { data: surveys, error: findError } = await supabaseAdmin
       .from('surveys')
-      .select('id, title, link_token, linkToken, link_expires_at, linkExpiresAt, projects')
+      .select('id, title, link_token, link_expires_at, projects')
       // Buscamos primero en el JSON. Al haber estado cambiando entre snake y camelCase...
       // Hacemos un select exhaustivo y filtramos en backend
       .limit(100);

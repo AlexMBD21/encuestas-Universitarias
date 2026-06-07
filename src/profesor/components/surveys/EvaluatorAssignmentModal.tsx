@@ -187,7 +187,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
       onClose={onClose || onCancel} 
       maxWidth="max-w-3xl" 
       hideMobileIndicator={true} 
-      scrollableBody={false}
+      scrollableBody={true}
       title="Configurar Evaluadores"
       footer={
         <div className="w-full flex justify-end">
@@ -210,7 +210,7 @@ export const EvaluatorAssignmentModal = ({ isOpen, onClose, survey, evaluatorUse
         </div>
       }
     >
-      <div className="flex flex-col h-full relative overflow-hidden">
+   <div className="flex flex-col h-full relative ">
         {/* Fixed Instructions at the top */}
         <div className="px-6 sm:px-10 py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0 relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
           <p className="text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">

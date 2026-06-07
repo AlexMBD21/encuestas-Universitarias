@@ -56,7 +56,7 @@ export default function PrintConfigModal({ isOpen, onClose, onPrint, isProject, 
       onClose={onClose} 
       title="Configurar Impresión" 
       maxWidth="max-w-lg" 
-      scrollableBody={false}
+      scrollableBody={true}
       noHeaderShadow={true}
       footer={
         <div className="w-full flex justify-end">

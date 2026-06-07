@@ -165,7 +165,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
       maxWidth="max-w-sm"
       hideCloseButton={false}
       noHeaderShadow={true}
-      scrollableBody={false}
+      scrollableBody={true}
       title={
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">

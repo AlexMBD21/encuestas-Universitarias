@@ -45,7 +45,7 @@ export function SatisfaccionResultsModal({ isOpen, onClose, surveyId, surveyTitl
         </div>
       }
     >
-      <div className="flex flex-col h-full relative overflow-hidden">
+   <div className="flex flex-col h-full relative ">
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 sm:px-10 py-6 custom-scrollbar-sm bg-white dark:bg-slate-900">
           {loading ? (

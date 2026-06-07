@@ -705,11 +705,11 @@ export default function Configuracion() {
           title={modalType === 'delete' ? null : (modalType === 'edit' ? 'Editar usuario' : 'Crear usuario')}
           maxWidth="max-w-md" 
           hideMobileIndicator={false} 
-          scrollableBody={false}
+          scrollableBody={true}
           noHeaderShadow={true}
           hideCloseButton={false}
         >
-          <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-white dark:bg-slate-900 px-6 pb-6 pt-2">
+     <div className="flex flex-col  relative  bg-white dark:bg-slate-900 px-6 pb-6 pt-2">
             {/* Content WITHOUT wrapping modal-scrollable-content to avoid gray bg if not needed */}
             {modalType === 'delete' ? (
               <div className="text-center pt-4">
@@ -848,11 +848,11 @@ export default function Configuracion() {
         title="Confirmar cambio"
         maxWidth="max-w-sm" 
         hideMobileIndicator={false} 
-        scrollableBody={false}
+        scrollableBody={true}
         noHeaderShadow={true}
         hideCloseButton={true}
       >
-        <div className="flex flex-col h-full sm:max-h-[85vh] relative overflow-hidden bg-white dark:bg-slate-900 p-6 pt-2">
+    <div className="flex flex-col h-full sm:max-h-[85vh] relative  bg-white dark:bg-slate-900 p-6 pt-2">
           <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 font-medium">¿Confirmas que deseas cambiar tu contraseña? Esta acción no se puede deshacer.</p>
           <div className="flex flex-col sm:flex-row-reverse gap-3 justify-end">
             <button type="button" onClick={doChangePassword} className="btn btn-primary w-full sm:w-auto px-8">Sí, cambiar</button>

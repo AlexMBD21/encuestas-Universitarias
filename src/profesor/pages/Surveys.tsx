@@ -1123,7 +1123,7 @@ export default function Surveys(): JSX.Element {
         onClose={closeModal} 
         maxWidth={modalKind === 'projects' ? 'max-w-6xl' : 'max-w-4xl'}
         fullHeightOnMobile={true}
-        scrollableBody={false}
+        scrollableBody={true}
       >
         <div className="h-full min-h-0 flex flex-col flex-1">
           <React.Suspense fallback={<div className="flex-1 flex items-center justify-center py-20"><Loader size={60} text="Abriendo..." /></div>}>

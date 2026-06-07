@@ -12,7 +12,7 @@ export const GenerateLinkModal = ({ isOpen, onClose, survey, dataClientNow, onSa
       onClose={onClose} 
       maxWidth="max-w-md" 
       hideMobileIndicator={true} 
-      scrollableBody={false}
+      scrollableBody={true}
       title={
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm shrink-0">
@@ -34,7 +34,7 @@ export const GenerateLinkModal = ({ isOpen, onClose, survey, dataClientNow, onSa
         </div>
       }
     >
-      <div className="flex flex-col h-full relative overflow-hidden bg-white dark:bg-slate-900">
+   <div className="flex flex-col h-full relative  bg-white dark:bg-slate-900">
         <div className="modal-scrollable-content px-6 sm:px-10 py-6 flex-1 overflow-y-auto overscroll-contain">
           <p className="text-[15px] text-slate-500 dark:text-slate-400 mb-8 leading-relaxed font-medium pl-1">
             Guarda la fecha máxima de inscripción para habilitar el enlace público.

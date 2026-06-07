@@ -514,9 +514,9 @@ export default function Inscripcion() {
       
       {/* Premium Error Modal */}
       <Modal isOpen={!!modalError} onClose={() => setModalError(null)} maxWidth="max-w-md" hideMobileIndicator={true}>
-        <div className="flex flex-col h-full sm:max-h-[80vh] relative overflow-hidden bg-slate-900 border border-slate-700 rounded-t-3xl sm:rounded-3xl shadow-2xl">
-          <div className="w-full flex justify-center pt-2 pb-3 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => setModalError(null)}>
-            <div className="w-12 h-1.5 rounded-full bg-white/30" />
+    <div className="flex flex-col  relative  bg-slate-900">
+          <div className="w-full flex justify-center pt-3 pb-2 sm:hidden absolute top-0 z-20 cursor-pointer" style={{ touchAction: 'none' }} onClick={() => setModalError(null)}>
+            <div className="w-12 h-1.5 rounded-full bg-white/20" />
           </div>
           <div className="p-8 text-center flex-1 overflow-y-auto mt-4">
             <div className="w-20 h-20 bg-rose-500/20 border border-rose-500/30 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(244,63,94,0.3)]">

@@ -90,7 +90,7 @@ export default function ProjectDetailModal({
       maxWidth="max-w-3xl"
       title="Detalle de Resultados"
       fullHeightOnMobile={true}
-      scrollableBody={false}
+      scrollableBody={true}
     >
       <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 sm:px-8 space-y-6 sm:space-y-8 custom-scrollbar bg-slate-50/50 w-full h-full">
         {/* Project Title as primary Heading */}
@@ -102,7 +102,7 @@ export default function ProjectDetailModal({
 
         {/* Overall score card */}
         {ps.overall !== null && (
-          <div className="p-5 sm:p-6 rounded-[20px] bg-white border border-slate-200/80 hover:border-slate-300 hover:shadow-slate-500/10 transition-all flex flex-wrap items-center gap-4 sm:gap-6 shadow-sm font-sans relative overflow-hidden">
+     <div className="p-5 sm:p-6 rounded-[20px] bg-white border border-slate-200/80 hover:border-slate-300 hover:shadow-slate-500/10 transition-all flex flex-wrap items-center gap-4 sm:gap-6 shadow-sm font-sans relative ">
             <div className="text-center shrink-0 relative z-10 w-24">
               <div className="text-5xl font-black text-slate-800 tracking-tighter">{ps.overall.toFixed(2)}</div>
               <div className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mt-1.5 flex items-center justify-center gap-1">
