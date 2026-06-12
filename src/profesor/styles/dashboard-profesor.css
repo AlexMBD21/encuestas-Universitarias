@@ -2952,6 +2952,36 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     }
 }
 
+@media (min-width: 1024px) and (max-width: 1280px) {
+    .quick-action-card {
+        padding: 12px 14px !important;
+        gap: 8px !important;
+        min-height: 68px !important;
+    }
+    
+    .quick-action-card .qa-icon-circle {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 10px !important;
+    }
+    
+    .quick-action-card .qa-icon-circle .material-symbols-outlined {
+        font-size: 16px !important;
+    }
+    
+    .quick-action-card .qa-title {
+        font-size: 0.9rem !important;
+    }
+    
+    .quick-action-card .qa-subtitle {
+        font-size: 0.72rem !important;
+    }
+    
+    .quick-action-card .qa-right {
+        display: none !important;
+    }
+}
+
 /* ========================= */
 /*  STAT CARDS (Resumen rápido Premium Elevado) */
 /* ========================= */
