@@ -399,6 +399,14 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
           await Promise.all(toRemove.map(async (n) => {
             try { if (n && n.id) await dataClient.setHiddenNotification(uid, String(n.id), true) } catch (e) { throw e }
           }))
+          // Optimistically update hiddenMap locally to prevent flickering when prop updates
+          setHiddenMap(prev => {
+            const next = { ...(prev || {}) }
+            for (const n of toRemove) {
+              if (n && n.id) next[String(n.id)] = true
+            }
+            return next
+          })
         } catch (err) {
           // permission error or other write error: fallback to localStorage per-user hidden map
           try {
