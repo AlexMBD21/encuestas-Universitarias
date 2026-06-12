@@ -3108,10 +3108,14 @@ body:not(.sidebar-closed) #close-sidebar-btn {
 .stat-badge {
     position: absolute;
     top: 6px; /* Ajustado para sentarse perfectamente en el notch de 42px de profundidad */
-    right: 4px;
+    right: 8px;
+    width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: #ffffff;
     color: #3b82f6;
-    padding: 8px 16px;
+    padding: 8px 0;
     border-radius: 20px;
     font-weight: 900;
     font-size: 10px;
@@ -3191,7 +3195,7 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     margin-left: 0;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     #dashboard-view .rounded-3xl ul.grid {
         grid-template-columns: 1fr !important;
         gap: 16px !important;
@@ -3244,12 +3248,16 @@ body:not(.sidebar-closed) #close-sidebar-btn {
     .stat-badge {
         position: absolute !important;
         top: 6px !important;
-        right: 6px !important;
+        right: 8px !important;
+        width: 96px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         grid-area: unset !important;
         margin: 0 !important;
         order: unset !important;
         align-self: unset !important;
-        padding: 4px 10px !important;
+        padding: 4px 0 !important;
         font-size: 8.5px !important;
         border-radius: 12px !important;
         border-width: 1px !important;

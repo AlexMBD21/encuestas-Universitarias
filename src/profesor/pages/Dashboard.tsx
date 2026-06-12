@@ -55,7 +55,7 @@ const CardNotchBg = () => {
 
   const isMobileWidth = W < 450;
   const R = isMobileWidth ? 20 : 24;     // Card corner radius
-  const NW = isMobileWidth ? Math.min(115, W - 32) : Math.min(164, W - 48);   // Notch width dynamically capped
+  const NW = isMobileWidth ? Math.min(110, W - 32) : Math.min(136, W - 48);   // Uniform notch width dynamically capped
   const NH = isMobileWidth ? 36 : 48;    // Notch height
   const Rn = isMobileWidth ? Math.min(10, (W - NW) / 2) : Math.min(16, (W - NW) / 2);    // Notch inner/outer radius dynamically capped
 
@@ -1048,7 +1048,7 @@ export default function Dashboard() {
           {summaryLoading ? (
             <DashboardStatCardsSkeleton />
           ) : (
-          <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full">
+          <ul className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
             <li className="stat-card">
               <CardNotchBg />
               <div className="stat-left"><span className="material-symbols-outlined stat-icon">insights</span></div>
