@@ -1296,7 +1296,7 @@ export default function Dashboard() {
         <div className="fixed right-0 z-[200] flex items-center" style={{ top: 'calc(var(--topbar-height) + 24px)' }}>
           <button
             onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-            className="group flex items-center justify-center pl-4 pr-5 py-3.5 text-white shadow-[-12px_0_30px_rgba(0,0,0,0.25)] rounded-l-3xl transition-all duration-500 ease-in-out border-y border-l border-white/10 active:scale-95 hover:pl-6"
+            className="group flex items-center justify-center text-white shadow-[-12px_0_30px_rgba(0,0,0,0.25)] rounded-l-3xl transition-all duration-500 ease-in-out border-y border-l border-white/10 active:scale-95 hover:pl-6 dash-calendar-btn"
             style={{ 
               background: '#0f172a',
               backdropFilter: 'blur(12px)',
@@ -1305,7 +1305,7 @@ export default function Dashboard() {
             title="Abrir Calendario"
           >
             <div className="relative">
-              <span className="material-symbols-outlined text-white text-2xl drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">calendar_month</span>
+              <span className="material-symbols-outlined text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] dash-calendar-icon">calendar_month</span>
             </div>
             <span className="overflow-hidden whitespace-nowrap max-w-0 opacity-0 group-hover:max-w-[140px] group-hover:opacity-100 group-hover:ml-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] font-black text-xs uppercase tracking-widest text-slate-100">
               Ver Calendario
