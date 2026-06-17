@@ -22,6 +22,7 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
   const [userRespondedMap, setUserRespondedMap] = useState<Record<string, boolean>>({})
   const [currentUser, setCurrentUser] = useState<any | null>(() => AuthAdapter.getUser())
   const [hiddenMap, setHiddenMap] = useState<Record<string, any>>({})
+  const [hiddenMapLoaded, setHiddenMapLoaded] = useState(false)
   const innerRef = useRef<HTMLDivElement | null>(null)
   const [itemHeight, setItemHeight] = useState<number | null>(null)
   const [panelLoaded, setPanelLoaded] = useState(false)
@@ -227,6 +228,7 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
   useEffect(() => {
     if (!onVisibleCountChange) return
     if (surveysFromDB === null) return  // wait for surveys to load before counting
+    if (!hiddenMapLoaded) return        // wait for hiddenMap to be restored before counting
     const count = (notifications || []).filter((n: any) => {
       if (!n) return false
       if (n.id && hiddenMap && hiddenMap[String(n.id)]) return false
@@ -234,7 +236,7 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
       return !!(surveysFromDB || []).find((s: any) => String(s.id) === String(n.surveyId))
     }).length
     onVisibleCountChange(count)
-  }, [notifications, hiddenMap, surveysFromDB, onVisibleCountChange])
+  }, [notifications, hiddenMap, hiddenMapLoaded, surveysFromDB, onVisibleCountChange])
 
   // Re-populate userRespondedMap whenever notifications, surveysFromDB or currentUser change
   useEffect(() => {
@@ -273,41 +275,56 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
   // listen to per-user hidden notifications (hiddenNotifications/{uid})
   useEffect(() => {
     let unsub: (() => void) | null = null
+    // Reset loaded flag each time currentUser changes so we wait for the new user's map
+    setHiddenMapLoaded(false)
     try {
-      const supabaseEnabled = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
       const dataClient: any = supabaseClient
       const authUser = (dataClient && dataClient.getAuthCurrentUser && dataClient.getAuthCurrentUser()) || null
       const uid = authUser ? ((authUser as any).uid || (authUser as any).id) : (currentUser && (currentUser.uid || currentUser.id)) || null
-      if (!uid) { setHiddenMap({}); return () => {} }
-      if (dataClient && dataClient.isEnabled && dataClient.isEnabled() && dataClient.listenHiddenNotifications) {
-        unsub = dataClient.listenHiddenNotifications(String(uid), (map: Record<string, any>) => {
-          try { setHiddenMap(map || {}) } catch (e) { setHiddenMap({}) }
-        })
-      } else if (dataClient && dataClient.getHiddenNotificationsOnce) {
-        try {
-          dataClient.getHiddenNotificationsOnce(String(uid))
-            .then((m: any) => { setHiddenMap(m || {}) })
-            .catch(() => { setHiddenMap({}) })
-        } catch (e) { setHiddenMap({}) }
-      }
-    } catch (e) { setHiddenMap({}) }
-    // also load any locally saved hidden entries for this uid
-    try {
-      const supabaseEnabled2 = (supabaseClient && (supabaseClient as any).isEnabled && (supabaseClient as any).isEnabled())
-      const dataClient2: any = supabaseClient
-      const authUser2 = (dataClient2 && dataClient2.getAuthCurrentUser && dataClient2.getAuthCurrentUser()) || null
-      const uid2 = authUser2 ? ((authUser2 as any).uid || (authUser2 as any).id) : (currentUser && (currentUser.uid || currentUser.id)) || null
-      if (uid2) {
-        const localKey = `hiddenNotificationsLocal:${uid2}`
+      if (!uid) { setHiddenMap({}); setHiddenMapLoaded(true); return () => {} }
+
+      // Eagerly read localStorage first so the badge is correct before any async DB call
+      let localMerge: Record<string, any> = {}
+      try {
+        const localKey = `hiddenNotificationsLocal:${uid}`
         const raw = window.localStorage.getItem(localKey)
         if (raw) {
-          try {
-            const parsed = JSON.parse(raw || '{}')
-            setHiddenMap(prev => ({ ...(prev || {}), ...(parsed || {}) }))
-          } catch (e) {}
+          try { localMerge = JSON.parse(raw) || {} } catch (e) { localMerge = {} }
         }
+      } catch (e) {}
+
+      if (dataClient && dataClient.isEnabled && dataClient.isEnabled() && dataClient.listenHiddenNotifications) {
+        unsub = dataClient.listenHiddenNotifications(String(uid), (map: Record<string, any>) => {
+          try {
+            // Merge DB map with local cache — local entries take precedence so dismissed
+            // notifications stay hidden even if the DB hasn't synced them yet.
+            setHiddenMap({ ...(localMerge || {}), ...(map || {}) })
+            setHiddenMapLoaded(true)
+          } catch (e) { setHiddenMap({}); setHiddenMapLoaded(true) }
+        })
+        // Apply local cache immediately so badge is correct before the DB callback fires
+        if (Object.keys(localMerge).length > 0) {
+          setHiddenMap(localMerge)
+          setHiddenMapLoaded(true)
+        }
+      } else if (dataClient && dataClient.getHiddenNotificationsOnce) {
+        // Apply local cache immediately
+        setHiddenMap(localMerge)
+        setHiddenMapLoaded(true)
+        try {
+          dataClient.getHiddenNotificationsOnce(String(uid))
+            .then((m: any) => {
+              setHiddenMap(prev => ({ ...(localMerge || {}), ...(m || {}), ...(prev || {}) }))
+              setHiddenMapLoaded(true)
+            })
+            .catch(() => { setHiddenMapLoaded(true) })
+        } catch (e) { setHiddenMapLoaded(true) }
+      } else {
+        // No DB method: use local cache only
+        setHiddenMap(localMerge)
+        setHiddenMapLoaded(true)
       }
-    } catch (e) {}
+    } catch (e) { setHiddenMap({}); setHiddenMapLoaded(true) }
 
     return () => { if (unsub) try { unsub() } catch (e) {} }
   }, [currentUser])
@@ -399,6 +416,18 @@ export default function NotificationsPanel({ open, onClose, notifications: notif
           await Promise.all(toRemove.map(async (n) => {
             try { if (n && n.id) await dataClient.setHiddenNotification(uid, String(n.id), true) } catch (e) { throw e }
           }))
+          // Also persist to localStorage so ProfesorLayout badge updates immediately
+          // even when the DB realtime callback hasn't fired yet
+          try {
+            const localKey = `hiddenNotificationsLocal:${uid}`
+            const raw = window.localStorage.getItem(localKey)
+            let localParsed: Record<string, any> = {}
+            try { localParsed = raw ? JSON.parse(raw) : {} } catch (e) { localParsed = {} }
+            for (const n of toRemove) {
+              if (n && n.id) localParsed[String(n.id)] = true
+            }
+            window.localStorage.setItem(localKey, JSON.stringify(localParsed))
+          } catch (e) {}
           // Optimistically update hiddenMap locally to prevent flickering when prop updates
           setHiddenMap(prev => {
             const next = { ...(prev || {}) }

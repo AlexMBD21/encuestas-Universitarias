@@ -58,7 +58,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
       isOpen={isOpen} 
       onClose={onClose} 
       maxWidth="max-w-lg" 
-      scrollableBody={true}
+      scrollableBody={false}
       noFooterShadow={true}
       title="Categorías del Proyecto"
       footer={
@@ -78,7 +78,7 @@ export const ManageCategoriesModal = ({ isOpen, onClose, initialCategories, onSa
         </div>
       }
     >
-   <div className="flex flex-col h-full relative ">
+   <div className="flex flex-col h-full overflow-hidden">
         {/* Subtitle bar */}
         <div className="px-6 sm:px-10 py-2.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 flex flex-col gap-1.5 items-start relative z-10 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.45)]">
           <span className="text-[10px] font-black px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full">
