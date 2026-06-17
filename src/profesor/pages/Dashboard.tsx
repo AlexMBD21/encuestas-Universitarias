@@ -989,7 +989,8 @@ export default function Dashboard() {
               type: 'survey',
               title: `Encuesta: ${s.title || s.name || 'Sin Título'}`,
               date: `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`,
-              color: isProject ? 'bg-indigo-500' : 'bg-emerald-500'
+              color: isProject ? 'bg-indigo-500' : 'bg-emerald-500',
+              surveyId: String(s.id)
             });
           }
         }
@@ -1005,7 +1006,9 @@ export default function Dashboard() {
               type: 'report',
               title: `Aviso: ${n.surveyTitle || n.title || 'Reporte'}`,
               date: `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`,
-              color: 'bg-rose-500'
+              color: 'bg-rose-500',
+              surveyId: n.surveyId ? String(n.surveyId) : undefined,
+              reportId: n.raw && n.raw.id ? String(n.raw.id) : undefined
             });
           }
         }
@@ -1013,6 +1016,34 @@ export default function Dashboard() {
     } catch(e) {}
     return evs;
   }, [publishedSurveys, noticesToShow]);
+
+  const handleCalendarEventClick = (ev: CalendarEvent) => {
+    try {
+      if (ev.type === 'report' && ev.surveyId) {
+        navigate('/profesor/encuestas', { 
+          state: { 
+            openSurveyId: ev.surveyId, 
+            openReports: true, 
+            openReportId: ev.reportId 
+          } 
+        });
+        setIsCalendarOpen(false);
+        return;
+      }
+      if (ev.type === 'survey' && ev.surveyId) {
+        navigate('/profesor/encuestas', { 
+          state: { 
+            openSurveyId: ev.surveyId, 
+            openSurveyKind: 'view' 
+          } 
+        });
+        setIsCalendarOpen(false);
+        return;
+      }
+    } catch (e) {
+      console.error('Error handling calendar event click:', e);
+    }
+  };
 
   return (
     <div id="dashboard-view" className="layout-content-container flex flex-col max-w-full flex-1 pt-4 relative bg-slate-100/80 dark:bg-[#0b1120]">
@@ -1319,6 +1350,7 @@ export default function Dashboard() {
         <CalendarWidget 
           events={calendarEvents} 
           onClose={() => setIsCalendarOpen(false)} 
+          onEventClick={handleCalendarEventClick}
         />
       )}
 

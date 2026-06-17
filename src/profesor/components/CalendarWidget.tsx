@@ -7,14 +7,17 @@ export interface CalendarEvent {
   title: string;
   date: string; // Formato YYYY-MM-DD
   color: string; // Clase de Tailwind para el badge/dot (ej. bg-blue-500)
+  surveyId?: string;
+  reportId?: string;
 }
 
 interface CalendarWidgetProps {
   events: CalendarEvent[];
   onClose?: () => void;
+  onEventClick?: (ev: CalendarEvent) => void;
 }
 
-export const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events, onClose }) => {
+export const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events, onClose, onEventClick }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
@@ -205,20 +208,21 @@ export const CalendarWidget: React.FC<CalendarWidgetProps> = ({ events, onClose 
               {eventsByDate[selectedDate] && eventsByDate[selectedDate].length > 0 ? (
                 <div className="space-y-4">
                   {eventsByDate[selectedDate].map((ev, idx) => (
-                    <div 
+                    <button 
                       key={idx} 
-                      className="group relative flex items-center gap-4 p-4 rounded-3xl bg-slate-800/30 border border-white/5 hover:bg-slate-800/50 transition-all duration-500 overflow-hidden"
+                      onClick={() => onEventClick?.(ev)}
+                      className="group relative flex items-center gap-4 p-4 rounded-3xl bg-slate-800/30 border border-white/5 hover:bg-slate-800/50 transition-all duration-300 overflow-hidden cursor-pointer w-full text-left active:scale-[0.98]"
                     >
                       <div className={`absolute top-0 left-0 w-1 h-full ${ev.color}`}></div>
                       <div className={`w-8 h-8 rounded-xl ${ev.color}/10 flex items-center justify-center`}>
                          <div className={`w-2 h-2 rounded-full ${ev.color} animate-pulse`}></div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">{ev.type === 'survey' ? 'Encuesta' : 'Actividad'}</div>
+                        <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">{ev.type === 'survey' ? 'Encuesta' : 'Reporte'}</div>
                         <div className="text-sm font-black text-slate-100 truncate leading-tight tracking-tight">{ev.title}</div>
                       </div>
                       <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors text-lg">chevron_right</span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               ) : (
