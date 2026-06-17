@@ -1246,21 +1246,57 @@ export default function Surveys(): JSX.Element {
           </div>
         }
       >
-        <div className="p-6">
+      <div className="p-6">
           {(() => {
             const rs = surveyReports.filter(r => String(r.surveyId) === String(viewReportsFor))
             if (rs.length === 0) return <div className="text-center py-10 text-slate-500">No hay reportes para esta encuesta.</div>
             return (
               <div className="space-y-4">
-                {rs.map((r, i) => (
-                  <div key={i} className="p-4 rounded-xl border bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{new Date(r.createdAt).toLocaleString()}</span>
-                      <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded text-[10px] font-black">REPORTE #{i+1}</span>
+                {rs.map((r, i) => {
+                  const reporterEmail: string = r.reporterEmail || r.reporter_email || ''
+                  const reporterId: string = r.reporterId || r.reporter_id || ''
+                  // Display label: prefer email, fallback to truncated ID
+                  const reporterLabel = reporterEmail
+                    ? reporterEmail
+                    : reporterId
+                      ? (reporterId.length > 20 ? reporterId.slice(0, 8) + '…' + reporterId.slice(-4) : reporterId)
+                      : 'Anónimo'
+                  // Avatar initials
+                  const initials = reporterEmail
+                    ? reporterEmail.slice(0, 2).toUpperCase()
+                    : '?'
+
+                  return (
+                    <div key={i} className="rounded-xl border bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700 overflow-hidden shadow-sm">
+                      {/* Header: reporter + date + badge */}
+                      <div className="flex items-center justify-between gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {/* Avatar */}
+                          <div className="w-7 h-7 rounded-full bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center text-rose-700 dark:text-rose-300 text-[10px] font-black shrink-0 border border-rose-200 dark:border-rose-800">
+                            {initials}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate leading-tight">
+                              {reporterLabel}
+                            </span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 leading-tight">
+                              {r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="px-2 py-0.5 bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 rounded text-[10px] font-black shrink-0 border border-rose-200 dark:border-rose-800">
+                          REPORTE #{i + 1}
+                        </span>
+                      </div>
+                      {/* Comment body */}
+                      <div className="px-4 py-3">
+                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                          {r.comment || <span className="italic text-slate-400">Sin comentario.</span>}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-slate-700 dark:text-slate-300 text-sm">{r.comment || 'Sin comentario.'}</p>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )
           })()}
